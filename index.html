@@ -59,7 +59,7 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
     <span style="font-size:16px;font-weight:800;letter-spacing:.5px;">📎 OFM Saraburi</span>
     <span style="font-size:11px;color:#94a3b8;font-weight:400;">Office Mate Plus · สาขาสระบุรี</span>
   </div>
-  <div style="font-size:11px;color:#94a3b8;">ข้อมูล POS: ม.ค. 2568 – พ.ย. 2569 &nbsp;|&nbsp; 14,425 บิล &nbsp;|&nbsp; 900+ ลูกค้า</div>
+  <div style="font-size:11px;color:#94a3b8;">ข้อมูล POS: ม.ค. 2568 – พ.ค. 2569 &nbsp;|&nbsp; 14,425 บิล &nbsp;|&nbsp; 900+ ลูกค้า</div>
 </div>
 
 <!-- ── TABS ──────────────────────────────────────────────── -->
@@ -95,7 +95,7 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
       <option value="1">มกราคม</option>
       <option value="2">กุมภาพันธ์</option>
       <option value="3">มีนาคม</option>
-      <option value="4" selected>เมษายน</option>
+      <option value="5" selected>พฤษภาคม</option>
       <option value="5">พฤษภาคม</option>
       <option value="6">มิถุนายน</option>
       <option value="7">กรกฎาคม</option>
@@ -374,29 +374,25 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
 // ── MONTHLY POS DATA (from POS sheet, all channels) ─────────────────────────
 // yr=Gregorian, mo=1-based month, th=Thai label, inv=invoices, rev=revenue
 const MONTHLY_POS = [
+  // ── ปี 2568 (2025) — merged: บิลที่ key ปีผิดเป็น 2569 ถูก merge กลับมาแล้ว ──
   {yr:2025,mo:1,  th:'ม.ค. 68',  inv:353,  rev:184822},
   {yr:2025,mo:2,  th:'ก.พ. 68',  inv:596,  rev:242920},
   {yr:2025,mo:3,  th:'มี.ค. 68', inv:755,  rev:334599},
   {yr:2025,mo:4,  th:'เม.ย. 68', inv:587,  rev:260648},
   {yr:2025,mo:5,  th:'พ.ค. 68',  inv:506,  rev:232124},
-  {yr:2025,mo:6,  th:'มิ.ย. 68', inv:826,  rev:325491},
-  {yr:2025,mo:7,  th:'ก.ค. 68',  inv:868,  rev:390094},
-  {yr:2025,mo:8,  th:'ส.ค. 68',  inv:771,  rev:337043},
-  {yr:2025,mo:9,  th:'ก.ย. 68',  inv:631,  rev:335909},
-  {yr:2025,mo:10, th:'ต.ค. 68',  inv:565,  rev:302826},
-  {yr:2025,mo:11, th:'พ.ย. 68',  inv:715,  rev:362800},
+  {yr:2025,mo:6,  th:'มิ.ย. 68', inv:1112, rev:441157},  // 826+286
+  {yr:2025,mo:7,  th:'ก.ค. 68',  inv:1224, rev:564388},  // 868+356
+  {yr:2025,mo:8,  th:'ส.ค. 68',  inv:1152, rev:525258},  // 771+381
+  {yr:2025,mo:9,  th:'ก.ย. 68',  inv:863,  rev:457909},  // 631+232
+  {yr:2025,mo:10, th:'ต.ค. 68',  inv:819,  rev:441993},  // 565+254
+  {yr:2025,mo:11, th:'พ.ย. 68',  inv:1032, rev:475865},  // 715+317
   {yr:2025,mo:12, th:'ธ.ค. 68',  inv:552,  rev:298316},
+  // ── ปี 2569 (2026) — ม.ค.–พ.ค. เท่านั้น (ข้อมูลจริงถึงวันนี้) ──
   {yr:2026,mo:1,  th:'ม.ค. 69',  inv:66,   rev:19151},
   {yr:2026,mo:2,  th:'ก.พ. 69',  inv:161,  rev:87199},
   {yr:2026,mo:3,  th:'มี.ค. 69', inv:281,  rev:99732},
   {yr:2026,mo:4,  th:'เม.ย. 69', inv:318,  rev:204249},
   {yr:2026,mo:5,  th:'พ.ค. 69',  inv:467,  rev:294227},
-  {yr:2026,mo:6,  th:'มิ.ย. 69', inv:286,  rev:115666},
-  {yr:2026,mo:7,  th:'ก.ค. 69',  inv:356,  rev:174294},
-  {yr:2026,mo:8,  th:'ส.ค. 69',  inv:381,  rev:188215},
-  {yr:2026,mo:9,  th:'ก.ย. 69',  inv:232,  rev:122000},
-  {yr:2026,mo:10, th:'ต.ค. 69',  inv:254,  rev:139167},
-  {yr:2026,mo:11, th:'พ.ย. 69',  inv:317,  rev:113065},
 ];
 
 // ── TARGET & DAILY DATA ──────────────────────────────────────────────────────
@@ -429,68 +425,56 @@ const DAILY_DATA = [
   {yr:2025,mo:5,d:6,inv:111,rev:57354},{yr:2025,mo:5,d:7,inv:38,rev:14556},
   {yr:2025,mo:5,d:8,inv:41,rev:21983},{yr:2025,mo:5,d:9,inv:32,rev:15618},
   {yr:2025,mo:5,d:11,inv:89,rev:42686},
-  {yr:2025,mo:6,d:2,inv:65,rev:23441},{yr:2025,mo:6,d:3,inv:81,rev:36417},
-  {yr:2025,mo:6,d:5,inv:63,rev:19126},{yr:2025,mo:6,d:6,inv:106,rev:40993},
-  {yr:2025,mo:6,d:8,inv:134,rev:46492},{yr:2025,mo:6,d:9,inv:40,rev:24297},
-  {yr:2025,mo:6,d:10,inv:180,rev:81130},{yr:2025,mo:6,d:11,inv:122,rev:43178},
-  {yr:2025,mo:6,d:12,inv:35,rev:10417},
-  {yr:2025,mo:7,d:1,inv:26,rev:0},{yr:2025,mo:7,d:2,inv:124,rev:64845},
-  {yr:2025,mo:7,d:3,inv:114,rev:53610},{yr:2025,mo:7,d:4,inv:10,rev:3469},
-  {yr:2025,mo:7,d:5,inv:50,rev:29968},{yr:2025,mo:7,d:6,inv:51,rev:18538},
+  // มิ.ย.–ธ.ค. 68: merged บิลที่ key ปีผิดเป็น 69 กลับมาแล้ว (batch id เดียวกัน = บวกยอดรวม)
+  {yr:2025,mo:6,d:1,inv:129,rev:46160},
+  {yr:2025,mo:6,d:2,inv:139,rev:113793},{yr:2025,mo:6,d:3,inv:113,rev:68306},
+  {yr:2025,mo:6,d:4,inv:4,rev:1322},   {yr:2025,mo:6,d:5,inv:291,rev:143630},
+  {yr:2025,mo:6,d:6,inv:106,rev:40993},{yr:2025,mo:6,d:8,inv:134,rev:46492},
+  {yr:2025,mo:6,d:9,inv:40,rev:24297}, {yr:2025,mo:6,d:10,inv:180,rev:81130},
+  {yr:2025,mo:6,d:11,inv:122,rev:43178},{yr:2025,mo:6,d:12,inv:35,rev:10417},
+  {yr:2025,mo:7,d:1,inv:66,rev:11900}, {yr:2025,mo:7,d:2,inv:152,rev:69263},
+  {yr:2025,mo:7,d:3,inv:126,rev:56897},{yr:2025,mo:7,d:4,inv:167,rev:65389},
+  {yr:2025,mo:7,d:5,inv:99,rev:64109}, {yr:2025,mo:7,d:6,inv:51,rev:18538},
   {yr:2025,mo:7,d:7,inv:117,rev:42121},{yr:2025,mo:7,d:8,inv:74,rev:91649},
   {yr:2025,mo:7,d:10,inv:228,rev:63228},{yr:2025,mo:7,d:11,inv:74,rev:22666},
-  {yr:2025,mo:8,d:2,inv:30,rev:5269},{yr:2025,mo:8,d:3,inv:27,rev:21678},
-  {yr:2025,mo:8,d:4,inv:85,rev:31190},{yr:2025,mo:8,d:5,inv:125,rev:36248},
-  {yr:2025,mo:8,d:7,inv:72,rev:20678},{yr:2025,mo:8,d:8,inv:55,rev:26208},
-  {yr:2025,mo:8,d:9,inv:149,rev:65994},{yr:2025,mo:8,d:10,inv:142,rev:55938},
-  {yr:2025,mo:8,d:11,inv:27,rev:26681},{yr:2025,mo:8,d:12,inv:59,rev:47159},
-  {yr:2025,mo:9,d:1,inv:2,rev:0},{yr:2025,mo:9,d:4,inv:96,rev:69407},
-  {yr:2025,mo:9,d:5,inv:66,rev:18328},{yr:2025,mo:9,d:6,inv:133,rev:59876},
-  {yr:2025,mo:9,d:7,inv:34,rev:14497},{yr:2025,mo:9,d:8,inv:38,rev:9181},
-  {yr:2025,mo:9,d:9,inv:80,rev:73475},{yr:2025,mo:9,d:10,inv:72,rev:23516},
+  {yr:2025,mo:8,d:1,inv:98,rev:40624}, {yr:2025,mo:8,d:2,inv:30,rev:5269},
+  {yr:2025,mo:8,d:3,inv:62,rev:78123}, {yr:2025,mo:8,d:4,inv:228,rev:86733},
+  {yr:2025,mo:8,d:5,inv:205,rev:57930},{yr:2025,mo:8,d:7,inv:72,rev:20678},
+  {yr:2025,mo:8,d:8,inv:55,rev:26208}, {yr:2025,mo:8,d:9,inv:149,rev:65994},
+  {yr:2025,mo:8,d:10,inv:142,rev:55938},{yr:2025,mo:8,d:11,inv:27,rev:26681},
+  {yr:2025,mo:8,d:12,inv:59,rev:47159},
+  {yr:2025,mo:9,d:1,inv:61,rev:31705}, {yr:2025,mo:9,d:2,inv:118,rev:44640},
+  {yr:2025,mo:9,d:3,inv:134,rev:75584},{yr:2025,mo:9,d:4,inv:140,rev:91929},
+  {yr:2025,mo:9,d:5,inv:92,rev:32092}, {yr:2025,mo:9,d:6,inv:133,rev:59876},
+  {yr:2025,mo:9,d:7,inv:34,rev:14497}, {yr:2025,mo:9,d:8,inv:38,rev:9181},
+  {yr:2025,mo:9,d:9,inv:80,rev:73475}, {yr:2025,mo:9,d:10,inv:72,rev:23516},
   {yr:2025,mo:9,d:12,inv:110,rev:67629},
-  {yr:2025,mo:10,d:1,inv:20,rev:0},{yr:2025,mo:10,d:2,inv:63,rev:56047},
-  {yr:2025,mo:10,d:3,inv:65,rev:16646},{yr:2025,mo:10,d:4,inv:43,rev:31734},
+  {yr:2025,mo:10,d:1,inv:59,rev:8898}, {yr:2025,mo:10,d:2,inv:143,rev:76043},
+  {yr:2025,mo:10,d:3,inv:105,rev:77218},{yr:2025,mo:10,d:4,inv:116,rev:64268},
   {yr:2025,mo:10,d:5,inv:90,rev:70116},{yr:2025,mo:10,d:6,inv:74,rev:34914},
   {yr:2025,mo:10,d:9,inv:33,rev:25801},{yr:2025,mo:10,d:10,inv:46,rev:24624},
   {yr:2025,mo:10,d:11,inv:81,rev:18445},{yr:2025,mo:10,d:12,inv:50,rev:24499},
-  {yr:2025,mo:11,d:1,inv:3,rev:0},{yr:2025,mo:11,d:2,inv:59,rev:38986},
-  {yr:2025,mo:11,d:3,inv:46,rev:23943},{yr:2025,mo:11,d:4,inv:47,rev:57342},
-  {yr:2025,mo:11,d:6,inv:108,rev:76660},{yr:2025,mo:11,d:7,inv:63,rev:21059},
-  {yr:2025,mo:11,d:8,inv:53,rev:18576},{yr:2025,mo:11,d:9,inv:123,rev:29015},
-  {yr:2025,mo:11,d:10,inv:92,rev:34550},{yr:2025,mo:11,d:11,inv:48,rev:29811},
-  {yr:2025,mo:11,d:12,inv:73,rev:32858},
-  {yr:2025,mo:12,d:2,inv:91,rev:33419},{yr:2025,mo:12,d:3,inv:41,rev:23870},
-  {yr:2025,mo:12,d:5,inv:48,rev:19354},{yr:2025,mo:12,d:6,inv:134,rev:105944},
-  {yr:2025,mo:12,d:7,inv:29,rev:8895},{yr:2025,mo:12,d:9,inv:91,rev:46750},
-  {yr:2025,mo:12,d:10,inv:2,rev:1980},{yr:2025,mo:12,d:11,inv:73,rev:39216},
-  {yr:2025,mo:12,d:12,inv:43,rev:18888},
+  {yr:2025,mo:11,d:1,inv:3,rev:0},     {yr:2025,mo:11,d:2,inv:126,rev:74404},
+  {yr:2025,mo:11,d:3,inv:192,rev:99959},{yr:2025,mo:11,d:4,inv:59,rev:60059},
+  {yr:2025,mo:11,d:5,inv:29,rev:25016},{yr:2025,mo:11,d:6,inv:108,rev:76660},
+  {yr:2025,mo:11,d:7,inv:63,rev:21059},{yr:2025,mo:11,d:8,inv:53,rev:18576},
+  {yr:2025,mo:11,d:9,inv:123,rev:29015},{yr:2025,mo:11,d:10,inv:92,rev:34550},
+  {yr:2025,mo:11,d:11,inv:48,rev:29811},{yr:2025,mo:11,d:12,inv:73,rev:32858},
+  {yr:2025,mo:12,d:1,inv:81,rev:25613},{yr:2025,mo:12,d:2,inv:127,rev:47160},
+  {yr:2025,mo:12,d:3,inv:183,rev:80691},{yr:2025,mo:12,d:5,inv:106,rev:36244},
+  {yr:2025,mo:12,d:6,inv:134,rev:105944},{yr:2025,mo:12,d:7,inv:29,rev:8895},
+  {yr:2025,mo:12,d:9,inv:91,rev:46750},{yr:2025,mo:12,d:10,inv:2,rev:1980},
+  {yr:2025,mo:12,d:11,inv:73,rev:39216},{yr:2025,mo:12,d:12,inv:43,rev:18888},
+  // ── ปี 2569 (2026) ม.ค.–พ.ค. ──
   {yr:2026,mo:1,d:4,inv:59,rev:13849},{yr:2026,mo:1,d:5,inv:7,rev:5302},
   {yr:2026,mo:2,d:2,inv:79,rev:58501},{yr:2026,mo:2,d:3,inv:17,rev:5961},
   {yr:2026,mo:2,d:4,inv:34,rev:10360},{yr:2026,mo:2,d:5,inv:31,rev:12377},
   {yr:2026,mo:3,d:2,inv:59,rev:20516},{yr:2026,mo:3,d:4,inv:42,rev:22001},
-  {yr:2026,mo:4,d:1,inv:8,rev:1398},{yr:2026,mo:4,d:2,inv:88,rev:49800},
+  {yr:2026,mo:4,d:1,inv:8,rev:1398},  {yr:2026,mo:4,d:2,inv:88,rev:49800},
   {yr:2026,mo:4,d:3,inv:83,rev:35086},{yr:2026,mo:4,d:4,inv:31,rev:4636},
   {yr:2026,mo:4,d:5,inv:71,rev:8812},
   {yr:2026,mo:5,d:1,inv:63,rev:25637},{yr:2026,mo:5,d:2,inv:116,rev:100336},
   {yr:2026,mo:5,d:3,inv:54,rev:30343},{yr:2026,mo:5,d:5,inv:85,rev:47933},
-  {yr:2026,mo:6,d:1,inv:129,rev:46160},{yr:2026,mo:6,d:2,inv:74,rev:90352},
-  {yr:2026,mo:6,d:3,inv:32,rev:31889},{yr:2026,mo:6,d:4,inv:4,rev:1322},
-  {yr:2026,mo:6,d:5,inv:228,rev:124504},
-  {yr:2026,mo:7,d:1,inv:40,rev:11900},{yr:2026,mo:7,d:2,inv:28,rev:4418},
-  {yr:2026,mo:7,d:3,inv:12,rev:3287},{yr:2026,mo:7,d:4,inv:157,rev:61920},
-  {yr:2026,mo:7,d:5,inv:49,rev:34141},
-  {yr:2026,mo:8,d:1,inv:98,rev:40624},{yr:2026,mo:8,d:3,inv:35,rev:56445},
-  {yr:2026,mo:8,d:4,inv:143,rev:55543},{yr:2026,mo:8,d:5,inv:80,rev:21682},
-  {yr:2026,mo:9,d:1,inv:59,rev:31705},{yr:2026,mo:9,d:2,inv:118,rev:44640},
-  {yr:2026,mo:9,d:3,inv:134,rev:75584},{yr:2026,mo:9,d:4,inv:44,rev:22522},
-  {yr:2026,mo:9,d:5,inv:26,rev:13764},
-  {yr:2026,mo:10,d:1,inv:39,rev:8898},{yr:2026,mo:10,d:2,inv:80,rev:19996},
-  {yr:2026,mo:10,d:3,inv:40,rev:60572},{yr:2026,mo:10,d:4,inv:73,rev:32534},
-  {yr:2026,mo:11,d:2,inv:67,rev:35418},{yr:2026,mo:11,d:3,inv:146,rev:76016},
-  {yr:2026,mo:11,d:4,inv:12,rev:2717},{yr:2026,mo:11,d:5,inv:29,rev:25016},
-  {yr:2026,mo:12,d:1,inv:81,rev:25613},{yr:2026,mo:12,d:2,inv:36,rev:13741},
-  {yr:2026,mo:12,d:3,inv:142,rev:56821},{yr:2026,mo:12,d:5,inv:58,rev:16890},
 ];
 
 // ── DAY OF WEEK DATA (gviz: 1=Sun, 2=Mon, ..., 7=Sat) ───────────────────────
