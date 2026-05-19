@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CRM Dashboard — Office Mate Plus สระบุรี</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Sarabun',sans-serif;background:#f1f5f9;color:#1e293b;font-size:14px;}
+.card{background:#fff;border-radius:10px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.08);}
+.cr{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
+h2{font-size:15px;font-weight:700;margin-bottom:10px;color:#0f172a;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{background:#f1f5f9;padding:9px 8px;text-align:left;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:2px solid #e2e8f0;}
+th:hover{background:#e2e8f0;}
+td{padding:8px 8px;border-bottom:1px solid #f1f5f9;vertical-align:middle;}
+tr:hover td{background:#f8fafc;}
+select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-family:inherit;font-size:13px;background:#fff;}
+.btn{padding:7px 14px;border:1px solid #e2e8f0;border-radius:6px;background:#fff;cursor:pointer;font-size:13px;font-family:inherit;}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn:hover:not(:disabled){background:#f1f5f9;}
+.tb{padding:10px 18px;border:none;border-bottom:3px solid transparent;background:transparent;
+    font-family:inherit;font-size:13px;cursor:pointer;color:#64748b;font-weight:600;}
+.tb:hover{color:#0f172a;background:#f8fafc;}
+.tba{color:#2563eb!important;border-bottom:3px solid #2563eb;}
+.tp{display:none;}
+#tp-overview{display:block;}
+#fb{display:none;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 24px;
+    background:#fefce8;border-bottom:1px solid #fde047;}
+.pill{background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:3px 10px;
+      font-size:12px;display:inline-flex;align-items:center;gap:4px;}
+.px{cursor:pointer;color:#94a3b8;font-size:11px;}
+.px:hover{color:#dc2626;}
+.pro-note{background:#fef9c3;border:1px solid #fde047;border-radius:6px;
+          padding:6px 12px;font-size:12px;color:#713f12;margin-bottom:10px;display:inline-block;}
+.seg-champion{background:#ede9fe;color:#4f46e5;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.seg-loyal{background:#dcfce7;color:#15803d;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.seg-atrisk{background:#fef3c7;color:#b45309;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.seg-sleeping{background:#fee2e2;color:#dc2626;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.bar-track{background:#e2e8f0;border-radius:4px;height:6px;width:80px;display:inline-block;vertical-align:middle;}
+.bar-fill{height:6px;border-radius:4px;}
+.sc-card{background:#fff;border-radius:10px;padding:16px 20px;box-shadow:0 1px 4px rgba(0,0,0,.08);
+         cursor:pointer;transition:transform .15s;border-left:4px solid;}
+.sc-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.12);}
+.sc-card.active{box-shadow:0 0 0 2px #2563eb;}
+.rfm-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px;}
+.delta-up{color:#059669;font-weight:700;}
+.delta-dn{color:#dc2626;font-weight:700;}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ─────────────────────────────────────────────── -->
+<div style="background:#0f172a;color:#fff;padding:0 24px;display:flex;align-items:center;
+            justify-content:space-between;height:52px;position:sticky;top:0;z-index:100;
+            box-shadow:0 2px 8px rgba(0,0,0,.3);">
+  <div style="display:flex;align-items:center;gap:16px;">
+    <span style="font-size:16px;font-weight:800;letter-spacing:.5px;">📎 OFM Saraburi</span>
+    <span style="font-size:11px;color:#94a3b8;font-weight:400;">Office Mate Plus · สาขาสระบุรี</span>
+  </div>
+  <div style="font-size:11px;color:#94a3b8;">ข้อมูล POS: ม.ค. 2568 – พ.ย. 2569 &nbsp;|&nbsp; 14,425 บิล &nbsp;|&nbsp; 900+ ลูกค้า</div>
+</div>
+
+<!-- ── TABS ──────────────────────────────────────────────── -->
+<div style="background:#fff;border-bottom:1px solid #e2e8f0;padding:0 24px;
+            display:flex;align-items:center;position:sticky;top:52px;z-index:99;
+            box-shadow:0 1px 3px rgba(0,0,0,.05);">
+  <button class="tb tba" data-t="overview"  onclick="switchTab('overview')">📊 ภาพรวม</button>
+  <button class="tb"     data-t="rfm"       onclick="switchTab('rfm')">🎯 RFM Analysis</button>
+  <button class="tb"     data-t="customers" onclick="switchTab('customers')">👥 รายชื่อลูกค้า</button>
+  <button class="tb"     data-t="charts"    onclick="switchTab('charts')">📈 Charts</button>
+</div>
+
+<!-- ── FILTER BAR ─────────────────────────────────────────── -->
+<div id="fb">
+  <span style="font-size:12px;font-weight:600;color:#78716c;">กรอง:</span>
+  <div id="fp"></div>
+  <button onclick="clearAll()" class="btn" style="color:#dc2626;font-size:12px;padding:3px 10px;">ล้างทั้งหมด ✕</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     TAB 1: ภาพรวม
+════════════════════════════════════════════════════════════ -->
+<div id="tp-overview" class="tp" style="padding:18px 24px;max-width:1600px;margin:0 auto;">
+
+  <!-- Period Selector -->
+  <div class="card" style="margin-bottom:18px;padding:12px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+    <span style="font-size:13px;font-weight:700;color:#0f172a;">📅 เลือกช่วงเวลา:</span>
+    <select id="yr-sel" onchange="onPeriodChange()">
+      <option value="2025">ปี 2568</option>
+      <option value="2026" selected>ปี 2569</option>
+    </select>
+    <select id="mo-sel" onchange="onPeriodChange()">
+      <option value="1">มกราคม</option>
+      <option value="2">กุมภาพันธ์</option>
+      <option value="3">มีนาคม</option>
+      <option value="4" selected>เมษายน</option>
+      <option value="5">พฤษภาคม</option>
+      <option value="6">มิถุนายน</option>
+      <option value="7">กรกฎาคม</option>
+      <option value="8">สิงหาคม</option>
+      <option value="9">กันยายน</option>
+      <option value="10">ตุลาคม</option>
+      <option value="11">พฤศจิกายน</option>
+      <option value="12">ธันวาคม</option>
+    </select>
+    <span id="period-badge" style="background:#ede9fe;color:#4f46e5;padding:4px 14px;
+          border-radius:20px;font-size:12px;font-weight:700;"></span>
+    <span style="font-size:11px;color:#94a3b8;margin-left:4px;">ข้อมูลจาก POS ทุกช่องทาง</span>
+  </div>
+
+  <!-- Dynamic KPI row -->
+  <div class="cr" id="period-kpi"></div>
+
+  <!-- Segment Cards (clickable filter) -->
+  <h2>🏷 Customer Segments <span style="font-size:11px;font-weight:400;color:#94a3b8;">คลิกเพื่อกรองตาราง</span></h2>
+  <div class="cr" style="margin-bottom:22px;">
+    <div class="sc-card" onclick="filterSeg('Champion')" style="flex:1;min-width:160px;border-color:#6366f1;">
+      <div style="font-size:11px;color:#64748b;font-weight:600;">🏆 CHAMPION</div>
+      <div style="font-size:28px;font-weight:800;color:#4f46e5;">19</div>
+      <div style="font-size:12px;color:#94a3b8;">ราย · RFM ≥ 12</div>
+      <div style="font-size:13px;font-weight:600;color:#4f46e5;margin-top:6px;">~฿5.4M</div>
+      <div class="bar-track" style="margin-top:6px;"><div class="bar-fill" style="width:100%;background:#6366f1;"></div></div>
+    </div>
+    <div class="sc-card" onclick="filterSeg('Loyal')" style="flex:1;min-width:160px;border-color:#10b981;">
+      <div style="font-size:11px;color:#64748b;font-weight:600;">📈 LOYAL</div>
+      <div style="font-size:28px;font-weight:800;color:#059669;">51</div>
+      <div style="font-size:12px;color:#94a3b8;">ราย · RFM 8–11</div>
+      <div style="font-size:13px;font-weight:600;color:#059669;margin-top:6px;">~฿2.8M</div>
+      <div class="bar-track" style="margin-top:6px;"><div class="bar-fill" style="width:68%;background:#10b981;"></div></div>
+    </div>
+    <div class="sc-card" onclick="filterSeg('At Risk')" style="flex:1;min-width:160px;border-color:#f59e0b;">
+      <div style="font-size:11px;color:#64748b;font-weight:600;">⚠️ AT RISK</div>
+      <div style="font-size:28px;font-weight:800;color:#d97706;">25</div>
+      <div style="font-size:12px;color:#94a3b8;">ราย · RFM 5–7</div>
+      <div style="font-size:13px;font-weight:600;color:#d97706;margin-top:6px;">~฿0.6M</div>
+      <div class="bar-track" style="margin-top:6px;"><div class="bar-fill" style="width:33%;background:#f59e0b;"></div></div>
+    </div>
+    <div class="sc-card" onclick="filterSeg('Sleeping')" style="flex:1;min-width:160px;border-color:#ef4444;">
+      <div style="font-size:11px;color:#64748b;font-weight:600;">😴 SLEEPING</div>
+      <div style="font-size:28px;font-weight:800;color:#dc2626;">5</div>
+      <div style="font-size:12px;color:#94a3b8;">ราย · RFM ≤ 4</div>
+      <div style="font-size:13px;font-weight:600;color:#dc2626;margin-top:6px;">~฿0.2M</div>
+      <div class="bar-track" style="margin-top:6px;"><div class="bar-fill" style="width:12%;background:#ef4444;"></div></div>
+    </div>
+  </div>
+
+  <!-- Day of Week Section -->
+  <h2>📅 วันขายดี <span style="font-size:11px;font-weight:400;color:#94a3b8;">ยอดรวมทั้งช่วง POS (ม.ค. 2568–พ.ย. 2569) · 14,425 บิล</span></h2>
+  <div class="card" style="margin-bottom:22px;">
+    <div id="dow-section"></div>
+  </div>
+
+  <!-- Daily Revenue Chart -->
+  <h2>📊 ยอดขายรายวัน — <span id="daily-month-label">เม.ย. 2569</span>
+    <span style="font-size:11px;font-weight:400;color:#94a3b8;">กดเดือนด้านบนเพื่อเปลี่ยน</span>
+  </h2>
+  <div class="card" style="margin-bottom:22px;padding:14px;">
+    <div style="position:relative;height:220px;"><canvas id="chart-daily"></canvas></div>
+    <div id="daily-no-data" style="display:none;text-align:center;padding:40px;color:#94a3b8;font-size:13px;">ไม่มีข้อมูลรายวันสำหรับเดือนนี้</div>
+  </div>
+
+  <!-- B2B Tracked Monthly Table -->
+  <h2>📋 B2B Tracked Customers — ยอดรายเดือน <span style="font-size:11px;font-weight:400;color:#94a3b8;">15 บริษัทหลัก (จากไฟล์ ภายนอก)</span></h2>
+  <div class="pro-note">📅 ต.ค. 2567 – เม.ย. 2568 &nbsp;|&nbsp; ✅ Active &nbsp; ⚠️ Pending &nbsp; 🔴 Inactive / ติดต่อไม่ได้ &nbsp;|&nbsp; คลิกแถวเพื่อดูรายละเอียด</div>
+  <div class="card" style="overflow-x:auto;padding:0;margin-bottom:24px;">
+    <table>
+      <thead>
+        <tr style="background:#0f172a;color:#fff;">
+          <th style="background:#0f172a;padding:12px;">บริษัท</th>
+          <th style="background:#0f172a;text-align:center;padding:10px;">เกรด</th>
+          <th style="background:#1e3a5f;text-align:right;padding:10px;">ต.ค.</th>
+          <th style="background:#1e3a5f;text-align:right;padding:10px;">พ.ย.</th>
+          <th style="background:#1e3a5f;text-align:right;padding:10px;">ธ.ค.</th>
+          <th style="background:#1e3a5f;text-align:right;padding:10px;">ม.ค.</th>
+          <th style="background:#1e3a5f;text-align:right;padding:10px;">ก.พ.</th>
+          <th style="background:#1e3a5f;text-align:right;padding:10px;">มี.ค.</th>
+          <th style="background:#3b1f6e;text-align:right;padding:10px;">เม.ย.</th>
+          <th style="background:#0f172a;text-align:right;padding:10px;font-weight:700;">รวม</th>
+          <th style="background:#0f172a;text-align:center;padding:10px;">สถานะ</th>
+        </tr>
+      </thead>
+      <tbody id="b2b-table"></tbody>
+    </table>
+  </div>
+
+  <!-- New Customer Sources -->
+  <h2>🆕 ลูกค้าใหม่ เม.ย. 2569 — แหล่งที่มา <span style="font-size:11px;font-weight:400;color:#94a3b8;">13 ราย · ฿22,878 รวม</span></h2>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px;">
+    <div class="card" style="flex:1;min-width:300px;overflow-x:auto;padding:0;">
+      <table>
+        <thead><tr>
+          <th>วันที่</th><th>บริษัท</th><th>แหล่งที่มา</th><th style="text-align:right;">ยอด (฿)</th>
+        </tr></thead>
+        <tbody id="new-cust-table"></tbody>
+      </table>
+    </div>
+    <div class="card" style="min-width:240px;display:flex;flex-direction:column;gap:8px;">
+      <h2>สัดส่วนแหล่งที่มา</h2>
+      <div id="src-bars"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     TAB 2: RFM Analysis
+════════════════════════════════════════════════════════════ -->
+<div id="tp-rfm" class="tp" style="padding:18px 24px;max-width:1600px;margin:0 auto;">
+  <h2>🎯 RFM Analysis — Customer Segments (Top 100) <span style="font-size:11px;font-weight:400;color:#94a3b8;">จากข้อมูล POS จริง</span></h2>
+  <div class="pro-note">🏆 Champion: RFM ≥ 12 &nbsp;|&nbsp; 📈 Loyal: 8–11 &nbsp;|&nbsp; ⚠️ At Risk: 5–7 &nbsp;|&nbsp; 😴 Sleeping: ≤ 4 &nbsp;|&nbsp; คลิกแถวเพื่อกรอง</div>
+
+  <div class="cr" style="margin-bottom:20px;">
+    <div class="card" style="flex:1;min-width:140px;text-align:center;">
+      <div style="font-size:11px;color:#64748b;margin-bottom:4px;">⏱ Recency</div>
+      <div style="font-size:12px;color:#4a5568;">ซื้อล่าสุดเมื่อไหร่</div>
+      <div style="margin-top:8px;display:flex;flex-direction:column;gap:3px;">
+        <div style="display:flex;justify-content:space-between;font-size:11px;"><span>Score 5 (≤2 เดือน)</span><span style="font-weight:700;color:#4f46e5;">47 ราย</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;"><span>Score 4 (3–4 เดือน)</span><span style="font-weight:700;color:#7c3aed;">14 ราย</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;"><span>Score 3 (4–6 เดือน)</span><span style="font-weight:700;color:#a78bfa;">8 ราย</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;"><span>Score 2 (7–10 เดือน)</span><span style="font-weight:700;color:#c4b5fd;">10 ราย</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;"><span>Score 1 (&gt;10 เดือน)</span><span style="font-weight:700;color:#94a3b8;">21 ราย</span></div>
+      </div>
+    </div>
+    <div class="card" style="flex:1;min-width:140px;text-align:center;">
+      <div style="font-size:11px;color:#64748b;margin-bottom:4px;">🔁 Frequency</div>
+      <div style="font-size:12px;color:#4a5568;">ความถี่การสั่งซื้อ</div>
+      <div style="margin-top:8px;display:flex;flex-direction:column;gap:3px;">
+        <div style="display:flex;justify-content:space-between;font-size:11px;"><span>Score 5 (&gt;400 รายการ)</span><span style="font-weight:700;color:#4f46e5;">6 ราย</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;"><span>Score 4 (200–400)</span><span style="font-weight:700;color:#7c3aed;">16 ราย</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;"><span>Score 3 (100–199)</span><span style="font-weight:700;color:#a78bfa;">22 ราย</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;"><span>Score 2 (50–99)</span><span style="font-weight:700;color:#c4b5fd;">20 ราย</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;"><span>Score 1 (&lt;50)</span><span style="font-weight:700;color:#94a3b8;">36 ราย</span></div>
+      </div>
+    </div>
+    <div class="card" style="flex:1;min-width:140px;text-align:center;">
+      <div style="font-size:11px;color:#64748b;margin-bottom:4px;">💰 Monetary</div>
+      <div style="font-size:12px;color:#4a5568;">มูลค่ายอดซื้อสะสม</div>
+      <div style="margin-top:8px;display:flex;flex-direction:column;gap:3px;">
+        <div style="display:flex;justify-content:space-between;font-size:11px;"><span>Score 5 (&gt;฿200K)</span><span style="font-weight:700;color:#4f46e5;">10 ราย</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;"><span>Score 4 (฿100K–200K)</span><span style="font-weight:700;color:#7c3aed;">19 ราย</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;"><span>Score 3 (฿50K–100K)</span><span style="font-weight:700;color:#a78bfa;">21 ราย</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;"><span>Score 2 (฿20K–50K)</span><span style="font-weight:700;color:#c4b5fd;">39 ราย</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;"><span>Score 1 (≤฿20K)</span><span style="font-weight:700;color:#94a3b8;">11 ราย</span></div>
+      </div>
+    </div>
+    <div class="card" style="flex:2;min-width:280px;">
+      <h2>📌 Action Plan ตาม Segment</h2>
+      <table style="font-size:12px;">
+        <thead><tr><th>Segment</th><th>Action</th><th style="text-align:center;">Priority</th></tr></thead>
+        <tbody>
+          <tr><td><span class="seg-champion">🏆 Champion</span></td><td>โทรเช็คสัมพันธ์ + Early Access สินค้าใหม่</td><td style="text-align:center;">🟢 รักษา</td></tr>
+          <tr><td><span class="seg-loyal">📈 Loyal</span></td><td>Cross-sell กระดาษ→หมึก, Bundle Pack</td><td style="text-align:center;">🔵 โต</td></tr>
+          <tr><td><span class="seg-atrisk">⚠️ At Risk</span></td><td>Win-back: Special Offer เฉพาะราย 30 วัน</td><td style="text-align:center;">🟡 เร่งด่วน</td></tr>
+          <tr><td><span class="seg-sleeping">😴 Sleeping</span></td><td>Re-engagement Line/Email ครั้งเดียว</td><td style="text-align:center;">🔴 ฟื้น</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="overflow-x:auto;padding:0;">
+    <div style="padding:12px 14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-bottom:1px solid #f1f5f9;">
+      <select id="rfm-seg-filter" onchange="renderRFMTable()" style="font-size:12px;">
+        <option value="">ทุก Segment</option>
+        <option value="Champion">🏆 Champion</option>
+        <option value="Loyal">📈 Loyal</option>
+        <option value="At Risk">⚠️ At Risk</option>
+        <option value="Sleeping">😴 Sleeping</option>
+      </select>
+      <span id="rfm-count" style="font-size:12px;color:#64748b;"></span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th onclick="sortRFM('name')">#  บริษัท ↕</th>
+          <th style="text-align:center;">Segment</th>
+          <th style="text-align:center;" onclick="sortRFM('r')">R ↕</th>
+          <th style="text-align:center;" onclick="sortRFM('f')">F ↕</th>
+          <th style="text-align:center;" onclick="sortRFM('m')">M ↕</th>
+          <th style="text-align:center;" onclick="sortRFM('total')">Total ↕</th>
+          <th style="text-align:right;" onclick="sortRFM('freq')">รายการ ↕</th>
+          <th style="text-align:right;" onclick="sortRFM('monetary')">ยอดรวม ↕</th>
+          <th>ซื้อล่าสุด</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="rfm-table-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     TAB 3: รายชื่อลูกค้า
+════════════════════════════════════════════════════════════ -->
+<div id="tp-customers" class="tp" style="padding:18px 24px;max-width:1600px;margin:0 auto;">
+  <div class="card">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center;">
+      <select id="cs-seg" onchange="renderCustTable()">
+        <option value="">ทุก Segment</option>
+        <option value="Champion">🏆 Champion</option>
+        <option value="Loyal">📈 Loyal</option>
+        <option value="At Risk">⚠️ At Risk</option>
+        <option value="Sleeping">😴 Sleeping</option>
+      </select>
+      <input id="cs-search" placeholder="ค้นหาชื่อบริษัท..." style="min-width:200px;" oninput="renderCustTable()">
+      <button onclick="clearCust()" class="btn" style="color:#dc2626;">ล้าง ✕</button>
+      <button onclick="exportCSV()" class="btn" style="background:#dcfce7;border-color:#86efac;color:#16a34a;">⬇ Export CSV</button>
+      <span id="cs-count" style="font-size:13px;color:#64748b;margin-left:auto;"></span>
+      <button id="cs-prev" class="btn" onclick="changePage(-1)">◀</button>
+      <button id="cs-next" class="btn" onclick="changePage(1)">▶</button>
+    </div>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead><tr>
+          <th onclick="sortCust('name')">บริษัท / องค์กร ↕</th>
+          <th onclick="sortCust('seg')" style="text-align:center;">Segment ↕</th>
+          <th onclick="sortCust('monetary')" style="text-align:right;">ยอดรวม ↕</th>
+          <th onclick="sortCust('freq')" style="text-align:right;">รายการ ↕</th>
+          <th onclick="sortCust('r')" style="text-align:center;">R</th>
+          <th onclick="sortCust('f')" style="text-align:center;">F</th>
+          <th onclick="sortCust('m')" style="text-align:center;">M</th>
+          <th onclick="sortCust('total')" style="text-align:center;">RFM ↕</th>
+          <th>ซื้อล่าสุด</th>
+        </tr></thead>
+        <tbody id="cust-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     TAB 4: Charts
+════════════════════════════════════════════════════════════ -->
+<div id="tp-charts" class="tp" style="padding:18px 24px;max-width:1600px;margin:0 auto;">
+  <!-- Row 1: Monthly POS + Segment donut -->
+  <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:18px;">
+    <div class="card" style="flex:2;min-width:320px;">
+      <h2>📊 ยอดขายรายเดือน — POS ทั้งหมด (ม.ค. 2568–พ.ย. 2569)</h2>
+      <div style="position:relative;height:300px;"><canvas id="chart-monthly"></canvas></div>
+    </div>
+    <div class="card" style="flex:1;min-width:240px;">
+      <h2>🏷 สัดส่วน Segment</h2>
+      <div style="position:relative;height:300px;"><canvas id="chart-seg"></canvas></div>
+    </div>
+  </div>
+  <!-- Row 2: YOY + DOW -->
+  <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:18px;">
+    <div class="card" style="flex:1;min-width:320px;">
+      <h2>📅 YOY เปรียบเทียบ (ปี 2568 vs 2569)</h2>
+      <div style="position:relative;height:300px;"><canvas id="chart-yoy"></canvas></div>
+    </div>
+    <div class="card" style="flex:1;min-width:280px;">
+      <h2>📅 วันขายดีรายสัปดาห์ — ยอดรวม</h2>
+      <div style="position:relative;height:300px;"><canvas id="chart-dow"></canvas></div>
+    </div>
+  </div>
+  <!-- Row 3: Source donut + Top10 -->
+  <div style="display:flex;gap:16px;flex-wrap:wrap;">
+    <div class="card" style="flex:1;min-width:280px;">
+      <h2>🆕 แหล่งที่มาลูกค้าใหม่ เม.ย. 2569</h2>
+      <div style="position:relative;height:260px;"><canvas id="chart-src"></canvas></div>
+    </div>
+    <div class="card" style="flex:2;min-width:320px;">
+      <h2>💰 ยอดสะสม Top 10 ลูกค้า (Champion)</h2>
+      <div style="position:relative;height:260px;"><canvas id="chart-top10"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     DATA & JAVASCRIPT
+════════════════════════════════════════════════════════════ -->
+<script>
+// ── MONTHLY POS DATA (from POS sheet, all channels) ─────────────────────────
+// yr=Gregorian, mo=1-based month, th=Thai label, inv=invoices, rev=revenue
+const MONTHLY_POS = [
+  {yr:2025,mo:1,  th:'ม.ค. 68',  inv:353,  rev:184822},
+  {yr:2025,mo:2,  th:'ก.พ. 68',  inv:596,  rev:242920},
+  {yr:2025,mo:3,  th:'มี.ค. 68', inv:755,  rev:334599},
+  {yr:2025,mo:4,  th:'เม.ย. 68', inv:587,  rev:260648},
+  {yr:2025,mo:5,  th:'พ.ค. 68',  inv:506,  rev:232124},
+  {yr:2025,mo:6,  th:'มิ.ย. 68', inv:826,  rev:325491},
+  {yr:2025,mo:7,  th:'ก.ค. 68',  inv:868,  rev:390094},
+  {yr:2025,mo:8,  th:'ส.ค. 68',  inv:771,  rev:337043},
+  {yr:2025,mo:9,  th:'ก.ย. 68',  inv:631,  rev:335909},
+  {yr:2025,mo:10, th:'ต.ค. 68',  inv:565,  rev:302826},
+  {yr:2025,mo:11, th:'พ.ย. 68',  inv:715,  rev:362800},
+  {yr:2025,mo:12, th:'ธ.ค. 68',  inv:552,  rev:298316},
+  {yr:2026,mo:1,  th:'ม.ค. 69',  inv:66,   rev:19151},
+  {yr:2026,mo:2,  th:'ก.พ. 69',  inv:161,  rev:87199},
+  {yr:2026,mo:3,  th:'มี.ค. 69', inv:281,  rev:99732},
+  {yr:2026,mo:4,  th:'เม.ย. 69', inv:318,  rev:204249},
+  {yr:2026,mo:5,  th:'พ.ค. 69',  inv:467,  rev:294227},
+  {yr:2026,mo:6,  th:'มิ.ย. 69', inv:286,  rev:115666},
+  {yr:2026,mo:7,  th:'ก.ค. 69',  inv:356,  rev:174294},
+  {yr:2026,mo:8,  th:'ส.ค. 69',  inv:381,  rev:188215},
+  {yr:2026,mo:9,  th:'ก.ย. 69',  inv:232,  rev:122000},
+  {yr:2026,mo:10, th:'ต.ค. 69',  inv:254,  rev:139167},
+  {yr:2026,mo:11, th:'พ.ย. 69',  inv:317,  rev:113065},
+];
+
+// ── TARGET & DAILY DATA ──────────────────────────────────────────────────────
+const TARGET_MONTHLY = 850000;
+
+const DAILY_DATA = [
+  {yr:2025,mo:1,d:2,inv:17,rev:2780},{yr:2025,mo:1,d:3,inv:22,rev:6534},
+  {yr:2025,mo:1,d:4,inv:25,rev:8229},{yr:2025,mo:1,d:7,inv:44,rev:75759},
+  {yr:2025,mo:1,d:8,inv:47,rev:9586},{yr:2025,mo:1,d:9,inv:23,rev:8201},
+  {yr:2025,mo:1,d:10,inv:64,rev:26604},{yr:2025,mo:1,d:11,inv:39,rev:17051},
+  {yr:2025,mo:1,d:12,inv:72,rev:30078},
+  {yr:2025,mo:2,d:4,inv:74,rev:65918},{yr:2025,mo:2,d:5,inv:44,rev:15829},
+  {yr:2025,mo:2,d:6,inv:20,rev:4373},{yr:2025,mo:2,d:7,inv:137,rev:61367},
+  {yr:2025,mo:2,d:8,inv:17,rev:6073},{yr:2025,mo:2,d:9,inv:74,rev:34627},
+  {yr:2025,mo:2,d:10,inv:50,rev:13873},{yr:2025,mo:2,d:12,inv:180,rev:40860},
+  {yr:2025,mo:3,d:1,inv:1,rev:0},{yr:2025,mo:3,d:2,inv:36,rev:6557},
+  {yr:2025,mo:3,d:3,inv:21,rev:11145},{yr:2025,mo:3,d:4,inv:22,rev:6740},
+  {yr:2025,mo:3,d:5,inv:34,rev:14982},{yr:2025,mo:3,d:6,inv:48,rev:14007},
+  {yr:2025,mo:3,d:7,inv:83,rev:17823},{yr:2025,mo:3,d:9,inv:74,rev:42622},
+  {yr:2025,mo:3,d:10,inv:242,rev:136010},{yr:2025,mo:3,d:11,inv:36,rev:20699},
+  {yr:2025,mo:3,d:12,inv:158,rev:64014},
+  {yr:2025,mo:4,d:1,inv:1,rev:0},{yr:2025,mo:4,d:2,inv:57,rev:21685},
+  {yr:2025,mo:4,d:3,inv:32,rev:10878},{yr:2025,mo:4,d:4,inv:38,rev:12978},
+  {yr:2025,mo:4,d:6,inv:48,rev:16121},{yr:2025,mo:4,d:7,inv:19,rev:4818},
+  {yr:2025,mo:4,d:8,inv:83,rev:84272},{yr:2025,mo:4,d:9,inv:88,rev:30436},
+  {yr:2025,mo:4,d:10,inv:14,rev:2524},{yr:2025,mo:4,d:11,inv:51,rev:20896},
+  {yr:2025,mo:4,d:12,inv:156,rev:56040},
+  {yr:2025,mo:5,d:2,inv:45,rev:19462},{yr:2025,mo:5,d:3,inv:100,rev:44559},
+  {yr:2025,mo:5,d:4,inv:11,rev:4131},{yr:2025,mo:5,d:5,inv:39,rev:11776},
+  {yr:2025,mo:5,d:6,inv:111,rev:57354},{yr:2025,mo:5,d:7,inv:38,rev:14556},
+  {yr:2025,mo:5,d:8,inv:41,rev:21983},{yr:2025,mo:5,d:9,inv:32,rev:15618},
+  {yr:2025,mo:5,d:11,inv:89,rev:42686},
+  {yr:2025,mo:6,d:2,inv:65,rev:23441},{yr:2025,mo:6,d:3,inv:81,rev:36417},
+  {yr:2025,mo:6,d:5,inv:63,rev:19126},{yr:2025,mo:6,d:6,inv:106,rev:40993},
+  {yr:2025,mo:6,d:8,inv:134,rev:46492},{yr:2025,mo:6,d:9,inv:40,rev:24297},
+  {yr:2025,mo:6,d:10,inv:180,rev:81130},{yr:2025,mo:6,d:11,inv:122,rev:43178},
+  {yr:2025,mo:6,d:12,inv:35,rev:10417},
+  {yr:2025,mo:7,d:1,inv:26,rev:0},{yr:2025,mo:7,d:2,inv:124,rev:64845},
+  {yr:2025,mo:7,d:3,inv:114,rev:53610},{yr:2025,mo:7,d:4,inv:10,rev:3469},
+  {yr:2025,mo:7,d:5,inv:50,rev:29968},{yr:2025,mo:7,d:6,inv:51,rev:18538},
+  {yr:2025,mo:7,d:7,inv:117,rev:42121},{yr:2025,mo:7,d:8,inv:74,rev:91649},
+  {yr:2025,mo:7,d:10,inv:228,rev:63228},{yr:2025,mo:7,d:11,inv:74,rev:22666},
+  {yr:2025,mo:8,d:2,inv:30,rev:5269},{yr:2025,mo:8,d:3,inv:27,rev:21678},
+  {yr:2025,mo:8,d:4,inv:85,rev:31190},{yr:2025,mo:8,d:5,inv:125,rev:36248},
+  {yr:2025,mo:8,d:7,inv:72,rev:20678},{yr:2025,mo:8,d:8,inv:55,rev:26208},
+  {yr:2025,mo:8,d:9,inv:149,rev:65994},{yr:2025,mo:8,d:10,inv:142,rev:55938},
+  {yr:2025,mo:8,d:11,inv:27,rev:26681},{yr:2025,mo:8,d:12,inv:59,rev:47159},
+  {yr:2025,mo:9,d:1,inv:2,rev:0},{yr:2025,mo:9,d:4,inv:96,rev:69407},
+  {yr:2025,mo:9,d:5,inv:66,rev:18328},{yr:2025,mo:9,d:6,inv:133,rev:59876},
+  {yr:2025,mo:9,d:7,inv:34,rev:14497},{yr:2025,mo:9,d:8,inv:38,rev:9181},
+  {yr:2025,mo:9,d:9,inv:80,rev:73475},{yr:2025,mo:9,d:10,inv:72,rev:23516},
+  {yr:2025,mo:9,d:12,inv:110,rev:67629},
+  {yr:2025,mo:10,d:1,inv:20,rev:0},{yr:2025,mo:10,d:2,inv:63,rev:56047},
+  {yr:2025,mo:10,d:3,inv:65,rev:16646},{yr:2025,mo:10,d:4,inv:43,rev:31734},
+  {yr:2025,mo:10,d:5,inv:90,rev:70116},{yr:2025,mo:10,d:6,inv:74,rev:34914},
+  {yr:2025,mo:10,d:9,inv:33,rev:25801},{yr:2025,mo:10,d:10,inv:46,rev:24624},
+  {yr:2025,mo:10,d:11,inv:81,rev:18445},{yr:2025,mo:10,d:12,inv:50,rev:24499},
+  {yr:2025,mo:11,d:1,inv:3,rev:0},{yr:2025,mo:11,d:2,inv:59,rev:38986},
+  {yr:2025,mo:11,d:3,inv:46,rev:23943},{yr:2025,mo:11,d:4,inv:47,rev:57342},
+  {yr:2025,mo:11,d:6,inv:108,rev:76660},{yr:2025,mo:11,d:7,inv:63,rev:21059},
+  {yr:2025,mo:11,d:8,inv:53,rev:18576},{yr:2025,mo:11,d:9,inv:123,rev:29015},
+  {yr:2025,mo:11,d:10,inv:92,rev:34550},{yr:2025,mo:11,d:11,inv:48,rev:29811},
+  {yr:2025,mo:11,d:12,inv:73,rev:32858},
+  {yr:2025,mo:12,d:2,inv:91,rev:33419},{yr:2025,mo:12,d:3,inv:41,rev:23870},
+  {yr:2025,mo:12,d:5,inv:48,rev:19354},{yr:2025,mo:12,d:6,inv:134,rev:105944},
+  {yr:2025,mo:12,d:7,inv:29,rev:8895},{yr:2025,mo:12,d:9,inv:91,rev:46750},
+  {yr:2025,mo:12,d:10,inv:2,rev:1980},{yr:2025,mo:12,d:11,inv:73,rev:39216},
+  {yr:2025,mo:12,d:12,inv:43,rev:18888},
+  {yr:2026,mo:1,d:4,inv:59,rev:13849},{yr:2026,mo:1,d:5,inv:7,rev:5302},
+  {yr:2026,mo:2,d:2,inv:79,rev:58501},{yr:2026,mo:2,d:3,inv:17,rev:5961},
+  {yr:2026,mo:2,d:4,inv:34,rev:10360},{yr:2026,mo:2,d:5,inv:31,rev:12377},
+  {yr:2026,mo:3,d:2,inv:59,rev:20516},{yr:2026,mo:3,d:4,inv:42,rev:22001},
+  {yr:2026,mo:4,d:1,inv:8,rev:1398},{yr:2026,mo:4,d:2,inv:88,rev:49800},
+  {yr:2026,mo:4,d:3,inv:83,rev:35086},{yr:2026,mo:4,d:4,inv:31,rev:4636},
+  {yr:2026,mo:4,d:5,inv:71,rev:8812},
+  {yr:2026,mo:5,d:1,inv:63,rev:25637},{yr:2026,mo:5,d:2,inv:116,rev:100336},
+  {yr:2026,mo:5,d:3,inv:54,rev:30343},{yr:2026,mo:5,d:5,inv:85,rev:47933},
+  {yr:2026,mo:6,d:1,inv:129,rev:46160},{yr:2026,mo:6,d:2,inv:74,rev:90352},
+  {yr:2026,mo:6,d:3,inv:32,rev:31889},{yr:2026,mo:6,d:4,inv:4,rev:1322},
+  {yr:2026,mo:6,d:5,inv:228,rev:124504},
+  {yr:2026,mo:7,d:1,inv:40,rev:11900},{yr:2026,mo:7,d:2,inv:28,rev:4418},
+  {yr:2026,mo:7,d:3,inv:12,rev:3287},{yr:2026,mo:7,d:4,inv:157,rev:61920},
+  {yr:2026,mo:7,d:5,inv:49,rev:34141},
+  {yr:2026,mo:8,d:1,inv:98,rev:40624},{yr:2026,mo:8,d:3,inv:35,rev:56445},
+  {yr:2026,mo:8,d:4,inv:143,rev:55543},{yr:2026,mo:8,d:5,inv:80,rev:21682},
+  {yr:2026,mo:9,d:1,inv:59,rev:31705},{yr:2026,mo:9,d:2,inv:118,rev:44640},
+  {yr:2026,mo:9,d:3,inv:134,rev:75584},{yr:2026,mo:9,d:4,inv:44,rev:22522},
+  {yr:2026,mo:9,d:5,inv:26,rev:13764},
+  {yr:2026,mo:10,d:1,inv:39,rev:8898},{yr:2026,mo:10,d:2,inv:80,rev:19996},
+  {yr:2026,mo:10,d:3,inv:40,rev:60572},{yr:2026,mo:10,d:4,inv:73,rev:32534},
+  {yr:2026,mo:11,d:2,inv:67,rev:35418},{yr:2026,mo:11,d:3,inv:146,rev:76016},
+  {yr:2026,mo:11,d:4,inv:12,rev:2717},{yr:2026,mo:11,d:5,inv:29,rev:25016},
+  {yr:2026,mo:12,d:1,inv:81,rev:25613},{yr:2026,mo:12,d:2,inv:36,rev:13741},
+  {yr:2026,mo:12,d:3,inv:142,rev:56821},{yr:2026,mo:12,d:5,inv:58,rev:16890},
+];
+
+// ── DAY OF WEEK DATA (gviz: 1=Sun, 2=Mon, ..., 7=Sat) ───────────────────────
+const DOW_DATA = [
+  {dow:2, day:'จันทร์',  inv:1333, rev:650282},
+  {dow:3, day:'อังคาร',  inv:1878, rev:1177264},
+  {dow:4, day:'พุธ',     inv:1502, rev:562523},
+  {dow:5, day:'พฤหัส',   inv:1575, rev:733172},
+  {dow:6, day:'ศุกร์',   inv:1668, rev:692178},
+  {dow:7, day:'เสาร์',   inv:1540, rev:766500},
+  {dow:1, day:'อาทิตย์', inv:1449, rev:625155},
+];
+
+// ── B2B TRACKED DATA ─────────────────────────────────────────────────────────
+const B2B = [
+  {n:"บ.วิรัชทุ่งสงค้าข้าว",g:"A",s:"Champion",oct:50689,nov:0,dec:18310,jan:9410,feb:19387,mar:11245,apr:17795,status:"Active",freq:4},
+  {n:"TBS Rice Mill + Green Inno Thai",g:"A+",s:"Champion",oct:3115,nov:15155,dec:219,jan:16724,feb:20324,mar:856,apr:29912,status:"Active",freq:4},
+  {n:"บ.วาณีฟู๊ด โปรดักส์",g:"A+",s:"Champion",oct:43516,nov:18470,dec:22199,jan:48868,feb:49092,mar:52118,apr:4308,status:"Pending",freq:4},
+  {n:"โรงเรียนเทพศิรินทร์พุแค",g:"A+",s:"Champion",oct:1250,nov:36500,dec:37966,jan:27247,feb:122888,mar:26496,apr:0,status:"Pending",freq:4},
+  {n:"บ.ซันเคียว คาเนฮิโร (ไทย)",g:"A+",s:"Champion",oct:20251,nov:19078,dec:18686,jan:15066,feb:14941,mar:19992,apr:21153,status:"Active",freq:4},
+  {n:"บ.ข้าวอร่อย",g:"A",s:"Champion",oct:13021,nov:11563,dec:12762,jan:13680,feb:6583,mar:8139,apr:0,status:"Active",freq:4},
+  {n:"บ.ธนสรรไรซ์ (ชัยนาท)",g:"A+",s:"Champion",oct:88228,nov:26252,dec:39900,jan:6909,feb:12141,mar:51879,apr:5425,status:"Active",freq:4},
+  {n:"บจก.เอส เค คอมเมอร์เชียล",g:"A-",s:"Loyal",oct:0,nov:14952,dec:0,jan:14950,feb:0,mar:0,apr:13475,status:"Active",freq:2},
+  {n:"บ.วงศ์โพลีเชค",g:"A-",s:"Loyal",oct:24751,nov:18255,dec:0,jan:18465,feb:5215,mar:37917,apr:0,status:"Pending",freq:4},
+  {n:"บ.วัชรธุรกิจเซ็นเตอร์",g:"A+",s:"Champion",oct:0,nov:52977,dec:47777,jan:39097,feb:24188,mar:44764,apr:41607,status:"Active",freq:4},
+  {n:"อบต.หนองโรง",g:"A",s:"Loyal",oct:0,nov:17700,dec:0,jan:0,feb:101136,mar:11900,apr:0,status:"Pending",freq:3},
+  {n:"บ.เครือเจ๊",g:"A",s:"Champion",oct:57337,nov:5679,dec:27859,jan:15266,feb:8959,mar:3316,apr:16004,status:"Active",freq:4},
+  {n:"เทศบาลตำบลหนองโดน",g:"A+",s:"Champion",oct:117319,nov:455,dec:113469,jan:5980,feb:25239,mar:95972,apr:23570,status:"Inactive",freq:4},
+  {n:"บ.สานิตแอนด์ซันส์",g:"B-",s:"Loyal",oct:6909,nov:3871,dec:27098,jan:24448,feb:2414,mar:16252,apr:12413,status:"Inactive",freq:0},
+  {n:"บ.เดอะริช กรุ๊ป เซอร์วิส",g:"B-",s:"At Risk",oct:5446,nov:5186,dec:17161,jan:7808,feb:12567,mar:4992,apr:5065,status:"Pending",freq:2},
+];
+
+const CUSTOMERS = [
+  {name:"โรงเรียนเทพศิรินทร์พุแค สระบุรี",seg:"Champion",freq:1178,monetary:970612,last:"2026-12-3",r:5,f:5,m:5,total:15},
+  {name:"บริษัท วาณีฟู๊ด โปรดักส์ จำกัด",seg:"Champion",freq:395,monetary:564862,last:"2026-9-4",r:5,f:4,m:5,total:14},
+  {name:"เทศบาลตำบลหนองโดน",seg:"Champion",freq:745,monetary:519067,last:"2026-12-3",r:5,f:5,m:5,total:15},
+  {name:"บริษัท วัชรธุรกิจเซ็นเตอร์ จำกัด",seg:"Champion",freq:262,monetary:509446,last:"2026-4-2",r:3,f:4,m:5,total:12},
+  {name:"บริษัท สยามโกลเด้นไรซ์ จำกัด",seg:"Champion",freq:451,monetary:435582,last:"2026-10-4",r:5,f:5,m:5,total:15},
+  {name:"บริษัท ธนสรร ไรซ์ จำกัด",seg:"Champion",freq:400,monetary:432189,last:"2026-10-3",r:5,f:5,m:5,total:15},
+  {name:"บริษัท วิรัชทุ่งสงค้าข้าว จำกัด",seg:"Loyal",freq:206,monetary:362886,last:"2025-11-7",r:1,f:4,m:5,total:10},
+  {name:"บริษัท ซันเคียว คาเนฮิโร (ประเทศไทย) จำกัด",seg:"Champion",freq:1050,monetary:329452,last:"2026-12-5",r:5,f:5,m:5,total:15},
+  {name:"องค์การบริหารส่วนตำบลหนองโรง",seg:"Loyal",freq:80,monetary:297903,last:"2026-6-5",r:4,f:2,m:5,total:11},
+  {name:"บริษัท ข้าวอร่อย จำกัด",seg:"Champion",freq:333,monetary:205442,last:"2026-6-5",r:4,f:4,m:4,total:12},
+  {name:"บริษัท สานิตแอนด์ซันส์ จำกัด",seg:"Champion",freq:188,monetary:183268,last:"2026-12-5",r:5,f:3,m:4,total:12},
+  {name:"โรงเรียนเตรียมอุดมศึกษาพัฒนาการ สระบุรี",seg:"Champion",freq:271,monetary:180161,last:"2026-9-2",r:5,f:4,m:4,total:13},
+  {name:"บริษัท ทีบีเอสไรซ์มิลล์ จำกัด",seg:"Champion",freq:161,monetary:178071,last:"2026-9-1",r:5,f:3,m:4,total:12},
+  {name:"บริษัท ล้อพูนผลไรซ์มิลล์ จำกัด",seg:"Champion",freq:314,monetary:175611,last:"2026-12-5",r:5,f:4,m:4,total:13},
+  {name:"บริษัท วงศ์ โพลีแซค จำกัด",seg:"Loyal",freq:72,monetary:169493,last:"2026-4-2",r:3,f:2,m:4,total:9},
+  {name:"บริษัท อัศวสามัคคีขนส่ง จำกัด",seg:"Loyal",freq:263,monetary:153536,last:"2025-12-12",r:2,f:4,m:4,total:10},
+  {name:"คุณวรลักษณ์ ฉัตรไชยศิริ",seg:"Loyal",freq:86,monetary:131506,last:"2026-9-5",r:5,f:2,m:4,total:11},
+  {name:"บริษัท ไพรม์เทค อิเล็คทรอนิคส์ (ประเทศไทย) จำกัด",seg:"Champion",freq:131,monetary:129304,last:"2026-9-4",r:5,f:3,m:4,total:12},
+  {name:"บริษัท บรอดเวย์ พรีซิชั่น(ไทยแลนด์)จำกัด",seg:"Champion",freq:113,monetary:127132,last:"2026-9-2",r:5,f:3,m:4,total:12},
+  {name:"บริษัท เคเอสแอล สยามโกลด์(2019) จำกัด",seg:"Champion",freq:441,monetary:125163,last:"2026-12-1",r:5,f:5,m:4,total:14},
+  {name:"บริษัท โชคฉัตรไชยไรซ์มิล จำกัด",seg:"Loyal",freq:194,monetary:120315,last:"2025-2-9",r:1,f:3,m:4,total:8},
+  {name:"บจก. เอส เค คอมเมอร์เชียล กรุ๊ป",seg:"Loyal",freq:139,monetary:114517,last:"2026-8-4",r:4,f:3,m:4,total:11},
+  {name:"บริษัท เอสพีที เทรดดิ้ง 2015 จำกัด",seg:"Loyal",freq:180,monetary:110638,last:"2025-9-9",r:1,f:3,m:4,total:8},
+  {name:"บริษัท อีซูซุลพบุรี จำกัด",seg:"Champion",freq:162,monetary:107465,last:"2026-11-3",r:5,f:3,m:4,total:12},
+  {name:"หจก วีสิริ ดิสทริบิวเตอร์",seg:"Loyal",freq:70,monetary:105005,last:"2026-7-1",r:4,f:2,m:4,total:10},
+  {name:"บริษัท ทีดี อินเตอร์ซัพพลายส์ จำกัด",seg:"Loyal",freq:233,monetary:95406,last:"2026-8-5",r:4,f:4,m:3,total:11},
+  {name:"บริษัท วงกลม จำกัด",seg:"Loyal",freq:262,monetary:94576,last:"2026-6-5",r:4,f:4,m:3,total:11},
+  {name:"บริษัท โรงสีสวัสดิ์ไพบูลย์ จำกัด",seg:"Loyal",freq:267,monetary:92741,last:"2026-6-5",r:4,f:4,m:3,total:11},
+  {name:"บริษัท โรงสีกิจประเสริฐ จำกัด",seg:"At Risk",freq:58,monetary:86063,last:"2025-11-12",r:1,f:2,m:3,total:6},
+  {name:"ห้างหุ้นส่วนจำกัด เอ.บี.เค เซ็นเตอร์",seg:"At Risk",freq:12,monetary:84286,last:"2025-11-7",r:1,f:1,m:3,total:5},
+  {name:"บริษัท ชิบาคาวะ (ประเทศไทย) จำกัด",seg:"Champion",freq:299,monetary:83983,last:"2026-11-5",r:5,f:4,m:3,total:12},
+  {name:"บริษัท ชินเซ็น อิชิบะ จำกัด",seg:"Champion",freq:277,monetary:81692,last:"2026-11-3",r:5,f:4,m:3,total:12},
+  {name:"ห้างหุ้นส่วนจำกัด เอส.เค. แอดวานซ์ เซอร์วิส",seg:"Champion",freq:255,monetary:78876,last:"2026-12-3",r:5,f:4,m:3,total:12},
+  {name:"บริษัท เฟไท เซมิคอนดักเตอร์ อีควิปเมนท์ จำกัด",seg:"Loyal",freq:156,monetary:74214,last:"2026-8-4",r:4,f:3,m:3,total:10},
+  {name:"บริษัท เดอะริทซ์ กรุ๊ป เซอร์วิส จำกัด",seg:"Loyal",freq:45,monetary:73103,last:"2026-11-5",r:5,f:1,m:3,total:9},
+  {name:"โรงพยาบาลสระบุรี",seg:"Loyal",freq:83,monetary:71607,last:"2026-12-5",r:5,f:2,m:3,total:10},
+  {name:"บริษัท เกียรติวณิช จำกัด",seg:"Loyal",freq:198,monetary:71381,last:"2026-12-1",r:5,f:3,m:3,total:11},
+  {name:"ห.จ.ก.เอกประเสริฐแดรี่ฟู้ดส์",seg:"Loyal",freq:294,monetary:70891,last:"2026-6-5",r:4,f:4,m:3,total:11},
+  {name:"บริษัท สระบุรีเวชกิจ จำกัด",seg:"Loyal",freq:38,monetary:68598,last:"2026-9-3",r:5,f:1,m:3,total:9},
+  {name:"บริษัท หินอ่อน จำกัด",seg:"Loyal",freq:45,monetary:65790,last:"2026-6-5",r:4,f:1,m:3,total:8},
+  {name:"บริษัท พี แอนด์ พี แอคเคาท์ 2016 จำกัด",seg:"Loyal",freq:69,monetary:62772,last:"2026-11-3",r:5,f:2,m:3,total:10},
+  {name:"บริษัท นพปฏล จำกัด",seg:"Loyal",freq:102,monetary:62066,last:"2026-6-2",r:4,f:3,m:3,total:10},
+  {name:"บริษัท ศ.เกษตรภัณฑ์ จำกัด",seg:"Loyal",freq:40,monetary:60840,last:"2026-12-2",r:5,f:1,m:3,total:9},
+  {name:"บริษัท ไทล์แมนท์ (ประเทศไทย) คอร์ปอเรชั่น จำกัด",seg:"At Risk",freq:162,monetary:58552,last:"2025-10-6",r:1,f:3,m:3,total:7},
+  {name:"บริษัท ท่าข้าวศิริพงษ์ จำกัด",seg:"Loyal",freq:156,monetary:58370,last:"2026-10-3",r:5,f:3,m:3,total:11},
+  {name:"บริษัท สยามสตีลทาวเวอร์ จำกัด",seg:"Loyal",freq:52,monetary:57895,last:"2026-11-3",r:5,f:2,m:3,total:10},
+  {name:"บริษัท สุขพัฒน์ (2006) จำกัด",seg:"Loyal",freq:97,monetary:56169,last:"2026-5-5",r:3,f:2,m:3,total:8},
+  {name:"จุมภฏ-พันธุ์ทิพย์ อุทยานวังตะไคร้",seg:"Loyal",freq:29,monetary:53726,last:"2026-9-3",r:5,f:1,m:3,total:9},
+  {name:"บริษัท ไพรเมท เอ็นเทอร์ไพรส์ จำกัด",seg:"Loyal",freq:138,monetary:51628,last:"2026-11-5",r:5,f:3,m:3,total:11},
+  {name:"บริษัท อาภานนท์ ดีซี จำกัด",seg:"Loyal",freq:38,monetary:50644,last:"2026-7-4",r:4,f:1,m:3,total:8},
+  {name:"บริษัท โลตัส ฟาร์มาซูติคอล (ประเทศไทย) จำกัด",seg:"Sleeping",freq:38,monetary:49592,last:"2025-10-11",r:1,f:1,m:2,total:4},
+  {name:"สำนักงานพาณิชย์จังหวัดสระบุรี",seg:"At Risk",freq:3,monetary:48270,last:"—",r:2,f:1,m:2,total:5},
+  {name:"บริษัท อัสพรรณ เอ็กซ์โพลซีฟ จำกัด",seg:"Loyal",freq:29,monetary:47994,last:"2026-10-4",r:5,f:1,m:2,total:8},
+  {name:"บริษัท ดีเอ็มพี กรุ๊ป จำกัด",seg:"Loyal",freq:61,monetary:43144,last:"2026-12-3",r:5,f:2,m:2,total:9},
+  {name:"บ.ไทยพลาสติกโปรดักส์ จำกัด",seg:"Loyal",freq:21,monetary:42308,last:"2026-12-5",r:5,f:1,m:2,total:8},
+  {name:"บริษัท ใกล้กัน เรียลเอสเตท จำกัด",seg:"Loyal",freq:12,monetary:39899,last:"2026-12-1",r:5,f:1,m:2,total:8},
+  {name:"สำนักงานเหล่ากาชาดจังหวัดสระบุรี",seg:"At Risk",freq:62,monetary:39401,last:"2025-11-9",r:1,f:2,m:2,total:5},
+  {name:"บริษัท ป้อมโชค จำกัด",seg:"At Risk",freq:144,monetary:39055,last:"2025-9-8",r:1,f:3,m:2,total:6},
+  {name:"บริษัท ไทล์เมนท์ (ประเทศไทย) คอร์ปอเรชั่น จำกัด",seg:"Loyal",freq:92,monetary:38903,last:"2026-12-3",r:5,f:2,m:2,total:9},
+  {name:"บริษัท นานา เอ็นจิเนียริ่ง เทคโนโลยี จำกัด",seg:"Loyal",freq:174,monetary:37587,last:"2026-10-4",r:5,f:3,m:2,total:10},
+  {name:"สำนักงาน ป.ป.ช ประจำจังหวัดสระบุรี",seg:"At Risk",freq:1,monetary:37478,last:"—",r:2,f:1,m:2,total:5},
+  {name:"บริษัท นำเมือง จำกัด",seg:"At Risk",freq:145,monetary:37110,last:"2025-9-10",r:1,f:3,m:2,total:6},
+  {name:"บริษัท ชูนินนาท(2015) จำกัด",seg:"At Risk",freq:29,monetary:36789,last:"2026-4-3",r:3,f:1,m:2,total:6},
+  {name:"คุณอุษวิช พันธ์วุฒิกร",seg:"At Risk",freq:2,monetary:36025,last:"—",r:2,f:1,m:2,total:5},
+  {name:"ห้างหุ้นส่วนจำกัด ไอ ทูลส์ ซัพพลาย",seg:"Loyal",freq:52,monetary:35778,last:"2026-11-3",r:5,f:2,m:2,total:9},
+  {name:"บริษัท อุตสาหกรรมสหธัญญพืช จำกัด",seg:"Loyal",freq:68,monetary:35179,last:"2026-11-2",r:5,f:2,m:2,total:9},
+  {name:"บริษัท รัตนทุน จำกัด",seg:"Loyal",freq:70,monetary:34670,last:"2026-8-4",r:4,f:2,m:2,total:8},
+  {name:"บริษัท เอกภาพ อินเตอร์อิเลคตริด จำกัด",seg:"At Risk",freq:36,monetary:34326,last:"—",r:2,f:1,m:2,total:5},
+  {name:"บริษัท วราภรณ์ สมพงษ์ ฟู้ดส์ จำกัด",seg:"Loyal",freq:21,monetary:33026,last:"2026-12-5",r:5,f:1,m:2,total:8},
+  {name:"บริษัท สระบุรีธีรรัตน์ จำกัด",seg:"Loyal",freq:75,monetary:31960,last:"2026-11-5",r:5,f:2,m:2,total:9},
+  {name:"บริษัท เอ็มพีเมด กรุ๊ป จำกัด",seg:"Sleeping",freq:14,monetary:31828,last:"2025-11-2",r:1,f:1,m:2,total:4},
+  {name:"บริษัท เซฟตี้ เซนเตอร์ (หนองแค) จำกัด",seg:"At Risk",freq:3,monetary:30080,last:"2026-5-3",r:3,f:1,m:2,total:6},
+  {name:"สหกรณ์การเกษตร ธ.ก.ส. สระบุรี",seg:"At Risk",freq:18,monetary:29775,last:"—",r:2,f:1,m:2,total:5},
+  {name:"องค์การบริหารส่วนตำบลหนองกบ",seg:"Sleeping",freq:2,monetary:29560,last:"2025-4-8",r:1,f:1,m:2,total:4},
+  {name:"บริษัท ไทยสมุทรประกันชีวิต สาขาสระบุรี",seg:"At Risk",freq:30,monetary:29338,last:"2026-7-5",r:4,f:1,m:2,total:7},
+  {name:"บมจ.ธนาคารกรุงไทย สาขาแก่งคอย",seg:"Sleeping",freq:4,monetary:29090,last:"2025-8-12",r:1,f:1,m:2,total:4},
+  {name:"บริษัท ทองใบ การโยธา จำกัด",seg:"At Risk",freq:36,monetary:28709,last:"2026-5-1",r:3,f:1,m:2,total:6},
+  {name:"บริษัท อีสเทิร์นไรซ์ มิลล์ จำกัด",seg:"Loyal",freq:121,monetary:27079,last:"2026-9-1",r:5,f:3,m:2,total:10},
+  {name:"ห้างหุ้นส่วนจำกัด เฮอร์คิวลิส ซีล",seg:"Loyal",freq:80,monetary:26251,last:"2026-8-4",r:4,f:2,m:2,total:8},
+  {name:"บริษัท ไทย โอลบา เฮลท์แคร์ จำกัด",seg:"Loyal",freq:82,monetary:25686,last:"2026-11-2",r:5,f:2,m:2,total:9},
+  {name:"ร้านอิงค์แมน สระบุรี",seg:"At Risk",freq:10,monetary:25073,last:"2026-8-5",r:4,f:1,m:2,total:7},
+  {name:"บริษัท มุโตะ(ประเทศไทย) จำกัด",seg:"Loyal",freq:30,monetary:24758,last:"2026-12-5",r:5,f:1,m:2,total:8},
+  {name:"บริษัท ดีเอ็น 33 กรุ๊ป จำกัด",seg:"Loyal",freq:58,monetary:24648,last:"2026-10-4",r:5,f:2,m:2,total:9},
+  {name:"บริษัท โมเทคแอร์ คูล จำกัด",seg:"Loyal",freq:105,monetary:24438,last:"2026-8-1",r:4,f:3,m:2,total:9},
+  {name:"บริษัท เอส วี ที ซัพพลายแอนด์เซอร์วิส จำกัด",seg:"At Risk",freq:5,monetary:24307,last:"2025-12-11",r:2,f:1,m:2,total:5},
+  {name:"หจก.พี.เอส.แก่งคอย เอ็นจิเนียริ่ง",seg:"Sleeping",freq:36,monetary:23850,last:"2025-11-12",r:1,f:1,m:2,total:4},
+  {name:"ห้างหุ้นส่วนจำกัดส.ทองดีขนส่ง(2022)",seg:"At Risk",freq:114,monetary:23424,last:"2025-9-5",r:1,f:3,m:2,total:6},
+  {name:"บริษัท ออโต้ เวิลด์ จำกัด",seg:"Loyal",freq:102,monetary:23357,last:"2026-11-2",r:5,f:3,m:2,total:10},
+  {name:"บ.แอลพีพี ไรซ์ บราน ออยล์",seg:"Loyal",freq:61,monetary:23243,last:"2026-9-3",r:5,f:2,m:2,total:9},
+  {name:"นิติบุคคลอาคารชุด เลควิว คอนโดมิเนียม",seg:"Loyal",freq:66,monetary:22471,last:"2026-10-3",r:5,f:2,m:2,total:9},
+  {name:"ห้างหุ้นส่วน พรหมพิรามชัยศิริ",seg:"At Risk",freq:7,monetary:22414,last:"2026-6-2",r:4,f:1,m:2,total:7},
+  {name:"บริษัท กระชับมิตรไรซ์ (2002) จำกัด",seg:"Loyal",freq:25,monetary:22284,last:"2026-9-3",r:5,f:1,m:2,total:8},
+  {name:"บริษัท รวมใจเจริญทรัพย์ จำกัด",seg:"Loyal",freq:11,monetary:22283,last:"2026-9-3",r:5,f:1,m:2,total:8},
+  {name:"บริษัท ภัทรา พอร์ซเลน จำกัด",seg:"At Risk",freq:33,monetary:21269,last:"2026-2-3",r:2,f:1,m:2,total:5},
+  {name:"บริษัท สันติพาณิชย์ โรสเตอร์ จำกัด",seg:"At Risk",freq:61,monetary:20971,last:"2025-2-10",r:1,f:2,m:2,total:5},
+  {name:"บจก.โรงสีโชควรลักษณ์รุ่งเรืองกิจ",seg:"At Risk",freq:9,monetary:20638,last:"2026-3-4",r:3,f:1,m:2,total:6},
+  {name:"บริษัท ไทยประกันชีวิต สาขาสระบุรี",seg:"At Risk",freq:50,monetary:20119,last:"2025-12-11",r:2,f:2,m:2,total:6},
+  {name:"บริษัท สยามเฮอร์เบิลฟาร์มาซูติคอล จำกัด",seg:"Loyal",freq:75,monetary:19702,last:"2026-11-4",r:5,f:2,m:1,total:8},
+  {name:"บริษัท พีพี ฟู๊ด ลพบุรี",seg:"At Risk",freq:40,monetary:19595,last:"2026-4-3",r:3,f:1,m:1,total:5},
+  {name:"บริษัท กรีน อินโน ไทย จำกัด",seg:"At Risk",freq:35,monetary:19280,last:"2026-9-5",r:5,f:1,m:1,total:7},
+];
+
+const NEW_CUSTS = [
+  {date:"3 เม.ย.",name:"บ. ออนซอน เทคโนโลยี เซอร์วิส",src:"ทางผ่าน",amount:2123},
+  {date:"4 เม.ย.",name:"บ. มงคล อินเตอร์ เซอร์วิส",src:"Facebook",amount:795},
+  {date:"6 เม.ย.",name:"บ. เอส เอ็น เอส อีโคแพค",src:"อีกบริษัท",amount:0},
+  {date:"7 เม.ย.",name:"บ. กระชับมิตร โลจิสติกส์",src:"อีกบริษัท",amount:5944},
+  {date:"7 เม.ย.",name:"บ. ซี ที ดับเยิ้ลยู เอเซีย",src:"Facebook",amount:1464},
+  {date:"8 เม.ย.",name:"บ. เจ-บิ๊คส์ เทรดดิ้ง",src:"Facebook",amount:1490},
+  {date:"8 เม.ย.",name:"บ. มอรแกน พริ้นท์",src:"โรบินสัน",amount:1490},
+  {date:"9 เม.ย.",name:"บจก. วัสดุก่อสร้างนานาชาติจงเหลียน",src:"ไม่ระบุ",amount:3885},
+  {date:"18 เม.ย.",name:"หจก. รัตณานนท์บริการ",src:"ทางผ่าน",amount:1011},
+  {date:"21 เม.ย.",name:"บ. คอมพลิเมนต์ คอนซัลแทนท์",src:"ทางผ่าน",amount:630},
+  {date:"22 เม.ย.",name:"บ. ฟ้าใสสี่กระจก อลูมิเนียม",src:"เว็บไซต์",amount:3525},
+  {date:"29 เม.ย.",name:"บ. เอ็มจี ออโต้เฮาส์ สระบุรี",src:"เว็บไซต์",amount:260},
+  {date:"29 เม.ย.",name:"หจก. เอ็น คิว เค",src:"ทางผ่าน",amount:261},
+];
+
+// ── HELPERS ─────────────────────────────────────────────────────────────────
+const fmt = v => v ? '฿'+Math.round(v).toLocaleString() : '—';
+const fmtK = v => v >= 1000000 ? '฿'+(v/1000000).toFixed(2)+'M' : v >= 1000 ? '฿'+(v/1000).toFixed(0)+'K' : fmt(v);
+
+const segCls = s => ({Champion:'seg-champion',Loyal:'seg-loyal','At Risk':'seg-atrisk',Sleeping:'seg-sleeping'}[s]||'');
+const segIcon = s => ({Champion:'🏆',Loyal:'📈','At Risk':'⚠️',Sleeping:'😴'}[s]||'');
+const segColor = s => ({Champion:'#4f46e5',Loyal:'#059669','At Risk':'#d97706',Sleeping:'#dc2626'}[s]||'#64748b');
+
+const scoreColor = v => ['','#ddd6fe','#c4b5fd','#a78bfa','#7c3aed','#4f46e5'][v]||'#e2e8f0';
+const scoreBadge = v => `<span style="background:${scoreColor(v)};color:${v>=3?'#fff':'#64748b'};
+  width:22px;height:22px;border-radius:4px;display:inline-flex;align-items:center;
+  justify-content:center;font-size:11px;font-weight:800;">${v}</span>`;
+
+const statusBadge = s => {
+  const m = {Active:['#dcfce7','#15803d','✅'],Pending:['#fef3c7','#b45309','⚠️'],Inactive:['#fee2e2','#dc2626','🔴']};
+  const [bg,c,ic] = m[s]||['#f1f5f9','#64748b','—'];
+  return `<span style="background:${bg};color:${c};padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;">${ic} ${s}</span>`;
+};
+
+// ── PERIOD SELECTOR ──────────────────────────────────────────────────────────
+let selYr = 2026, selMo = 4;
+
+function getPOS(yr, mo) { return MONTHLY_POS.find(d => d.yr===yr && d.mo===mo); }
+
+function onPeriodChange() {
+  selYr = +document.getElementById('yr-sel').value;
+  selMo = +document.getElementById('mo-sel').value;
+  renderPeriodKPIs();
+  renderDailyChart();
+}
+
+function renderPeriodKPIs() {
+  const cur = getPOS(selYr, selMo);
+  // previous month
+  let pYr = selYr, pMo = selMo - 1;
+  if (pMo === 0) { pMo = 12; pYr--; }
+  const prev = getPOS(pYr, pMo);
+  // same month previous year
+  const yoy = getPOS(selYr - 1, selMo);
+
+  const thYr = selYr + 543;
+  const moNames = ['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  document.getElementById('period-badge').textContent = `${moNames[selMo]} ${thYr}`;
+
+  if (!cur) {
+    document.getElementById('period-kpi').innerHTML =
+      `<div class="card" style="flex:1;color:#94a3b8;font-size:13px;padding:20px;">ไม่มีข้อมูลสำหรับช่วงนี้</div>`;
+    return;
+  }
+
+  const mom = prev ? (cur.rev - prev.rev) / prev.rev * 100 : null;
+  const yoyPct = yoy ? (cur.rev - yoy.rev) / yoy.rev * 100 : null;
+  const aov = cur.inv > 0 ? cur.rev / cur.inv : 0;
+
+  const delta = (pct, label) => {
+    if (pct === null) return `<div style="font-size:11px;color:#94a3b8;">ไม่มีข้อมูลปีก่อน</div>`;
+    const up = pct >= 0;
+    return `<div style="font-size:20px;font-weight:800;color:${up?'#059669':'#dc2626'};">${up?'↑':'↓'} ${Math.abs(pct).toFixed(1)}%</div>
+            <div style="font-size:11px;color:#94a3b8;">vs ${label}</div>`;
+  };
+
+  const tPct = Math.min(100, Math.round(cur.rev / TARGET_MONTHLY * 100));
+  const tColor = tPct >= 100 ? '#059669' : tPct >= 60 ? '#d97706' : '#dc2626';
+  const shortfall = Math.max(0, TARGET_MONTHLY - cur.rev);
+
+  document.getElementById('period-kpi').innerHTML = `
+    <div class="card" style="flex:1;min-width:130px;">
+      <div style="font-size:11px;color:#64748b;margin-bottom:2px;">💰 ยอดขาย</div>
+      <div style="font-size:22px;font-weight:800;color:#2563eb;">${fmtK(cur.rev)}</div>
+      <div style="font-size:11px;color:#94a3b8;">${cur.th} · POS</div>
+    </div>
+    <div class="card" style="flex:1;min-width:110px;">
+      <div style="font-size:11px;color:#64748b;margin-bottom:2px;">🧾 จำนวนบิล</div>
+      <div style="font-size:22px;font-weight:800;">${cur.inv.toLocaleString()}</div>
+      <div style="font-size:11px;color:#94a3b8;">รายการ</div>
+    </div>
+    <div class="card" style="flex:1;min-width:110px;">
+      <div style="font-size:11px;color:#64748b;margin-bottom:2px;">🛒 AOV</div>
+      <div style="font-size:22px;font-weight:800;color:#7c3aed;">${fmtK(aov)}</div>
+      <div style="font-size:11px;color:#94a3b8;">เฉลี่ย/บิล</div>
+    </div>
+    <div class="card" style="flex:1;min-width:140px;border-top:3px solid ${tColor};">
+      <div style="font-size:11px;color:#64748b;margin-bottom:4px;">🎯 เป้า ฿850K</div>
+      <div style="font-size:22px;font-weight:800;color:${tColor};">${tPct}%</div>
+      <div style="background:#e2e8f0;border-radius:4px;height:6px;margin:5px 0 4px;">
+        <div style="width:${tPct}%;background:${tColor};height:6px;border-radius:4px;max-width:100%;transition:width .4s;"></div>
+      </div>
+      <div style="font-size:11px;color:#94a3b8;">${tPct>=100?'✅ ทำได้เป้า!':'ขาด '+fmtK(shortfall)}</div>
+    </div>
+    <div class="card" style="flex:1;min-width:120px;">
+      <div style="font-size:11px;color:#64748b;margin-bottom:4px;">📈 MOM</div>
+      ${delta(mom, prev ? prev.th : '')}
+    </div>
+    <div class="card" style="flex:1;min-width:120px;">
+      <div style="font-size:11px;color:#64748b;margin-bottom:4px;">📅 YOY</div>
+      ${delta(yoyPct, yoy ? yoy.th : '')}
+    </div>
+  `;
+}
+
+// ── DAY OF WEEK ──────────────────────────────────────────────────────────────
+function renderDOW() {
+  const maxRev = Math.max(...DOW_DATA.map(d=>d.rev));
+  const maxInv = Math.max(...DOW_DATA.map(d=>d.inv));
+  const bestRevDay = DOW_DATA.find(d=>d.rev===maxRev).day;
+  const bestInvDay = DOW_DATA.find(d=>d.inv===maxInv).day;
+
+  document.getElementById('dow-section').innerHTML = `
+    <div style="display:flex;gap:24px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:260px;">
+        <div style="font-size:12px;font-weight:600;color:#64748b;margin-bottom:10px;">💰 ยอดรวม (฿) ต่อวัน</div>
+        ${DOW_DATA.map(d => {
+          const best = d.day === bestRevDay;
+          const aov = Math.round(d.rev / d.inv);
+          return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
+            <div style="min-width:64px;font-size:13px;font-weight:${best?'800':'500'};
+                 color:${best?'#4f46e5':'#475569'};">${d.day}</div>
+            <div style="flex:1;background:#e2e8f0;border-radius:4px;height:10px;position:relative;">
+              <div style="width:${d.rev/maxRev*100}%;background:${best?'#6366f1':'#94a3b8'};
+                   height:10px;border-radius:4px;"></div>
+            </div>
+            <div style="font-size:12px;min-width:64px;text-align:right;font-weight:${best?'700':'400'};
+                 color:${best?'#4f46e5':'#64748b'};">${(d.rev/1000).toFixed(0)}K</div>
+            ${best?`<span style="font-size:10px;background:#ede9fe;color:#4f46e5;padding:1px 7px;
+                    border-radius:10px;font-weight:700;white-space:nowrap;">🔥 TOP</span>`:'<span style="min-width:42px;"></span>'}
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="flex:1;min-width:260px;">
+        <div style="font-size:12px;font-weight:600;color:#64748b;margin-bottom:10px;">🧾 จำนวนบิล ต่อวัน</div>
+        ${DOW_DATA.map(d => {
+          const best = d.day === bestInvDay;
+          return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
+            <div style="min-width:64px;font-size:13px;font-weight:${best?'800':'500'};
+                 color:${best?'#059669':'#475569'};">${d.day}</div>
+            <div style="flex:1;background:#e2e8f0;border-radius:4px;height:10px;">
+              <div style="width:${d.inv/maxInv*100}%;background:${best?'#10b981':'#94a3b8'};
+                   height:10px;border-radius:4px;"></div>
+            </div>
+            <div style="font-size:12px;min-width:64px;text-align:right;font-weight:${best?'700':'400'};
+                 color:${best?'#059669':'#64748b'};">${d.inv.toLocaleString()} บิล</div>
+            ${best?`<span style="font-size:10px;background:#dcfce7;color:#15803d;padding:1px 7px;
+                    border-radius:10px;font-weight:700;white-space:nowrap;">🔥 TOP</span>`:'<span style="min-width:42px;"></span>'}
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="card" style="min-width:180px;background:#ede9fe;border:1px solid #c4b5fd;align-self:flex-start;padding:14px 18px;">
+        <div style="font-size:12px;font-weight:700;color:#4f46e5;margin-bottom:6px;">🏆 สรุปวันขายดีสุด</div>
+        <div style="font-size:11px;color:#64748b;margin-bottom:4px;">ยอดสูงสุด</div>
+        <div style="font-size:18px;font-weight:800;color:#4f46e5;">วัน${bestRevDay}</div>
+        <div style="font-size:12px;color:#7c3aed;font-weight:600;margin-bottom:10px;">฿${(maxRev/1000).toFixed(0)}K รวม</div>
+        <div style="font-size:11px;color:#64748b;margin-bottom:4px;">บิลมากสุด</div>
+        <div style="font-size:18px;font-weight:800;color:#059669;">วัน${bestInvDay}</div>
+        <div style="font-size:12px;color:#15803d;font-weight:600;">${maxInv.toLocaleString()} บิล</div>
+      </div>
+    </div>
+  `;
+}
+
+// ── DAILY CHART ─────────────────────────────────────────────────────────────
+let dailyChart = null;
+function renderDailyChart(){
+  const moNames=['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  document.getElementById('daily-month-label').textContent=`${moNames[selMo]} ${selYr+543}`;
+  const days=DAILY_DATA.filter(d=>d.yr===selYr&&d.mo===selMo).sort((a,b)=>a.d-b.d);
+  const noData=document.getElementById('daily-no-data');
+  const canvas=document.getElementById('chart-daily');
+  if(!days.length){canvas.style.display='none';noData.style.display='block';return;}
+  canvas.style.display='block';noData.style.display='none';
+  const maxRev=Math.max(...days.map(d=>d.rev));
+  const dailyTarget=Math.round(TARGET_MONTHLY/26);
+  if(dailyChart){dailyChart.destroy();dailyChart=null;}
+  dailyChart=new Chart(canvas,{
+    data:{
+      labels:days.map(d=>`${d.d}`),
+      datasets:[
+        {type:'bar',label:'ยอดขาย (฿)',data:days.map(d=>d.rev),
+         backgroundColor:days.map(d=>d.rev===maxRev?'#6366f1':'rgba(99,102,241,.5)'),
+         borderRadius:5,order:2},
+        {type:'line',label:`เป้า/วัน ฿${(dailyTarget/1000).toFixed(0)}K`,
+         data:Array(days.length).fill(dailyTarget),
+         borderColor:'#ef4444',borderWidth:2,borderDash:[5,4],
+         pointRadius:0,fill:false,order:1}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'top',labels:{font:{size:11},usePointStyle:true}},
+        tooltip:{callbacks:{
+          title:c=>`รายการที่ ${c[0].label}`,
+          label:c=>`${c.dataset.label}: ฿${Math.round(c.raw).toLocaleString()}`
+        }}},
+      scales:{
+        y:{ticks:{callback:v=>v>=1000?(v/1000).toFixed(0)+'K':v},grid:{color:'#f1f5f9'}},
+        x:{title:{display:true,text:'รายการ/วัน',font:{size:10}},grid:{display:false}}
+      }}
+  });
+}
+
+// ── TAB SWITCHING ────────────────────────────────────────────────────────────
+function switchTab(t){
+  document.querySelectorAll('.tp').forEach(p=>p.style.display='none');
+  document.querySelectorAll('.tb').forEach(b=>{b.classList.remove('tba');});
+  document.getElementById('tp-'+t).style.display='block';
+  document.querySelector(`[data-t="${t}"]`).classList.add('tba');
+  if(t==='charts') initCharts();
+}
+
+// ── RENDER B2B TABLE ─────────────────────────────────────────────────────────
+function renderB2B(){
+  const tb = document.getElementById('b2b-table');
+  tb.innerHTML = B2B.map(r => {
+    const total = [r.oct,r.nov,r.dec,r.jan,r.feb,r.mar,r.apr].reduce((a,b)=>a+b,0);
+    const maxM = Math.max(...B2B.map(x=>[x.oct,x.nov,x.dec,x.jan,x.feb,x.mar,x.apr].reduce((a,b)=>a+b,0)));
+    const cell = v => v ? `<td style="text-align:right;font-size:12px;">฿${v.toLocaleString()}</td>` : `<td style="text-align:right;color:#cbd5e1;font-size:12px;">—</td>`;
+    const aprCell = r.apr
+      ? `<td style="text-align:right;font-size:12px;background:#f0fdf4;">฿${r.apr.toLocaleString()}</td>`
+      : `<td style="text-align:right;color:#cbd5e1;font-size:12px;background:#fffbeb;">—</td>`;
+    return `<tr style="cursor:pointer;">
+      <td style="font-weight:600;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.n}</td>
+      <td style="text-align:center;"><span class="${segCls(r.s)}">${segIcon(r.s)} ${r.s}</span></td>
+      ${cell(r.oct)}${cell(r.nov)}${cell(r.dec)}${cell(r.jan)}${cell(r.feb)}${cell(r.mar)}${aprCell}
+      <td style="text-align:right;font-weight:700;color:#0f172a;">฿${total.toLocaleString()}</td>
+      <td style="text-align:center;">${statusBadge(r.status)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── RENDER NEW CUSTOMERS ─────────────────────────────────────────────────────
+function renderNewCust(){
+  const srcColor = {Facebook:'#dbeafe|#1d4ed8',ทางผ่าน:'#dcfce7|#15803d',เว็บไซต์:'#ede9fe|#4f46e5',
+    อีกบริษัท:'#fef3c7|#b45309',โรบินสัน:'#fee2e2|#dc2626',ไม่ระบุ:'#f1f5f9|#64748b'};
+  document.getElementById('new-cust-table').innerHTML = NEW_CUSTS.map(r=>{
+    const [bg,c] = (srcColor[r.src]||'#f1f5f9|#64748b').split('|');
+    return `<tr><td style="font-size:12px;color:#94a3b8;white-space:nowrap;">${r.date}</td>
+      <td style="font-size:12px;">${r.name}</td>
+      <td><span style="background:${bg};color:${c};padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;">${r.src}</span></td>
+      <td style="text-align:right;font-weight:600;font-size:12px;">${r.amount ? '฿'+r.amount.toLocaleString() : '—'}</td></tr>`;
+  }).join('');
+  const srcs = {};
+  NEW_CUSTS.forEach(r=>{ srcs[r.src]=(srcs[r.src]||0)+1; });
+  const max = Math.max(...Object.values(srcs));
+  const colors = {ทางผ่าน:'#10b981',Facebook:'#3b82f6',อีกบริษัท:'#f59e0b',เว็บไซต์:'#8b5cf6',โรบินสัน:'#ef4444',ไม่ระบุ:'#94a3b8'};
+  document.getElementById('src-bars').innerHTML = Object.entries(srcs).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <div style="min-width:70px;font-size:12px;color:#4a5568;">${k}</div>
+      <div style="flex:1;background:#e2e8f0;border-radius:4px;height:8px;">
+        <div style="width:${v/max*100}%;background:${colors[k]||'#94a3b8'};height:8px;border-radius:4px;"></div>
+      </div>
+      <div style="font-size:12px;font-weight:700;min-width:20px;">${v}</div>
+    </div>`).join('');
+}
+
+// ── RFM TABLE ────────────────────────────────────────────────────────────────
+let rfmSort = {col:'monetary', dir:-1};
+function sortRFM(col){ rfmSort.dir = rfmSort.col===col ? -rfmSort.dir : -1; rfmSort.col=col; renderRFMTable(); }
+
+function renderRFMTable(){
+  const seg = document.getElementById('rfm-seg-filter').value;
+  let data = seg ? CUSTOMERS.filter(c=>c.seg===seg) : CUSTOMERS;
+  data = [...data].sort((a,b) => rfmSort.dir * ((a[rfmSort.col]||0) < (b[rfmSort.col]||0) ? -1 : 1));
+  document.getElementById('rfm-count').textContent = `แสดง ${data.length} ราย`;
+  const actionMap = {Champion:'โทรสัมพันธ์ + เสนอสินค้าใหม่',Loyal:'Cross-sell + Bundle Pack','At Risk':'Win-back ด่วน 30 วัน',Sleeping:'Re-engage หรือ Inactive'};
+  document.getElementById('rfm-table-body').innerHTML = data.map((c,i) => `
+    <tr>
+      <td style="font-size:12px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+        <span style="color:#94a3b8;margin-right:6px;">${i+1}</span>${c.name}</td>
+      <td style="text-align:center;"><span class="${segCls(c.seg)}">${segIcon(c.seg)} ${c.seg}</span></td>
+      <td style="text-align:center;">${scoreBadge(c.r)}</td>
+      <td style="text-align:center;">${scoreBadge(c.f)}</td>
+      <td style="text-align:center;">${scoreBadge(c.m)}</td>
+      <td style="text-align:center;">
+        <strong style="color:${segColor(c.seg)}">${c.total}</strong>
+        <span style="color:#cbd5e1;font-size:11px;">/15</span></td>
+      <td style="text-align:right;font-size:12px;">${c.freq.toLocaleString()}</td>
+      <td style="text-align:right;font-weight:600;font-size:12px;">${fmtK(c.monetary)}</td>
+      <td style="font-size:11px;color:#94a3b8;">${c.last}</td>
+      <td style="font-size:11px;color:${segColor(c.seg)};font-weight:500;">${actionMap[c.seg]||''}</td>
+    </tr>`).join('');
+}
+
+// ── CUSTOMER LIST TABLE ──────────────────────────────────────────────────────
+let custSort = {col:'monetary',dir:-1}, custPage = 0;
+const PAGE = 20;
+
+function sortCust(col){ custSort.dir = custSort.col===col ? -custSort.dir : -1; custSort.col=col; custPage=0; renderCustTable(); }
+function changePage(d){ custPage=Math.max(0,custPage+d); renderCustTable(); }
+function clearCust(){ document.getElementById('cs-seg').value=''; document.getElementById('cs-search').value=''; custPage=0; renderCustTable(); }
+
+function renderCustTable(){
+  const seg = document.getElementById('cs-seg').value;
+  const q = document.getElementById('cs-search').value.toLowerCase();
+  let data = CUSTOMERS.filter(c =>
+    (!seg || c.seg===seg) && (!q || c.name.toLowerCase().includes(q))
+  );
+  data = [...data].sort((a,b)=>custSort.dir*((a[custSort.col]||0)<(b[custSort.col]||0)?-1:1));
+  const total = data.length;
+  const pages = Math.ceil(total/PAGE);
+  if(custPage>=pages) custPage=Math.max(0,pages-1);
+  const slice = data.slice(custPage*PAGE, custPage*PAGE+PAGE);
+  document.getElementById('cs-count').textContent = `${custPage*PAGE+1}–${Math.min((custPage+1)*PAGE,total)} จาก ${total} ราย`;
+  document.getElementById('cs-prev').disabled = custPage===0;
+  document.getElementById('cs-next').disabled = custPage>=pages-1;
+  document.getElementById('cust-table-body').innerHTML = slice.map(c=>`
+    <tr>
+      <td style="font-size:12px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;">${c.name}</td>
+      <td style="text-align:center;"><span class="${segCls(c.seg)}">${segIcon(c.seg)} ${c.seg}</span></td>
+      <td style="text-align:right;font-weight:700;">${fmtK(c.monetary)}</td>
+      <td style="text-align:right;">${c.freq.toLocaleString()}</td>
+      <td style="text-align:center;">${scoreBadge(c.r)}</td>
+      <td style="text-align:center;">${scoreBadge(c.f)}</td>
+      <td style="text-align:center;">${scoreBadge(c.m)}</td>
+      <td style="text-align:center;"><strong style="color:${segColor(c.seg)}">${c.total}</strong>/15</td>
+      <td style="font-size:11px;color:#94a3b8;">${c.last}</td>
+    </tr>`).join('');
+}
+
+function exportCSV(){
+  const rows = [['ชื่อบริษัท','Segment','ยอดรวม','รายการ','R','F','M','RFM Total','ซื้อล่าสุด']];
+  CUSTOMERS.forEach(c=>rows.push([c.name,c.seg,c.monetary,c.freq,c.r,c.f,c.m,c.total,c.last]));
+  const csv = rows.map(r=>r.join(',')).join('\n');
+  const a = document.createElement('a'); a.href='data:text/csv;charset=utf-8,﻿'+encodeURIComponent(csv);
+  a.download='ofm_crm_customers.csv'; a.click();
+}
+
+// ── FILTER BY SEGMENT (from overview) ───────────────────────────────────────
+function filterSeg(seg){
+  switchTab('customers');
+  document.getElementById('cs-seg').value=seg;
+  custPage=0; renderCustTable();
+}
+
+// ── CHARTS ───────────────────────────────────────────────────────────────────
+let chartsInited = false;
+function initCharts(){
+  if(chartsInited) return; chartsInited = true;
+
+  // 1. Monthly POS Revenue + target line
+  const monthlyColors = MONTHLY_POS.map(d =>
+    d.yr===2026 ? 'rgba(139,92,246,.85)' : 'rgba(99,102,241,.75)'
+  );
+  new Chart(document.getElementById('chart-monthly'),{
+    data:{
+      labels: MONTHLY_POS.map(d=>d.th),
+      datasets:[
+        {type:'bar',label:'ยอดขาย (฿)',data:MONTHLY_POS.map(d=>d.rev),
+         backgroundColor:monthlyColors,borderRadius:4,order:2},
+        {type:'line',label:'เป้า ฿850K',data:Array(MONTHLY_POS.length).fill(TARGET_MONTHLY),
+         borderColor:'#ef4444',borderWidth:2,borderDash:[6,4],pointRadius:0,fill:false,order:1}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:c=>`฿${c.raw.toLocaleString()}`}},
+        annotation:{}},
+      scales:{y:{ticks:{callback:v=>v>=1000?(v/1000).toFixed(0)+'K':v},grid:{color:'#f1f5f9'}},
+        x:{ticks:{font:{size:10}},grid:{display:false}}}}
+  });
+
+  // 2. Segment Donut
+  new Chart(document.getElementById('chart-seg'),{
+    type:'doughnut',
+    data:{
+      labels:['🏆 Champion','📈 Loyal','⚠️ At Risk','😴 Sleeping'],
+      datasets:[{data:[19,51,25,5],
+        backgroundColor:['#6366f1','#10b981','#f59e0b','#ef4444'],
+        borderWidth:3,borderColor:'#fff'}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+      plugins:{legend:{position:'bottom',labels:{font:{size:11},padding:8,usePointStyle:true}}}}
+  });
+
+  // 3. YOY comparison (months 1–11, grouped bar)
+  const moLabels = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.'];
+  const rev2025 = Array.from({length:11},(_,i)=>{ const d=getPOS(2025,i+1); return d?d.rev:0; });
+  const rev2026 = Array.from({length:11},(_,i)=>{ const d=getPOS(2026,i+1); return d?d.rev:0; });
+  new Chart(document.getElementById('chart-yoy'),{
+    type:'bar',
+    data:{
+      labels: moLabels,
+      datasets:[
+        {label:'ปี 2568',data:rev2025,backgroundColor:'rgba(99,102,241,.7)',borderRadius:3},
+        {label:'ปี 2569',data:rev2026,backgroundColor:'rgba(139,92,246,.85)',borderRadius:3},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'top',labels:{font:{size:11},padding:12,usePointStyle:true}},
+        tooltip:{callbacks:{label:c=>`${c.dataset.label}: ฿${c.raw.toLocaleString()}`}}},
+      scales:{y:{ticks:{callback:v=>v>=1000?(v/1000).toFixed(0)+'K':v},grid:{color:'#f1f5f9'}},
+        x:{grid:{display:false}}}}
+  });
+
+  // 4. DOW bar chart
+  new Chart(document.getElementById('chart-dow'),{
+    type:'bar',
+    data:{
+      labels: DOW_DATA.map(d=>d.day),
+      datasets:[{
+        label:'ยอดรวม (฿)',
+        data: DOW_DATA.map(d=>d.rev),
+        backgroundColor: DOW_DATA.map(d=>d.rev===Math.max(...DOW_DATA.map(x=>x.rev))?'#6366f1':'rgba(148,163,184,.7)'),
+        borderRadius:5
+      }]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:c=>`฿${c.raw.toLocaleString()} (${DOW_DATA[c.dataIndex].inv} บิล)`}}},
+      scales:{y:{ticks:{callback:v=>v>=1000?(v/1000).toFixed(0)+'K':v},grid:{color:'#f1f5f9'}},
+        x:{grid:{display:false}}}}
+  });
+
+  // 5. New Customer Sources donut
+  const srcData = {ทางผ่าน:4,Facebook:3,อีกบริษัท:2,เว็บไซต์:2,โรบินสัน:1,ไม่ระบุ:1};
+  new Chart(document.getElementById('chart-src'),{
+    type:'doughnut',
+    data:{
+      labels:Object.keys(srcData),
+      datasets:[{data:Object.values(srcData),
+        backgroundColor:['#10b981','#3b82f6','#f59e0b','#8b5cf6','#ef4444','#94a3b8'],
+        borderWidth:2,borderColor:'#fff'}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,cutout:'55%',
+      plugins:{legend:{position:'bottom',labels:{font:{size:11},padding:6,usePointStyle:true}}}}
+  });
+
+  // 6. Top 10 Champion
+  const top10 = CUSTOMERS.filter(c=>c.seg==='Champion').sort((a,b)=>b.monetary-a.monetary).slice(0,10);
+  new Chart(document.getElementById('chart-top10'),{
+    type:'bar',
+    data:{
+      labels:top10.map(c=>c.name.replace('บริษัท ','บ.').replace(' จำกัด','').substring(0,18)),
+      datasets:[{label:'ยอดรวม',data:top10.map(c=>+(c.monetary/1000).toFixed(0)),
+        backgroundColor:'rgba(99,102,241,.8)',borderRadius:4}]
+    },
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:c=>`฿${c.raw}K`}}},
+      scales:{x:{ticks:{callback:v=>v+'K'},grid:{color:'#f1f5f9'}},
+        y:{ticks:{font:{size:10}},grid:{display:false}}}}
+  });
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+renderB2B();
+renderNewCust();
+renderRFMTable();
+renderCustTable();
+renderPeriodKPIs();
+renderDailyChart();
+renderDOW();
+</script>
+</body>
+</html>
