@@ -993,31 +993,35 @@ async function loadData() {
     '<style>@keyframes spin{to{transform:rotate(360deg)}}</style>';
 
   try {
-    // ── ใช้คอลัมน์ I (Dateแก้ไข) = วันที่ขายที่ถูกต้อง ──
-    // คอลัมน์ H (Sales date) มีรูปแบบ MM/DD ผิดพลาด → ใช้ I แทน
+    // ── ใช้ column O=Year, M=Month, K=Day (ตัวเลขตรง, ไม่มีปัญหา format) ──
+    // H/I มีปัญหา MM/DD vs DD/MM → ใช้ numeric columns แทนทั้งหมด
     const now = new Date();
-    const dd  = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-    const WHERE = `where AM > 0 and I is not null and I <= date '${dd}'`;
+    const curY = now.getFullYear();
+    const curM = now.getMonth() + 1; // 1-indexed
+    const curD = now.getDate();
+    // filter เฉพาะวันที่ผ่านมาแล้ว (ตัด future POS errors)
+    const DATE_FILTER = `(O < ${curY} or (O = ${curY} and M < ${curM}) or (O = ${curY} and M = ${curM} and K <= ${curD}))`;
+    const WHERE = `where AM > 0 and O is not null and ${DATE_FILTER}`;
 
-    // Query 1: Monthly totals (ใช้ column I เป็น date)
+    // Query 1: Monthly totals — O=year, M=month(1-indexed), sum(AM)=revenue
     const mTable = await gvizFetch(
-      `select year(I), month(I), count(AM), sum(AM) ${WHERE} group by year(I), month(I) order by year(I), month(I)`
+      `select O, M, count(AM), sum(AM) ${WHERE} group by O, M order by O, M`
     );
     MONTHLY_POS = (mTable.rows || []).map(r => {
       const yr  = r.c[0].v;
-      const mo  = r.c[1].v + 1;           // gviz month() = 0-indexed → +1
+      const mo  = r.c[1].v;              // M คือ 1-indexed แล้ว (ไม่ต้อง +1)
       const inv = Math.round(r.c[2].v || 0);
       const rev = Math.round(r.c[3].v || 0);
       return { yr, mo, th: `${THAI_MO[mo-1]} ${(yr+543)%100}`, inv, rev };
     });
 
-    // Query 2: Daily totals (actual calendar days, ใช้ column I)
+    // Query 2: Daily totals — O=year, M=month, K=day
     const dTable = await gvizFetch(
-      `select year(I), month(I), day(I), count(AM), sum(AM) ${WHERE} and day(I) is not null group by year(I), month(I), day(I) order by year(I), month(I), day(I)`
+      `select O, M, K, count(AM), sum(AM) ${WHERE} group by O, M, K order by O, M, K`
     );
     DAILY_DATA = (dTable.rows || []).map(r => ({
       yr:  r.c[0].v,
-      mo:  r.c[1].v + 1,                  // 0-indexed → +1
+      mo:  r.c[1].v,                     // M คือ 1-indexed แล้ว
       d:   r.c[2].v,
       inv: Math.round(r.c[3].v || 0),
       rev: Math.round(r.c[4].v || 0)
