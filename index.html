@@ -1010,14 +1010,17 @@ async function loadData() {
       `select O, M, K, Q, sum(AN) ${WHERE} group by O, M, K, Q order by O, M, K, Q`
     );
 
-    const monthMap = {}, dayMap = {};
+    // seenQ: ติดตาม Invoice No. ที่นับไปแล้วต่อเดือน
+    // — กรณี return คนละวันกับวันขาย: Q เดียวกัน โผล่ 2 rows (K ต่างกัน)
+    //   ถ้าไม่ใช้ Set จะนับ inv++ 2 ครั้ง → AOV ต่ำกว่าจริงครึ่งนึง
+    const monthMap = {}, dayMap = {}, seenQ = {};
     for (const r of (qTable.rows || [])) {
       const yr  = r.c[0].v,  mo = r.c[1].v;
-      const d   = r.c[2].v;
-      const rev = r.c[4].v || 0;         // net revenue ต่อ invoice (sum AN ของทุก line item)
+      const d   = r.c[2].v,  q  = r.c[3].v;
+      const rev = r.c[4].v || 0;         // net revenue ต่อ invoice ต่อวัน (sum AN ของทุก line item)
       const mk  = `${yr}_${mo}`;
-      if (!monthMap[mk]) monthMap[mk] = { yr, mo, inv: 0, rev: 0 };
-      monthMap[mk].inv++;                 // นับ 1 per distinct invoice
+      if (!monthMap[mk]) { monthMap[mk] = { yr, mo, inv: 0, rev: 0 }; seenQ[mk] = new Set(); }
+      if (!seenQ[mk].has(q)) { monthMap[mk].inv++; seenQ[mk].add(q); } // นับแต่ละ Q ครั้งเดียวต่อเดือน
       monthMap[mk].rev += rev;
       const dk  = `${yr}_${mo}_${d}`;
       if (!dayMap[dk]) dayMap[dk] = { yr, mo, d, inv: 0, rev: 0 };
