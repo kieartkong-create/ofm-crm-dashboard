@@ -59,7 +59,7 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
     <span style="font-size:16px;font-weight:800;letter-spacing:.5px;">📎 OFM Saraburi</span>
     <span style="font-size:11px;color:#94a3b8;font-weight:400;">Office Mate Plus · สาขาสระบุรี</span>
   </div>
-  <div style="font-size:11px;color:#94a3b8;">ข้อมูล POS: ม.ค. 2568 – พ.ค. 2569 &nbsp;|&nbsp; 14,425 บิล &nbsp;|&nbsp; 900+ ลูกค้า</div>
+  <div id="hdr-stat" style="font-size:11px;color:#94a3b8;">ข้อมูล POS: ม.ค. 2568 – พ.ค. 2569 &nbsp;|&nbsp; 14,425 บิล &nbsp;|&nbsp; 900+ ลูกค้า</div>
 </div>
 
 <!-- ── TABS ──────────────────────────────────────────────── -->
@@ -147,7 +147,7 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
   </div>
 
   <!-- Day of Week Section -->
-  <h2>📅 วันขายดี <span style="font-size:11px;font-weight:400;color:#94a3b8;">ยอดรวมทั้งช่วง POS (ม.ค. 2568–พ.ย. 2569) · 14,425 บิล</span></h2>
+  <h2>📅 วันขายดี <span id="dow-hdr" style="font-size:11px;font-weight:400;color:#94a3b8;">ยอดรวมทั้งช่วง POS (ม.ค. 2568–พ.ค. 2569) · 14,425 บิล</span></h2>
   <div class="card" style="margin-bottom:22px;">
     <div id="dow-section"></div>
   </div>
@@ -730,7 +730,7 @@ function renderDailyChart(){
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{position:'top',labels:{font:{size:11},usePointStyle:true}},
         tooltip:{callbacks:{
-          title:c=>`รายการที่ ${c[0].label}`,
+          title:c=>`วันที่ ${c[0].label}`,
           label:c=>`${c.dataset.label}: ฿${Math.round(c.raw).toLocaleString()}`
         }}},
       scales:{
@@ -830,6 +830,18 @@ function sortCust(col){ custSort.dir = custSort.col===col ? -custSort.dir : -1; 
 function changePage(d){ custPage=Math.max(0,custPage+d); renderCustTable(); }
 function clearCust(){ document.getElementById('cs-seg').value=''; document.getElementById('cs-search').value=''; custPage=0; renderCustTable(); }
 
+// ── CLEAR ALL FILTERS ─────────────────────────────────────────────────────────
+function clearAll(){
+  document.getElementById('cs-seg').value='';
+  document.getElementById('cs-search').value='';
+  document.getElementById('rfm-seg-filter').value='';
+  custPage=0;
+  renderCustTable();
+  renderRFMTable();
+  document.getElementById('fb').style.display='none';
+  document.getElementById('fp').innerHTML='';
+}
+
 function renderCustTable(){
   const seg = document.getElementById('cs-seg').value;
   const q = document.getElementById('cs-search').value.toLowerCase();
@@ -841,7 +853,7 @@ function renderCustTable(){
   const pages = Math.ceil(total/PAGE);
   if(custPage>=pages) custPage=Math.max(0,pages-1);
   const slice = data.slice(custPage*PAGE, custPage*PAGE+PAGE);
-  document.getElementById('cs-count').textContent = `${custPage*PAGE+1}–${Math.min((custPage+1)*PAGE,total)} จาก ${total} ราย`;
+  document.getElementById('cs-count').textContent = total===0 ? '0 ราย' : `${custPage*PAGE+1}–${Math.min((custPage+1)*PAGE,total)} จาก ${total} ราย`;
   document.getElementById('cs-prev').disabled = custPage===0;
   document.getElementById('cs-next').disabled = custPage>=pages-1;
   document.getElementById('cust-table-body').innerHTML = slice.map(c=>`
@@ -877,6 +889,11 @@ function filterSeg(seg){
 let chartsInited = false;
 function initCharts(){
   if(chartsInited) return; chartsInited = true;
+  // Destroy any stale instances before re-creating (handles re-init after live data loads)
+  ['chart-monthly','chart-seg','chart-yoy','chart-dow','chart-src','chart-top10'].forEach(id => {
+    const existing = Chart.getChart(document.getElementById(id));
+    if(existing) existing.destroy();
+  });
 
   // 1. Monthly POS Revenue + target line
   const monthlyColors = MONTHLY_POS.map(d =>
@@ -913,18 +930,21 @@ function initCharts(){
       plugins:{legend:{position:'bottom',labels:{font:{size:11},padding:8,usePointStyle:true}}}}
   });
 
-  // 3. YOY comparison (months 1–11, grouped bar)
-  const moLabels = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.'];
-  const rev2025 = Array.from({length:11},(_,i)=>{ const d=getPOS(2025,i+1); return d?d.rev:0; });
-  const rev2026 = Array.from({length:11},(_,i)=>{ const d=getPOS(2026,i+1); return d?d.rev:0; });
+  // 3. YOY comparison (all 12 months, dynamic years from live data)
+  const moLabels = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const yoyYears = [...new Set(MONTHLY_POS.map(d=>d.yr))].sort((a,b)=>a-b).slice(-2);
+  const yoyColors = ['rgba(99,102,241,.7)','rgba(139,92,246,.85)'];
+  const yoyDatasets = yoyYears.map((yr,i)=>({
+    label:`ปี ${yr+543}`,
+    data:Array.from({length:12},(_,j)=>{ const d=getPOS(yr,j+1); return d?d.rev:0; }),
+    backgroundColor:yoyColors[i]||'rgba(148,163,184,.6)',
+    borderRadius:3
+  }));
   new Chart(document.getElementById('chart-yoy'),{
     type:'bar',
     data:{
       labels: moLabels,
-      datasets:[
-        {label:'ปี 2568',data:rev2025,backgroundColor:'rgba(99,102,241,.7)',borderRadius:3},
-        {label:'ปี 2569',data:rev2026,backgroundColor:'rgba(139,92,246,.85)',borderRadius:3},
-      ]
+      datasets: yoyDatasets,
     },
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{position:'top',labels:{font:{size:11},padding:12,usePointStyle:true}},
@@ -1073,14 +1093,26 @@ async function loadData() {
     // ── อัปเดต header ──
     const first = MONTHLY_POS[0], last2 = MONTHLY_POS[MONTHLY_POS.length-1];
     if (first && last2) {
-      const hdr = document.querySelector('[style*="ข้อมูล POS"]');
-      if (hdr) hdr.textContent =
-        `ข้อมูล POS: ${first.th} – ${last2.th} | ${MONTHLY_POS.reduce((s,d)=>s+d.inv,0).toLocaleString()} รายการ | 900+ ลูกค้า`;
+      const hdr = document.getElementById('hdr-stat');  // Bug fix: ใช้ ID แทน querySelector style
+      if (hdr) hdr.innerHTML =
+        `ข้อมูล POS: ${first.th} – ${last2.th} &nbsp;|&nbsp; ${MONTHLY_POS.reduce((s,d)=>s+d.inv,0).toLocaleString()} บิล &nbsp;|&nbsp; 900+ ลูกค้า`;
     }
 
     renderPeriodKPIs();
     renderDailyChart();
     renderDOW();
+
+    // Update DOW header with live date range + bill count
+    const dowHdr = document.getElementById('dow-hdr');
+    if (dowHdr && MONTHLY_POS.length > 0) {
+      const fst = MONTHLY_POS[0], lst = MONTHLY_POS[MONTHLY_POS.length-1];
+      const totalInv = MONTHLY_POS.reduce((s,d)=>s+d.inv, 0);
+      dowHdr.textContent = `ยอดรวมทั้งช่วง POS (${fst.th} – ${lst.th}) · ${totalInv.toLocaleString()} บิล`;
+    }
+
+    // Re-init charts with fresh live data (handles case where Charts tab was open before data loaded)
+    chartsInited = false;
+    if (document.getElementById('tp-charts').style.display !== 'none') initCharts();
 
   } catch(e) {
     document.getElementById('period-kpi').innerHTML =
