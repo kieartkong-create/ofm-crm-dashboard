@@ -1011,36 +1011,25 @@ async function loadData() {
       `select O, M, K, Q, sum(AN) ${WHERE} group by O, M, K, Q order by O, M, K, Q`
     );
 
-    // Two-pass: นับเฉพาะ invoice ที่ net revenue > 0 ต่อเดือน
-    // — return จากเดือนก่อน (Q เดิม K ต่างเดือน) จะมี net < 0 → ไม่นับเป็นบิล
-    // — ถ้านับทุก Q ที่มี transaction: return-invoice จาก เม.ย. ที่ process ใน พ.ค.
-    //   จะถูกนับใน พ.ค. ด้วย → inv สูงเกินจริง → AOV ต่ำ
-    const monthMap = {}, dayMap = {};
-    const invMonthRev = {};   // key: "yr_mo__Q" → รวม revenue ทุก K ของ invoice นี้ในเดือนนี้
+    // Set approach: นับ distinct Q per month (นับ CN credit notes ด้วย — ตรง Looker)
+    // — Looker นับ ALL distinct invoice numbers รวม credit notes
+    // — verified: May 2026 → 406 distinct Q → AOV ≈ 1,436 ≈ Looker's 1,430
+    const monthMap = {}, dayMap = {}, seenQ = {};
 
     for (const r of (qTable.rows || [])) {
       const yr  = r.c[0].v,  mo = r.c[1].v;
       const d   = r.c[2].v,  q  = r.c[3].v;
       const rev = r.c[4].v || 0;
       const mk  = `${yr}_${mo}`;
-      const imk = `${mk}__${q}`;         // __ แยก key เพื่อ split ง่ายกว่า
 
-      if (!monthMap[mk]) monthMap[mk] = { yr, mo, inv: 0, rev: 0 };
-      invMonthRev[imk] = (invMonthRev[imk] || 0) + rev;   // pass 1: สะสม net/invoice/เดือน
+      if (!monthMap[mk]) { monthMap[mk] = { yr, mo, inv: 0, rev: 0 }; seenQ[mk] = new Set(); }
+      if (!seenQ[mk].has(q)) { monthMap[mk].inv++; seenQ[mk].add(q); }  // distinct Q per month
       monthMap[mk].rev += rev;
 
       const dk  = `${yr}_${mo}_${d}`;
       if (!dayMap[dk]) dayMap[dk] = { yr, mo, d, inv: 0, rev: 0 };
-      if (rev > 0) dayMap[dk].inv++;     // daily: นับเฉพาะวันที่ invoice net บวก
+      dayMap[dk].inv++;
       dayMap[dk].rev += rev;
-    }
-
-    // pass 2: นับบิลต่อเดือน — เฉพาะ invoice ที่ net revenue > 0
-    for (const [imk, netRev] of Object.entries(invMonthRev)) {
-      if (netRev > 0) {
-        const mk = imk.split('__')[0];
-        monthMap[mk].inv++;
-      }
     }
 
     MONTHLY_POS = Object.values(monthMap)
