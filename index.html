@@ -371,111 +371,13 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
      DATA & JAVASCRIPT
 ════════════════════════════════════════════════════════════ -->
 <script>
-// ── MONTHLY POS DATA (from POS sheet, all channels) ─────────────────────────
-// yr=Gregorian, mo=1-based month, th=Thai label, inv=invoices, rev=revenue
-const MONTHLY_POS = [
-  // ── ปี 2568 (2025) — merged: บิลที่ key ปีผิดเป็น 2569 ถูก merge กลับมาแล้ว ──
-  {yr:2025,mo:1,  th:'ม.ค. 68',  inv:353,  rev:184822},
-  {yr:2025,mo:2,  th:'ก.พ. 68',  inv:596,  rev:242920},
-  {yr:2025,mo:3,  th:'มี.ค. 68', inv:755,  rev:334599},
-  {yr:2025,mo:4,  th:'เม.ย. 68', inv:587,  rev:260648},
-  {yr:2025,mo:5,  th:'พ.ค. 68',  inv:506,  rev:232124},
-  {yr:2025,mo:6,  th:'มิ.ย. 68', inv:1112, rev:441157},  // 826+286
-  {yr:2025,mo:7,  th:'ก.ค. 68',  inv:1224, rev:564388},  // 868+356
-  {yr:2025,mo:8,  th:'ส.ค. 68',  inv:1152, rev:525258},  // 771+381
-  {yr:2025,mo:9,  th:'ก.ย. 68',  inv:863,  rev:457909},  // 631+232
-  {yr:2025,mo:10, th:'ต.ค. 68',  inv:819,  rev:441993},  // 565+254
-  {yr:2025,mo:11, th:'พ.ย. 68',  inv:1032, rev:475865},  // 715+317
-  {yr:2025,mo:12, th:'ธ.ค. 68',  inv:552,  rev:298316},
-  // ── ปี 2569 (2026) — ม.ค.–พ.ค. เท่านั้น (ข้อมูลจริงถึงวันนี้) ──
-  {yr:2026,mo:1,  th:'ม.ค. 69',  inv:66,   rev:19151},
-  {yr:2026,mo:2,  th:'ก.พ. 69',  inv:161,  rev:87199},
-  {yr:2026,mo:3,  th:'มี.ค. 69', inv:281,  rev:99732},
-  {yr:2026,mo:4,  th:'เม.ย. 69', inv:318,  rev:204249},
-  {yr:2026,mo:5,  th:'พ.ค. 69',  inv:467,  rev:294227},
-];
+// ── LIVE DATA — โหลดจาก Google Sheets อัตโนมัติ ────────────────────────────
+// yr=Gregorian, mo=1-based, th=Thai label, inv=row count, rev=Netsale(Inc.VAT)
+let MONTHLY_POS = [];
+let DAILY_DATA   = [];
 
-// ── TARGET & DAILY DATA ──────────────────────────────────────────────────────
+// ── TARGET ────────────────────────────────────────────────────────────────────
 const TARGET_MONTHLY = 850000;
-
-const DAILY_DATA = [
-  {yr:2025,mo:1,d:2,inv:17,rev:2780},{yr:2025,mo:1,d:3,inv:22,rev:6534},
-  {yr:2025,mo:1,d:4,inv:25,rev:8229},{yr:2025,mo:1,d:7,inv:44,rev:75759},
-  {yr:2025,mo:1,d:8,inv:47,rev:9586},{yr:2025,mo:1,d:9,inv:23,rev:8201},
-  {yr:2025,mo:1,d:10,inv:64,rev:26604},{yr:2025,mo:1,d:11,inv:39,rev:17051},
-  {yr:2025,mo:1,d:12,inv:72,rev:30078},
-  {yr:2025,mo:2,d:4,inv:74,rev:65918},{yr:2025,mo:2,d:5,inv:44,rev:15829},
-  {yr:2025,mo:2,d:6,inv:20,rev:4373},{yr:2025,mo:2,d:7,inv:137,rev:61367},
-  {yr:2025,mo:2,d:8,inv:17,rev:6073},{yr:2025,mo:2,d:9,inv:74,rev:34627},
-  {yr:2025,mo:2,d:10,inv:50,rev:13873},{yr:2025,mo:2,d:12,inv:180,rev:40860},
-  {yr:2025,mo:3,d:1,inv:1,rev:0},{yr:2025,mo:3,d:2,inv:36,rev:6557},
-  {yr:2025,mo:3,d:3,inv:21,rev:11145},{yr:2025,mo:3,d:4,inv:22,rev:6740},
-  {yr:2025,mo:3,d:5,inv:34,rev:14982},{yr:2025,mo:3,d:6,inv:48,rev:14007},
-  {yr:2025,mo:3,d:7,inv:83,rev:17823},{yr:2025,mo:3,d:9,inv:74,rev:42622},
-  {yr:2025,mo:3,d:10,inv:242,rev:136010},{yr:2025,mo:3,d:11,inv:36,rev:20699},
-  {yr:2025,mo:3,d:12,inv:158,rev:64014},
-  {yr:2025,mo:4,d:1,inv:1,rev:0},{yr:2025,mo:4,d:2,inv:57,rev:21685},
-  {yr:2025,mo:4,d:3,inv:32,rev:10878},{yr:2025,mo:4,d:4,inv:38,rev:12978},
-  {yr:2025,mo:4,d:6,inv:48,rev:16121},{yr:2025,mo:4,d:7,inv:19,rev:4818},
-  {yr:2025,mo:4,d:8,inv:83,rev:84272},{yr:2025,mo:4,d:9,inv:88,rev:30436},
-  {yr:2025,mo:4,d:10,inv:14,rev:2524},{yr:2025,mo:4,d:11,inv:51,rev:20896},
-  {yr:2025,mo:4,d:12,inv:156,rev:56040},
-  {yr:2025,mo:5,d:2,inv:45,rev:19462},{yr:2025,mo:5,d:3,inv:100,rev:44559},
-  {yr:2025,mo:5,d:4,inv:11,rev:4131},{yr:2025,mo:5,d:5,inv:39,rev:11776},
-  {yr:2025,mo:5,d:6,inv:111,rev:57354},{yr:2025,mo:5,d:7,inv:38,rev:14556},
-  {yr:2025,mo:5,d:8,inv:41,rev:21983},{yr:2025,mo:5,d:9,inv:32,rev:15618},
-  {yr:2025,mo:5,d:11,inv:89,rev:42686},
-  // มิ.ย.–ธ.ค. 68: merged บิลที่ key ปีผิดเป็น 69 กลับมาแล้ว (batch id เดียวกัน = บวกยอดรวม)
-  {yr:2025,mo:6,d:1,inv:129,rev:46160},
-  {yr:2025,mo:6,d:2,inv:139,rev:113793},{yr:2025,mo:6,d:3,inv:113,rev:68306},
-  {yr:2025,mo:6,d:4,inv:4,rev:1322},   {yr:2025,mo:6,d:5,inv:291,rev:143630},
-  {yr:2025,mo:6,d:6,inv:106,rev:40993},{yr:2025,mo:6,d:8,inv:134,rev:46492},
-  {yr:2025,mo:6,d:9,inv:40,rev:24297}, {yr:2025,mo:6,d:10,inv:180,rev:81130},
-  {yr:2025,mo:6,d:11,inv:122,rev:43178},{yr:2025,mo:6,d:12,inv:35,rev:10417},
-  {yr:2025,mo:7,d:1,inv:66,rev:11900}, {yr:2025,mo:7,d:2,inv:152,rev:69263},
-  {yr:2025,mo:7,d:3,inv:126,rev:56897},{yr:2025,mo:7,d:4,inv:167,rev:65389},
-  {yr:2025,mo:7,d:5,inv:99,rev:64109}, {yr:2025,mo:7,d:6,inv:51,rev:18538},
-  {yr:2025,mo:7,d:7,inv:117,rev:42121},{yr:2025,mo:7,d:8,inv:74,rev:91649},
-  {yr:2025,mo:7,d:10,inv:228,rev:63228},{yr:2025,mo:7,d:11,inv:74,rev:22666},
-  {yr:2025,mo:8,d:1,inv:98,rev:40624}, {yr:2025,mo:8,d:2,inv:30,rev:5269},
-  {yr:2025,mo:8,d:3,inv:62,rev:78123}, {yr:2025,mo:8,d:4,inv:228,rev:86733},
-  {yr:2025,mo:8,d:5,inv:205,rev:57930},{yr:2025,mo:8,d:7,inv:72,rev:20678},
-  {yr:2025,mo:8,d:8,inv:55,rev:26208}, {yr:2025,mo:8,d:9,inv:149,rev:65994},
-  {yr:2025,mo:8,d:10,inv:142,rev:55938},{yr:2025,mo:8,d:11,inv:27,rev:26681},
-  {yr:2025,mo:8,d:12,inv:59,rev:47159},
-  {yr:2025,mo:9,d:1,inv:61,rev:31705}, {yr:2025,mo:9,d:2,inv:118,rev:44640},
-  {yr:2025,mo:9,d:3,inv:134,rev:75584},{yr:2025,mo:9,d:4,inv:140,rev:91929},
-  {yr:2025,mo:9,d:5,inv:92,rev:32092}, {yr:2025,mo:9,d:6,inv:133,rev:59876},
-  {yr:2025,mo:9,d:7,inv:34,rev:14497}, {yr:2025,mo:9,d:8,inv:38,rev:9181},
-  {yr:2025,mo:9,d:9,inv:80,rev:73475}, {yr:2025,mo:9,d:10,inv:72,rev:23516},
-  {yr:2025,mo:9,d:12,inv:110,rev:67629},
-  {yr:2025,mo:10,d:1,inv:59,rev:8898}, {yr:2025,mo:10,d:2,inv:143,rev:76043},
-  {yr:2025,mo:10,d:3,inv:105,rev:77218},{yr:2025,mo:10,d:4,inv:116,rev:64268},
-  {yr:2025,mo:10,d:5,inv:90,rev:70116},{yr:2025,mo:10,d:6,inv:74,rev:34914},
-  {yr:2025,mo:10,d:9,inv:33,rev:25801},{yr:2025,mo:10,d:10,inv:46,rev:24624},
-  {yr:2025,mo:10,d:11,inv:81,rev:18445},{yr:2025,mo:10,d:12,inv:50,rev:24499},
-  {yr:2025,mo:11,d:1,inv:3,rev:0},     {yr:2025,mo:11,d:2,inv:126,rev:74404},
-  {yr:2025,mo:11,d:3,inv:192,rev:99959},{yr:2025,mo:11,d:4,inv:59,rev:60059},
-  {yr:2025,mo:11,d:5,inv:29,rev:25016},{yr:2025,mo:11,d:6,inv:108,rev:76660},
-  {yr:2025,mo:11,d:7,inv:63,rev:21059},{yr:2025,mo:11,d:8,inv:53,rev:18576},
-  {yr:2025,mo:11,d:9,inv:123,rev:29015},{yr:2025,mo:11,d:10,inv:92,rev:34550},
-  {yr:2025,mo:11,d:11,inv:48,rev:29811},{yr:2025,mo:11,d:12,inv:73,rev:32858},
-  {yr:2025,mo:12,d:1,inv:81,rev:25613},{yr:2025,mo:12,d:2,inv:127,rev:47160},
-  {yr:2025,mo:12,d:3,inv:183,rev:80691},{yr:2025,mo:12,d:5,inv:106,rev:36244},
-  {yr:2025,mo:12,d:6,inv:134,rev:105944},{yr:2025,mo:12,d:7,inv:29,rev:8895},
-  {yr:2025,mo:12,d:9,inv:91,rev:46750},{yr:2025,mo:12,d:10,inv:2,rev:1980},
-  {yr:2025,mo:12,d:11,inv:73,rev:39216},{yr:2025,mo:12,d:12,inv:43,rev:18888},
-  // ── ปี 2569 (2026) ม.ค.–พ.ค. ──
-  {yr:2026,mo:1,d:4,inv:59,rev:13849},{yr:2026,mo:1,d:5,inv:7,rev:5302},
-  {yr:2026,mo:2,d:2,inv:79,rev:58501},{yr:2026,mo:2,d:3,inv:17,rev:5961},
-  {yr:2026,mo:2,d:4,inv:34,rev:10360},{yr:2026,mo:2,d:5,inv:31,rev:12377},
-  {yr:2026,mo:3,d:2,inv:59,rev:20516},{yr:2026,mo:3,d:4,inv:42,rev:22001},
-  {yr:2026,mo:4,d:1,inv:8,rev:1398},  {yr:2026,mo:4,d:2,inv:88,rev:49800},
-  {yr:2026,mo:4,d:3,inv:83,rev:35086},{yr:2026,mo:4,d:4,inv:31,rev:4636},
-  {yr:2026,mo:4,d:5,inv:71,rev:8812},
-  {yr:2026,mo:5,d:1,inv:63,rev:25637},{yr:2026,mo:5,d:2,inv:116,rev:100336},
-  {yr:2026,mo:5,d:3,inv:54,rev:30343},{yr:2026,mo:5,d:5,inv:85,rev:47933},
-];
 
 // ── DAY OF WEEK DATA (gviz: 1=Sun, 2=Mon, ..., 7=Sat) ───────────────────────
 const DOW_DATA = [
@@ -646,7 +548,7 @@ const statusBadge = s => {
 };
 
 // ── PERIOD SELECTOR ──────────────────────────────────────────────────────────
-let selYr = 2026, selMo = 4;
+let selYr = 2026, selMo = 5;
 
 function getPOS(yr, mo) { return MONTHLY_POS.find(d => d.yr===yr && d.mo===mo); }
 
@@ -1067,14 +969,92 @@ function initCharts(){
   });
 }
 
+// ── GOOGLE SHEETS LIVE CONNECTION ────────────────────────────────────────────
+const SHEET_ID = '1KDtB1FjvwoD-yzlswzWxhc5-3eOvktQzDfEUABsRZLE';
+const THAI_MO  = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.',
+                  'ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+
+async function gvizFetch(tq) {
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&tq=${encodeURIComponent(tq)}`;
+  const res  = await fetch(url);
+  const text = await res.text();
+  const json = text.slice(text.indexOf('{'), text.lastIndexOf('}')+1);
+  const obj  = JSON.parse(json);
+  if (obj.status === 'error') throw new Error(obj.errors?.[0]?.message || 'gviz error');
+  return obj.table;
+}
+
+async function loadData() {
+  // Loading indicator
+  document.getElementById('period-kpi').innerHTML =
+    '<div style="padding:16px 0;color:#64748b;font-size:13px;display:flex;align-items:center;gap:8px;">' +
+    '<span style="display:inline-block;width:16px;height:16px;border:2px solid #cbd5e1;border-top-color:#2563eb;border-radius:50%;animation:spin .8s linear infinite;"></span>' +
+    'กำลังโหลดข้อมูลจาก Google Sheets…</div>' +
+    '<style>@keyframes spin{to{transform:rotate(360deg)}}</style>';
+
+  try {
+    // ── ตัด future dates: เฉพาะข้อมูลถึงวันนี้ ──
+    const now = new Date();
+    const dd  = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    const WHERE = `where AM > 0 and H is not null and H <= date '${dd}'`;
+
+    // Query 1: Monthly totals
+    const mTable = await gvizFetch(
+      `select year(H), month(H), count(A), sum(AM) ${WHERE} group by year(H), month(H) order by year(H), month(H)`
+    );
+    MONTHLY_POS = (mTable.rows || []).map(r => {
+      const yr  = r.c[0].v;
+      const mo  = r.c[1].v + 1;           // gviz month() = 0-indexed → +1
+      const inv = Math.round(r.c[2].v || 0);
+      const rev = Math.round(r.c[3].v || 0);
+      return { yr, mo, th: `${THAI_MO[mo-1]} ${(yr+543)%100}`, inv, rev };
+    });
+
+    // Query 2: Daily totals (actual calendar days)
+    const dTable = await gvizFetch(
+      `select year(H), month(H), day(H), count(A), sum(AM) ${WHERE} and day(H) is not null group by year(H), month(H), day(H) order by year(H), month(H), day(H)`
+    );
+    DAILY_DATA = (dTable.rows || []).map(r => ({
+      yr:  r.c[0].v,
+      mo:  r.c[1].v + 1,                  // 0-indexed → +1
+      d:   r.c[2].v,
+      inv: Math.round(r.c[3].v || 0),
+      rev: Math.round(r.c[4].v || 0)
+    }));
+
+    // ── อัปเดต selector ให้ตรงกับเดือนล่าสุดใน data ──
+    if (MONTHLY_POS.length > 0) {
+      const last = MONTHLY_POS[MONTHLY_POS.length - 1];
+      selYr = last.yr; selMo = last.mo;
+      document.getElementById('yr-sel').value = selYr;
+      document.getElementById('mo-sel').value = selMo;
+    }
+
+    // ── อัปเดต header ──
+    const first = MONTHLY_POS[0], last2 = MONTHLY_POS[MONTHLY_POS.length-1];
+    if (first && last2) {
+      const hdr = document.querySelector('[style*="ข้อมูล POS"]');
+      if (hdr) hdr.textContent =
+        `ข้อมูล POS: ${first.th} – ${last2.th} | ${MONTHLY_POS.reduce((s,d)=>s+d.inv,0).toLocaleString()} รายการ | 900+ ลูกค้า`;
+    }
+
+    renderPeriodKPIs();
+    renderDailyChart();
+    renderDOW();
+
+  } catch(e) {
+    document.getElementById('period-kpi').innerHTML =
+      `<div style="padding:14px;background:#fef2f2;border-radius:8px;color:#dc2626;font-size:13px;">` +
+      `❌ โหลดข้อมูลไม่ได้: ${e.message}<br><small style="color:#94a3b8;">ตรวจสอบว่า Sheet เปิด "Anyone with link" หรือยัง</small></div>`;
+  }
+}
+
 // ── INIT ─────────────────────────────────────────────────────────────────────
 renderB2B();
 renderNewCust();
 renderRFMTable();
 renderCustTable();
-renderPeriodKPIs();
-renderDailyChart();
-renderDOW();
+loadData(); // ← โหลด live data จาก Google Sheets แล้วค่อย render KPI + charts
 </script>
 </body>
 </html>
