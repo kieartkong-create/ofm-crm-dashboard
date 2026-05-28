@@ -95,8 +95,8 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
       <option value="1">มกราคม</option>
       <option value="2">กุมภาพันธ์</option>
       <option value="3">มีนาคม</option>
+      <option value="4">เมษายน</option>
       <option value="5" selected>พฤษภาคม</option>
-      <option value="5">พฤษภาคม</option>
       <option value="6">มิถุนายน</option>
       <option value="7">กรกฎาคม</option>
       <option value="8">สิงหาคม</option>
@@ -553,7 +553,20 @@ let selYr = 2026, selMo = 5;
 
 function getPOS(yr, mo) { return MONTHLY_POS.find(d => d.yr===yr && d.mo===mo); }
 
+const MO_NAMES = ['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+
+function updateMonthOptions(yr, keepMo) {
+  // แสดงเฉพาะเดือนที่มีข้อมูลใน MONTHLY_POS สำหรับปีนั้น
+  const months = MONTHLY_POS.filter(m => m.yr === yr).map(m => m.mo).sort((a,b) => a-b);
+  const moSel  = document.getElementById('mo-sel');
+  moSel.innerHTML = months.map(m => `<option value="${m}">${MO_NAMES[m]}</option>`).join('');
+  // คง selMo ถ้ามีในปีใหม่ ไม่งั้นใช้เดือนล่าสุด
+  moSel.value = (keepMo && months.includes(keepMo)) ? keepMo : months[months.length - 1];
+}
+
 function onPeriodChange() {
+  const newYr = +document.getElementById('yr-sel').value;
+  if (newYr !== selYr) { selYr = newYr; updateMonthOptions(selYr, selMo); }
   selYr = +document.getElementById('yr-sel').value;
   selMo = +document.getElementById('mo-sel').value;
   renderPeriodKPIs();
@@ -1042,12 +1055,19 @@ async function loadData() {
       .map(d => ({ yr: d.yr, mo: d.mo, d: d.d, inv: d.inv, rev: Math.round(d.rev) }))
       .sort((a, b) => a.yr !== b.yr ? a.yr - b.yr : a.mo !== b.mo ? a.mo - b.mo : a.d - b.d);
 
-    // ── อัปเดต selector ให้ตรงกับเดือนล่าสุดใน data ──
+    // ── Dynamic selectors: generate จาก data จริง ──
     if (MONTHLY_POS.length > 0) {
       const last = MONTHLY_POS[MONTHLY_POS.length - 1];
       selYr = last.yr; selMo = last.mo;
-      document.getElementById('yr-sel').value = selYr;
-      document.getElementById('mo-sel').value = selMo;
+
+      // Year selector — แสดงเฉพาะปีที่มีข้อมูล
+      const years = [...new Set(MONTHLY_POS.map(m => m.yr))].sort((a,b) => a-b);
+      const yrSel = document.getElementById('yr-sel');
+      yrSel.innerHTML = years.map(y => `<option value="${y}">ปี ${y+543}</option>`).join('');
+      yrSel.value = selYr;
+
+      // Month selector — แสดงเฉพาะเดือนที่มีข้อมูลของปีล่าสุด
+      updateMonthOptions(selYr, selMo);
     }
 
     // ── อัปเดต header ──
