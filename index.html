@@ -993,14 +993,15 @@ async function loadData() {
     '<style>@keyframes spin{to{transform:rotate(360deg)}}</style>';
 
   try {
-    // ── ตัด future dates: เฉพาะข้อมูลถึงวันนี้ ──
+    // ── ใช้คอลัมน์ I (Dateแก้ไข) = วันที่ขายที่ถูกต้อง ──
+    // คอลัมน์ H (Sales date) มีรูปแบบ MM/DD ผิดพลาด → ใช้ I แทน
     const now = new Date();
     const dd  = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-    const WHERE = `where AM > 0 and H is not null and H <= date '${dd}'`;
+    const WHERE = `where AM > 0 and I is not null and I <= date '${dd}'`;
 
-    // Query 1: Monthly totals
+    // Query 1: Monthly totals (ใช้ column I เป็น date)
     const mTable = await gvizFetch(
-      `select year(H), month(H), count(A), sum(AM) ${WHERE} group by year(H), month(H) order by year(H), month(H)`
+      `select year(I), month(I), count(AM), sum(AM) ${WHERE} group by year(I), month(I) order by year(I), month(I)`
     );
     MONTHLY_POS = (mTable.rows || []).map(r => {
       const yr  = r.c[0].v;
@@ -1010,9 +1011,9 @@ async function loadData() {
       return { yr, mo, th: `${THAI_MO[mo-1]} ${(yr+543)%100}`, inv, rev };
     });
 
-    // Query 2: Daily totals (actual calendar days)
+    // Query 2: Daily totals (actual calendar days, ใช้ column I)
     const dTable = await gvizFetch(
-      `select year(H), month(H), day(H), count(A), sum(AM) ${WHERE} and day(H) is not null group by year(H), month(H), day(H) order by year(H), month(H), day(H)`
+      `select year(I), month(I), day(I), count(AM), sum(AM) ${WHERE} and day(I) is not null group by year(I), month(I), day(I) order by year(I), month(I), day(I)`
     );
     DAILY_DATA = (dTable.rows || []).map(r => ({
       yr:  r.c[0].v,
