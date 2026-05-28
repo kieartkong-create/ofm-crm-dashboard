@@ -530,7 +530,8 @@ const NEW_CUSTS = [
 
 // ── HELPERS ─────────────────────────────────────────────────────────────────
 const fmt = v => v ? '฿'+Math.round(v).toLocaleString() : '—';
-const fmtK = v => v >= 1000000 ? '฿'+(v/1000000).toFixed(2)+'M' : v >= 1000 ? '฿'+(v/1000).toFixed(0)+'K' : fmt(v);
+const fmtK  = v => v >= 1000000 ? '฿'+(v/1000000).toFixed(2)+'M' : v >= 1000 ? '฿'+(v/1000).toFixed(0)+'K' : fmt(v);
+const fmtK1 = v => v >= 1000000 ? '฿'+(v/1000000).toFixed(2)+'M' : v >= 1000 ? '฿'+(v/1000).toFixed(1)+'K' : fmt(v); // 1 decimal สำหรับ AOV
 
 const segCls = s => ({Champion:'seg-champion',Loyal:'seg-loyal','At Risk':'seg-atrisk',Sleeping:'seg-sleeping'}[s]||'');
 const segIcon = s => ({Champion:'🏆',Loyal:'📈','At Risk':'⚠️',Sleeping:'😴'}[s]||'');
@@ -606,7 +607,7 @@ function renderPeriodKPIs() {
     </div>
     <div class="card" style="flex:1;min-width:110px;">
       <div style="font-size:11px;color:#64748b;margin-bottom:2px;">🛒 AOV</div>
-      <div style="font-size:22px;font-weight:800;color:#7c3aed;">${fmtK(aov)}</div>
+      <div style="font-size:22px;font-weight:800;color:#7c3aed;">${fmtK1(aov)}</div>
       <div style="font-size:11px;color:#94a3b8;">เฉลี่ย/บิล</div>
     </div>
     <div class="card" style="flex:1;min-width:140px;border-top:3px solid ${tColor};">
@@ -1010,22 +1011,36 @@ async function loadData() {
       `select O, M, K, Q, sum(AN) ${WHERE} group by O, M, K, Q order by O, M, K, Q`
     );
 
-    // seenQ: ติดตาม Invoice No. ที่นับไปแล้วต่อเดือน
-    // — กรณี return คนละวันกับวันขาย: Q เดียวกัน โผล่ 2 rows (K ต่างกัน)
-    //   ถ้าไม่ใช้ Set จะนับ inv++ 2 ครั้ง → AOV ต่ำกว่าจริงครึ่งนึง
-    const monthMap = {}, dayMap = {}, seenQ = {};
+    // Two-pass: นับเฉพาะ invoice ที่ net revenue > 0 ต่อเดือน
+    // — return จากเดือนก่อน (Q เดิม K ต่างเดือน) จะมี net < 0 → ไม่นับเป็นบิล
+    // — ถ้านับทุก Q ที่มี transaction: return-invoice จาก เม.ย. ที่ process ใน พ.ค.
+    //   จะถูกนับใน พ.ค. ด้วย → inv สูงเกินจริง → AOV ต่ำ
+    const monthMap = {}, dayMap = {};
+    const invMonthRev = {};   // key: "yr_mo__Q" → รวม revenue ทุก K ของ invoice นี้ในเดือนนี้
+
     for (const r of (qTable.rows || [])) {
       const yr  = r.c[0].v,  mo = r.c[1].v;
       const d   = r.c[2].v,  q  = r.c[3].v;
-      const rev = r.c[4].v || 0;         // net revenue ต่อ invoice ต่อวัน (sum AN ของทุก line item)
+      const rev = r.c[4].v || 0;
       const mk  = `${yr}_${mo}`;
-      if (!monthMap[mk]) { monthMap[mk] = { yr, mo, inv: 0, rev: 0 }; seenQ[mk] = new Set(); }
-      if (!seenQ[mk].has(q)) { monthMap[mk].inv++; seenQ[mk].add(q); } // นับแต่ละ Q ครั้งเดียวต่อเดือน
+      const imk = `${mk}__${q}`;         // __ แยก key เพื่อ split ง่ายกว่า
+
+      if (!monthMap[mk]) monthMap[mk] = { yr, mo, inv: 0, rev: 0 };
+      invMonthRev[imk] = (invMonthRev[imk] || 0) + rev;   // pass 1: สะสม net/invoice/เดือน
       monthMap[mk].rev += rev;
+
       const dk  = `${yr}_${mo}_${d}`;
       if (!dayMap[dk]) dayMap[dk] = { yr, mo, d, inv: 0, rev: 0 };
-      dayMap[dk].inv++;
+      if (rev > 0) dayMap[dk].inv++;     // daily: นับเฉพาะวันที่ invoice net บวก
       dayMap[dk].rev += rev;
+    }
+
+    // pass 2: นับบิลต่อเดือน — เฉพาะ invoice ที่ net revenue > 0
+    for (const [imk, netRev] of Object.entries(invMonthRev)) {
+      if (netRev > 0) {
+        const mk = imk.split('__')[0];
+        monthMap[mk].inv++;
+      }
     }
 
     MONTHLY_POS = Object.values(monthMap)
