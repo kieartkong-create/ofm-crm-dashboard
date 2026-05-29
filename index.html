@@ -621,7 +621,7 @@ function renderPeriodKPIs() {
     <div class="card" style="flex:1;min-width:110px;">
       <div style="font-size:11px;color:#64748b;margin-bottom:2px;">🛒 AOV</div>
       <div style="font-size:22px;font-weight:800;color:#7c3aed;">${fmtK1(aov)}</div>
-      <div style="font-size:11px;color:#94a3b8;">เฉลี่ย/บิล</div>
+      <div style="font-size:11px;color:#94a3b8;">เฉลี่ย/บิล · ฿${Math.round(aov).toLocaleString()}</div>
     </div>
     <div class="card" style="flex:1;min-width:140px;border-top:3px solid ${tColor};">
       <div style="font-size:11px;color:#64748b;margin-bottom:4px;">🎯 เป้า ฿850K</div>
