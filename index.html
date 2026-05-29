@@ -1165,13 +1165,113 @@ async function loadData() {
   }
 }
 
+// ── LIVE RFM ─────────────────────────────────────────────────────────────────
+// column G = ชื่อลูกค้า (verified จาก gviz)
+// query: select G,O,M,K,Q,sum(AN) group by G,O,M,K,Q  → 1 row ต่อ invoice ต่อ customer
+// คำนวณ R (recency from today), F/M (quintile) แล้ว replace CUSTOMERS array
+async function loadRFM() {
+  // แสดง loading state
+  const rfmBody = document.getElementById('rfm-table-body');
+  if (rfmBody) rfmBody.innerHTML =
+    '<tr><td colspan="10" style="text-align:center;padding:28px;color:#64748b;font-size:13px;">' +
+    '<span style="display:inline-block;width:14px;height:14px;border:2px solid #cbd5e1;border-top-color:#4f46e5;' +
+    'border-radius:50%;animation:spin .8s linear infinite;margin-right:8px;"></span>กำลังโหลด RFM จาก Google Sheets…</td></tr>';
+  const rfmCount = document.getElementById('rfm-count');
+  if (rfmCount) rfmCount.textContent = 'กำลังโหลด…';
+
+  try {
+    const now  = new Date();
+    const curY = now.getFullYear(), curM = now.getMonth()+1, curD = now.getDate();
+    const DATE_FILTER =
+      `(O < ${curY} or (O = ${curY} and M < ${curM}) or (O = ${curY} and M = ${curM} and K <= ${curD}))`;
+    const WHERE =
+      `where (AN > 0 or AN < 0) and O is not null and G is not null ` +
+      `and G != '' and G != 'ไม่มีชื่อ' and ${DATE_FILTER}`;
+
+    const tbl = await gvizFetch(
+      `select G, O, M, K, Q, sum(AN) ${WHERE} group by G, O, M, K, Q`
+    );
+
+    // ── Aggregate per customer ──────────────────────────────────────────────
+    const map = {};
+    for (const row of (tbl.rows || [])) {
+      const name = row.c[0]?.v;
+      const yr = row.c[1]?.v, mo = row.c[2]?.v, d = row.c[3]?.v;
+      const rev = row.c[5]?.v || 0;
+      if (!name || !yr || !mo || !d) continue;
+
+      if (!map[name]) map[name] = { name, lastNum:0, lastYr:0, lastMo:0, lastD:0, invCount:0, rev:0 };
+      const c = map[name];
+
+      // Track latest purchase date as single integer (YYYYMMDD)
+      const dn = yr*10000 + mo*100 + d;
+      if (dn > c.lastNum) { c.lastNum=dn; c.lastYr=yr; c.lastMo=mo; c.lastD=d; }
+      c.invCount++;   // already 1 per invoice (grouped by G,O,M,K,Q)
+      c.rev += rev;
+    }
+
+    const arr = Object.values(map);
+    if (!arr.length) return;
+
+    // ── Quintile scoring F and M (all customers, ascending sort) ───────────
+    // Sort ascending → index/n = percentile rank
+    const byFreq = [...arr].sort((a,b) => a.invCount - b.invCount);
+    const byRev  = [...arr].sort((a,b) => a.rev      - b.rev);
+    const n = arr.length;
+
+    // Map: customer name → F score / M score from sorted rank
+    const fMap = {}, mMap = {};
+    byFreq.forEach((c,i) => { fMap[c.name] = Math.min(5, Math.floor(i/n*5)+1); });
+    byRev .forEach((c,i) => { mMap[c.name] = Math.min(5, Math.floor(i/n*5)+1); });
+
+    const TH_MO = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+
+    arr.forEach(c => {
+      // R: วันล่าสุดที่ซื้อ → days ห่างจากวันนี้
+      const lastDt = new Date(c.lastYr, c.lastMo-1, c.lastD);
+      const days   = Math.floor((now - lastDt) / 864e5);
+      c.r = days<=0?5 : days<=30?5 : days<=60?4 : days<=120?3 : days<=240?2 : 1;
+
+      // F / M จาก quintile
+      c.f    = fMap[c.name] || 1;
+      c.freq = c.invCount;
+      c.m        = mMap[c.name] || 1;
+      c.monetary = Math.round(c.rev);
+
+      // Total & segment
+      c.total = c.r + c.f + c.m;
+      c.seg   = c.total>=12?'Champion' : c.total>=8?'Loyal' : c.total>=5?'At Risk':'Sleeping';
+
+      // Display date  "25 พ.ค. 69"
+      c.lastFmt = `${c.lastD} ${TH_MO[c.lastMo-1]} ${(c.lastYr+543)%100}`;
+      c.last    = `${c.lastYr}-${c.lastMo}-${c.lastD}`;
+    });
+
+    // ── Top 100 by monetary → replace CUSTOMERS ────────────────────────────
+    arr.sort((a,b) => b.monetary - a.monetary);
+    CUSTOMERS.length = 0;
+    arr.slice(0, 100).forEach(c => CUSTOMERS.push(c));
+
+    renderSegCards();
+    renderRFMTable();
+    renderCustTable();
+
+  } catch(e) {
+    const rfmBody = document.getElementById('rfm-table-body');
+    if (rfmBody) rfmBody.innerHTML =
+      `<tr><td colspan="10" style="padding:14px;color:#dc2626;font-size:13px;">` +
+      `❌ โหลด RFM ไม่ได้: ${e.message}</td></tr>`;
+  }
+}
+
 // ── INIT ─────────────────────────────────────────────────────────────────────
 renderB2B();
 renderNewCust();
-renderSegCards();   // อัปเดต segment card counts (Champion/Loyal/At Risk/Sleeping)
+renderSegCards();   // แสดง hardcoded data ก่อน (เร็ว)
 renderRFMTable();
 renderCustTable();
-loadData(); // ← โหลด live data จาก Google Sheets แล้วค่อย render KPI + charts
+loadData();   // ← POS monthly/daily data
+loadRFM();    // ← Live RFM from Google Sheets (concurrent)
 </script>
 </body>
 </html>
