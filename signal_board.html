@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>📡 Signal Board — OFM สระบุรี</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#f8fafc;color:#1e293b;font-size:13px;}
+a{text-decoration:none;}
+
+/* ── Header ── */
+.hdr{background:linear-gradient(135deg,#1e293b 0%,#334155 100%);color:#fff;padding:14px 20px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.hdr h1{font-size:18px;font-weight:800;letter-spacing:-.3px;}
+.hdr .period{background:rgba(255,255,255,.15);padding:4px 12px;border-radius:20px;
+  font-size:12px;font-weight:600;}
+.hdr .sub{font-size:11px;color:#94a3b8;margin-left:auto;}
+
+/* ── Legend ── */
+.legend{background:#fff;border-bottom:1px solid #e2e8f0;padding:8px 20px;
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.legend span{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;
+  padding:3px 9px;border-radius:20px;}
+.l-stop{background:#fef2f2;color:#dc2626;}
+.l-down{background:#fffbeb;color:#d97706;}
+.l-stable{background:#f1f5f9;color:#64748b;}
+.l-up{background:#f0fdf4;color:#16a34a;}
+.l-new{background:#eff6ff;color:#2563eb;}
+
+/* ── Filters ── */
+.filters{background:#fff;border-bottom:1px solid #e2e8f0;padding:10px 20px;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.filters select,.filters input{padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px;
+  font-family:inherit;font-size:12px;background:#fff;outline:none;}
+.filters input{width:200px;}
+.filters input:focus,.filters select:focus{border-color:#6366f1;}
+.f-count{font-size:12px;color:#64748b;margin-left:auto;}
+.btn-reload{padding:6px 14px;background:#4f46e5;color:#fff;border:none;border-radius:6px;
+  font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;}
+.btn-reload:hover{background:#4338ca;}
+
+/* ── Table wrapper ── */
+.tbl-wrap{overflow-x:auto;padding:16px 20px 0;}
+table{border-collapse:collapse;width:100%;min-width:900px;}
+thead th{background:#f1f5f9;padding:8px 10px;text-align:left;font-size:11px;font-weight:700;
+  color:#475569;border-bottom:2px solid #e2e8f0;white-space:nowrap;position:sticky;top:0;z-index:2;}
+thead th.cat-hdr{text-align:center;min-width:90px;}
+tbody tr:hover{background:#f8fafc;}
+tbody tr td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:middle;}
+
+/* name cell */
+.cust-name{font-weight:600;font-size:12px;max-width:200px;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;}
+.cust-total{font-weight:700;font-size:13px;text-align:right;}
+.cust-total-sub{font-size:10px;color:#94a3b8;}
+
+/* ── Signal cell ── */
+.sig-cell{text-align:center;border-radius:6px;padding:5px 6px;margin:1px;}
+.sig-stop{background:#fef2f2;color:#dc2626;}
+.sig-down{background:#fffbeb;color:#d97706;}
+.sig-stable{background:#f8fafc;color:#94a3b8;}
+.sig-up{background:#f0fdf4;color:#16a34a;}
+.sig-new{background:#eff6ff;color:#2563eb;}
+.sig-none{color:#e2e8f0;font-size:11px;}
+.sig-icon{font-size:11px;font-weight:800;}
+.sig-amt{font-size:11px;font-weight:600;display:block;}
+.sig-pct{font-size:10px;display:block;}
+
+/* ── Leakage ── */
+.leak-section{padding:20px;margin-top:4px;}
+.leak-section h2{font-size:14px;font-weight:700;color:#dc2626;margin-bottom:12px;}
+.leak-grid{display:flex;flex-wrap:wrap;gap:12px;}
+.leak-card{background:#fff;border:1.5px solid #fecaca;border-radius:10px;padding:14px 16px;
+  min-width:200px;max-width:280px;}
+.leak-card .lk-name{font-weight:700;font-size:12px;color:#1e293b;margin-bottom:4px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.leak-card .lk-cat{font-size:11px;color:#dc2626;font-weight:700;margin-bottom:6px;}
+.leak-card .lk-amt{font-size:16px;font-weight:800;color:#dc2626;}
+.leak-card .lk-sub{font-size:10px;color:#94a3b8;}
+
+/* Loading */
+.loading{text-align:center;padding:40px;color:#64748b;font-size:13px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid #e2e8f0;
+  border-top-color:#4f46e5;border-radius:50%;animation:spin .8s linear infinite;margin-right:8px;}
+
+/* empty */
+.empty-row td{text-align:center;padding:40px;color:#94a3b8;font-size:12px;}
+</style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<div class="hdr">
+  <h1>📡 Signal Board</h1>
+  <div class="period" id="period-lbl">กำลังโหลด…</div>
+  <div class="sub">Office Mate Plus สาขาสระบุรี &nbsp;|&nbsp; ทีมขาย</div>
+</div>
+
+<!-- ── Legend ── -->
+<div class="legend">
+  <b style="font-size:11px;color:#64748b;">Signal:</b>
+  <span class="l-stop">✕ หยุดซื้อ</span>
+  <span class="l-down">⬇ ลด &gt;20%</span>
+  <span class="l-stable">→ ทรงตัว</span>
+  <span class="l-up">⬆ โต &gt;20%</span>
+  <span class="l-new">★ เพิ่งซื้อ</span>
+</div>
+
+<!-- ── Filters ── -->
+<div class="filters">
+  <select id="f-sig" onchange="render()">
+    <option value="">ทุก Signal</option>
+    <option value="stop">✕ หยุดซื้อ</option>
+    <option value="down">⬇ ลด &gt;20%</option>
+    <option value="up">⬆ โต &gt;20%</option>
+    <option value="new">★ เพิ่งซื้อ</option>
+    <option value="stable">→ ทรงตัว</option>
+  </select>
+  <input id="f-search" type="text" placeholder="🔍 ค้นหาลูกค้า..." oninput="render()">
+  <button class="btn-reload" onclick="loadSignals()">🔄 Refresh</button>
+  <span class="f-count" id="f-count"></span>
+</div>
+
+<!-- ── Table ── -->
+<div class="tbl-wrap">
+  <table id="tbl">
+    <thead id="tbl-head"></thead>
+    <tbody id="tbl-body">
+      <tr><td class="loading"><span class="spinner"></span>กำลังโหลดข้อมูลจาก Google Sheets…</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ── Leakage Alerts ── -->
+<div class="leak-section" id="leak-section" style="display:none;">
+  <h2>🚨 Leakage Alerts — ลูกค้าหยุดซื้อหมวดที่เคยซื้อสูง</h2>
+  <div class="leak-grid" id="leak-grid"></div>
+</div>
+
+<script>
+// ── Config ────────────────────────────────────────────────────────────────────
+const SHEET_ID = '1KDtB1FjvwoD-yzlswzWxhc5-3eOvktQzDfEUABsRZLE';
+const LEAKAGE_THR = 20000; // บาท/เดือน → trigger leakage alert
+
+// หมวดสินค้า OFM (column Y = Dept Name)
+const CATS = [
+  { key:'paper',    label:'กระดาษ',       match: s => s === 'PAPER' },
+  { key:'it',       label:'IT',            match: s => s === 'IT' },
+  { key:'office',   label:'ออฟฟิศ',        match: s => s === 'OFFICE SUPPLIES' },
+  { key:'machine',  label:'เครื่องใช้',    match: s => s === 'BUSINESS MACHINE' },
+  { key:'hygiene',  label:'สุขอนามัย',     match: s => s.startsWith('HYGIENE') },
+  { key:'writing',  label:'เครื่องเขียน',  match: s => s === 'WRITING INSTRUMENTS' || s === 'STATIONERY' },
+  { key:'furn',     label:'เฟอร์นิเจอร์',  match: s => s === 'FURNITURE' },
+  { key:'computer', label:'คอมพิวเตอร์',   match: s => s.includes('COMPUTER') || s.includes('OA/') },
+];
+
+const THAI_MO = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const fmt  = v => v>=1000000?'฿'+(v/1000000).toFixed(2)+'M' : v>=1000?'฿'+(v/1000).toFixed(0)+'K' : v>0?'฿'+Math.round(v).toLocaleString():'—';
+const fmtS = v => v>=1000?'฿'+(v/1000).toFixed(0)+'K' : v>0?'฿'+Math.round(v):'—';
+
+let DATA = [], LEAKS = [];
+
+// ── gviz helper ───────────────────────────────────────────────────────────────
+async function gvizFetch(tq) {
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&tq=${encodeURIComponent(tq)}`;
+  const res = await fetch(url);
+  const txt = await res.text();
+  const obj = JSON.parse(txt.slice(txt.indexOf('{'), txt.lastIndexOf('}')+1));
+  if (obj.status === 'error') throw new Error(obj.errors?.[0]?.message || 'gviz error');
+  return obj.table;
+}
+
+// ── Normalize dept name → cat key ────────────────────────────────────────────
+function catKey(dept) {
+  if (!dept) return null;
+  const d = dept.trim().toUpperCase();
+  const c = CATS.find(x => x.match(d));
+  return c ? c.key : null;
+}
+
+// ── Load + process ────────────────────────────────────────────────────────────
+async function loadSignals() {
+  document.getElementById('tbl-body').innerHTML =
+    `<tr><td class="loading" colspan="${CATS.length+3}"><span class="spinner"></span>กำลังโหลดข้อมูล…</td></tr>`;
+  document.getElementById('period-lbl').textContent = 'กำลังโหลด…';
+  document.getElementById('leak-section').style.display = 'none';
+
+  try {
+    const now  = new Date();
+    const curY = now.getFullYear(), curM = now.getMonth() + 1;
+
+    // Previous 2 months (baseline)
+    let p1Y = curY, p1M = curM - 1;
+    let p2Y = curY, p2M = curM - 2;
+    if (p1M <= 0) { p1M += 12; p1Y--; }
+    if (p2M <= 0) { p2M += 12; p2Y--; }
+
+    const CUST_FILTER = `G is not null and G != '' and G != 'ไม่มีชื่อ'`;
+
+    // ── Query current month ──
+    const curTbl = await gvizFetch(
+      `select G, Y, sum(AN) where O=${curY} and M=${curM} and AN>0 and ${CUST_FILTER} group by G, Y`
+    );
+
+    // ── Query prev 2 months (sum) ──
+    const prevTbl = await gvizFetch(
+      `select G, Y, sum(AN) where ((O=${p1Y} and M=${p1M}) or (O=${p2Y} and M=${p2M})) and AN>0 and ${CUST_FILTER} group by G, Y`
+    );
+
+    // ── Aggregate ──
+    const map = {};
+    const ensure = name => { if (!map[name]) map[name] = { name, cur:{}, prev:{} }; };
+
+    for (const r of (curTbl.rows || [])) {
+      const name = r.c[0]?.v, dept = r.c[1]?.v, rev = r.c[2]?.v || 0;
+      if (!name || rev <= 0) continue;
+      const ck = catKey(dept); if (!ck) continue;
+      ensure(name);
+      map[name].cur[ck] = (map[name].cur[ck] || 0) + rev;
+    }
+    for (const r of (prevTbl.rows || [])) {
+      const name = r.c[0]?.v, dept = r.c[1]?.v, rev = r.c[2]?.v || 0;
+      if (!name || rev <= 0) continue;
+      const ck = catKey(dept); if (!ck) continue;
+      ensure(name);
+      map[name].prev[ck] = (map[name].prev[ck] || 0) + rev;
+    }
+
+    // ── Compute signals ──
+    DATA = Object.values(map).map(c => {
+      const cats = {};
+      let stopCount = 0, downCount = 0, upCount = 0, newCount = 0;
+
+      CATS.forEach(cat => {
+        const cur = c.cur[cat.key] || 0;
+        const rec = (c.prev[cat.key] || 0) / 2; // avg of 2 months
+
+        let sig;
+        if (rec > 0 && cur === 0)   { sig = 'stop'; stopCount++; }
+        else if (rec === 0 && cur > 0) { sig = 'new';  newCount++;  }
+        else if (rec === 0 && cur === 0) sig = 'none';
+        else if (cur > rec * 1.2)    { sig = 'up';   upCount++;   }
+        else if (cur < rec * 0.8)    { sig = 'down'; downCount++; }
+        else                           sig = 'stable';
+
+        const pct = rec > 0 ? Math.round((cur - rec) / rec * 100) : null;
+        cats[cat.key] = { cur, rec, sig, pct };
+      });
+
+      const totalCur  = CATS.reduce((s, cat) => s + (c.cur[cat.key]  || 0), 0);
+      const totalPrev = CATS.reduce((s, cat) => s + (c.prev[cat.key] || 0)/2, 0);
+
+      return { name: c.name, totalCur, totalPrev, cats, stopCount, downCount, upCount, newCount };
+    });
+
+    // Sort priority: stops → downs → total revenue
+    DATA.sort((a, b) =>
+      b.stopCount !== a.stopCount ? b.stopCount - a.stopCount :
+      b.downCount !== a.downCount ? b.downCount - a.downCount :
+      b.totalCur  - a.totalCur
+    );
+
+    // ── Leakage alerts: rec > LEAKAGE_THR and cur = 0 ──
+    LEAKS = [];
+    DATA.forEach(c => {
+      CATS.forEach(cat => {
+        const d = c.cats[cat.key];
+        if (d && d.sig === 'stop' && d.rec >= LEAKAGE_THR) {
+          LEAKS.push({ name: c.name, catLabel: cat.label, rec: d.rec });
+        }
+      });
+    });
+    LEAKS.sort((a, b) => b.rec - a.rec);
+
+    // ── Update period label ──
+    document.getElementById('period-lbl').textContent =
+      `${THAI_MO[curM-1]} ${curY+543}  เทียบกับ avg ${THAI_MO[p2M-1]}–${THAI_MO[p1M-1]} ${p1Y+543}`;
+
+    buildHeader();
+    render();
+    renderLeakage();
+
+  } catch(e) {
+    document.getElementById('tbl-body').innerHTML =
+      `<tr><td colspan="${CATS.length+3}" style="padding:20px;color:#dc2626;font-size:13px;">❌ โหลดไม่ได้: ${e.message}</td></tr>`;
+  }
+}
+
+// ── Build table header ────────────────────────────────────────────────────────
+function buildHeader() {
+  document.getElementById('tbl-head').innerHTML = `
+    <tr>
+      <th style="min-width:180px;">ชื่อลูกค้า</th>
+      <th style="text-align:right;min-width:80px;">ยอดรวม</th>
+      ${CATS.map(c=>`<th class="cat-hdr">${c.label}</th>`).join('')}
+    </tr>`;
+}
+
+// ── Signal cell HTML ──────────────────────────────────────────────────────────
+function sigCell(d) {
+  if (!d || d.sig === 'none') return `<td><div class="sig-cell sig-none">·</div></td>`;
+
+  const cls = { stop:'sig-stop', down:'sig-down', stable:'sig-stable', up:'sig-up', new:'sig-new' }[d.sig];
+  const icon = { stop:'✕', down:'⬇', stable:'→', up:'⬆', new:'★' }[d.sig];
+  const pctTxt = d.pct !== null ? (d.pct > 0 ? `+${d.pct}%` : `${d.pct}%`) : '';
+
+  return `<td>
+    <div class="sig-cell ${cls}">
+      <span class="sig-icon">${icon}</span>
+      <span class="sig-amt">${fmtS(d.cur)}</span>
+      ${pctTxt ? `<span class="sig-pct">${pctTxt}</span>` : ''}
+    </div>
+  </td>`;
+}
+
+// ── Render table ──────────────────────────────────────────────────────────────
+function render() {
+  const sigFilter  = document.getElementById('f-sig').value;
+  const searchVal  = document.getElementById('f-search').value.toLowerCase().trim();
+
+  let rows = DATA;
+
+  // Filter by signal: keep customer if ANY category matches the selected signal
+  if (sigFilter) {
+    rows = rows.filter(c => CATS.some(cat => c.cats[cat.key]?.sig === sigFilter));
+  }
+  // Filter by search
+  if (searchVal) {
+    rows = rows.filter(c => c.name.toLowerCase().includes(searchVal));
+  }
+
+  document.getElementById('f-count').textContent = `แสดง ${rows.length} ราย จาก ${DATA.length} ราย`;
+
+  if (!rows.length) {
+    document.getElementById('tbl-body').innerHTML =
+      `<tr class="empty-row"><td colspan="${CATS.length+2}">ไม่พบข้อมูลที่ตรงกัน</td></tr>`;
+    return;
+  }
+
+  document.getElementById('tbl-body').innerHTML = rows.map(c => `
+    <tr>
+      <td>
+        <div class="cust-name" title="${c.name}">${c.name}</div>
+      </td>
+      <td class="cust-total">
+        ${fmt(c.totalCur)}
+        ${c.totalPrev>0 ? `<div class="cust-total-sub">avg ${fmt(c.totalPrev)}/ด.</div>` : ''}
+      </td>
+      ${CATS.map(cat => sigCell(c.cats[cat.key])).join('')}
+    </tr>`).join('');
+}
+
+// ── Render leakage alerts ─────────────────────────────────────────────────────
+function renderLeakage() {
+  if (!LEAKS.length) {
+    document.getElementById('leak-section').style.display = 'none';
+    return;
+  }
+  document.getElementById('leak-section').style.display = 'block';
+  document.getElementById('leak-grid').innerHTML = LEAKS.slice(0, 12).map(l => `
+    <div class="leak-card">
+      <div class="lk-name" title="${l.name}">${l.name}</div>
+      <div class="lk-cat">✕ หยุดซื้อหมวด ${l.catLabel}</div>
+      <div class="lk-amt">${fmt(l.rec)}<span class="lk-sub">/เดือน (baseline)</span></div>
+    </div>`).join('');
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+buildHeader();
+loadSignals();
+</script>
+</body>
+</html>
