@@ -189,10 +189,13 @@ tbody tr td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:midd
   </select>
   <select id="f-seg" onchange="render()">
     <option value="">ทุก Segment</option>
-    <option value="champion">🏆 Champion</option>
-    <option value="loyal">💎 Loyal</option>
-    <option value="atrisk">⚠️ At Risk</option>
-    <option value="sleeping">💤 Sleeping</option>
+    <option value="rescue">🆘 กู้ด่วน</option>
+    <option value="sleeping">💤 หลับยาว</option>
+    <option value="premium">🏆 พรีเมียม</option>
+    <option value="promising">📈 โปรมิสซิ่ง</option>
+    <option value="declining">📉 ขาลง</option>
+    <option value="regular">🔄 ประจำ</option>
+    <option value="new">✨ ใหม่</option>
   </select>
   <input id="f-search" type="text" placeholder="🔍 ค้นหาลูกค้า..." oninput="render()">
   <button class="btn-reload" onclick="loadSignals()">🔄 Refresh</button>
