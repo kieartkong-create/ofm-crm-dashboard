@@ -634,7 +634,9 @@ function render() {
     <tr data-cust="${escHTML(c.name)}" onclick="openDrilldown(this.dataset.cust)">
       <td><div class="cust-name" title="${escHTML(c.name)}">${escHTML(c.name)}</div>${segBadge(c.name)}</td>
       <td class="cust-total">
-        ${c.totalCur>0 ? fmt(c.totalCur) : `<span style="color:#94a3b8;font-size:11px">ยังไม่มีข้อมูล</span>`}
+        ${c.totalCur>0
+          ? fmt(c.totalCur)
+          : `<span style="color:#dc2626;font-size:11px;font-weight:600;">✕ ไม่ซื้อ ${THAI_MO[CUR_M-1]}</span>`}
         ${c.totalPrev>0?`<div class="cust-total-sub">avg ${fmt(c.totalPrev)}/ด.</div>`:''}
       </td>
       ${CATS.map(cat=>sigCell(c.cats[cat.key])).join('')}
