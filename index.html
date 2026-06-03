@@ -70,6 +70,7 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
   <button class="tb"     data-t="rfm"       onclick="switchTab('rfm')">🎯 RFM Analysis</button>
   <button class="tb"     data-t="customers" onclick="switchTab('customers')">👥 รายชื่อลูกค้า</button>
   <button class="tb"     data-t="charts"    onclick="switchTab('charts')">📈 Charts</button>
+  <button class="tb"     data-t="signal"    onclick="switchTab('signal')">📡 Signal Board</button>
 </div>
 
 <!-- ── FILTER BAR ─────────────────────────────────────────── -->
@@ -365,6 +366,15 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
       <div style="position:relative;height:260px;"><canvas id="chart-top10"></canvas></div>
     </div>
   </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     TAB 5: Signal Board
+════════════════════════════════════════════════════════════ -->
+<div id="tp-signal" class="tp" style="display:none;padding:0;overflow:hidden;">
+  <iframe id="signal-frame"
+    style="width:100%;height:calc(100vh - 97px);border:none;display:block;">
+  </iframe>
 </div>
 
 <!-- ══════════════════════════════════════════════════════════
@@ -791,6 +801,10 @@ function switchTab(t){
   document.getElementById('tp-'+t).style.display='block';
   document.querySelector(`[data-t="${t}"]`).classList.add('tba');
   if(t==='charts') initCharts();
+  if(t==='signal'){
+    const f=document.getElementById('signal-frame');
+    if(!f.src) f.src='signal_board.html';
+  }
 }
 
 // ── RENDER B2B TABLE ─────────────────────────────────────────────────────────
