@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>RFM Preview — New Framework</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#f8fafc;color:#1e293b;font-size:13px;padding:20px;}
+h1{font-size:18px;font-weight:800;margin-bottom:4px;}
+.sub{color:#64748b;font-size:12px;margin-bottom:20px;}
+
+/* Summary cards */
+.cards{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:24px;}
+.card{background:#fff;border-radius:12px;padding:14px 18px;min-width:150px;
+  box-shadow:0 1px 3px rgba(0,0,0,.08);border-top:4px solid #e2e8f0;}
+.card-count{font-size:28px;font-weight:800;line-height:1;}
+.card-label{font-size:12px;color:#64748b;margin-top:4px;}
+.card-sub{font-size:11px;color:#94a3b8;margin-top:2px;}
+
+/* Segment colors */
+.c-rescue   {border-color:#dc2626;} .c-rescue   .card-count{color:#dc2626;}
+.c-sleeping {border-color:#94a3b8;} .c-sleeping .card-count{color:#64748b;}
+.c-premium  {border-color:#d97706;} .c-premium  .card-count{color:#d97706;}
+.c-promising{border-color:#7c3aed;} .c-promising .card-count{color:#7c3aed;}
+.c-declining{border-color:#f97316;} .c-declining .card-count{color:#f97316;}
+.c-regular  {border-color:#2563eb;} .c-regular  .card-count{color:#2563eb;}
+.c-new      {border-color:#16a34a;} .c-new      .card-count{color:#16a34a;}
+
+/* Table */
+.section{background:#fff;border-radius:12px;padding:16px 20px;margin-bottom:16px;
+  box-shadow:0 1px 3px rgba(0,0,0,.08);}
+.section h2{font-size:14px;font-weight:700;margin-bottom:12px;}
+table{width:100%;border-collapse:collapse;}
+th{background:#f1f5f9;padding:7px 10px;text-align:left;font-size:11px;font-weight:700;
+   color:#475569;border-bottom:2px solid #e2e8f0;}
+td{padding:7px 10px;border-bottom:1px solid #f1f5f9;font-size:12px;}
+
+/* Segment badges */
+.seg{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap;}
+.seg-rescue   {background:#fef2f2;color:#dc2626;}
+.seg-sleeping {background:#f1f5f9;color:#64748b;}
+.seg-premium  {background:#fef9c3;color:#854d0e;}
+.seg-promising{background:#ede9fe;color:#6d28d9;}
+.seg-declining{background:#ffedd5;color:#c2410c;}
+.seg-regular  {background:#eff6ff;color:#1d4ed8;}
+.seg-new      {background:#f0fdf4;color:#15803d;}
+
+/* R/M badges */
+.rb{display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;margin-right:2px;}
+.r4{background:#dcfce7;color:#15803d;}
+.r3{background:#d1fae5;color:#059669;}
+.r2{background:#fef9c3;color:#854d0e;}
+.r1{background:#fef2f2;color:#dc2626;}
+.m5{background:#6d28d9;color:#fff;}
+.m4{background:#7c3aed;color:#fff;}
+.m3{background:#8b5cf6;color:#fff;}
+.m2{background:#ddd6fe;color:#5b21b6;}
+.m1{background:#f1f5f9;color:#94a3b8;}
+
+/* Loading */
+.loading{text-align:center;padding:40px;color:#64748b;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid #e2e8f0;
+  border-top-color:#4f46e5;border-radius:50%;animation:spin .8s linear infinite;margin-right:8px;}
+
+/* thresholds box */
+.thresholds{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;
+  padding:12px 16px;margin-bottom:20px;font-size:11px;}
+.thresholds h3{font-size:12px;font-weight:700;margin-bottom:8px;color:#475569;}
+.th-row{display:flex;gap:24px;flex-wrap:wrap;}
+.th-item{display:flex;align-items:center;gap:6px;}
+</style>
+</head>
+<body>
+
+<h1>🔬 RFM Framework Preview — ใหม่</h1>
+<div class="sub" id="period-sub">กำลังโหลดข้อมูลจาก Google Sheets…</div>
+
+<!-- Threshold summary -->
+<div class="thresholds">
+  <h3>📐 Threshold ที่ใช้</h3>
+  <div class="th-row">
+    <div>
+      <b>R Score (Recency)</b><br>
+      <span class="rb r4">R4</span> ≤7 วัน &nbsp;
+      <span class="rb r3">R3</span> 8-15 วัน &nbsp;
+      <span class="rb r2">R2</span> 16-30 วัน &nbsp;
+      <span class="rb r1">R1</span> >30 วัน
+    </div>
+    <div>
+      <b>M Score (avg/เดือน)</b><br>
+      <span class="rb m5">M5</span> ≥฿30K &nbsp;
+      <span class="rb m4">M4</span> ฿10-30K &nbsp;
+      <span class="rb m3">M3</span> ฿3-10K &nbsp;
+      <span class="rb m2">M2</span> ฿0.5-3K &nbsp;
+      <span class="rb m1">M1</span> &lt;฿500
+    </div>
+  </div>
+</div>
+
+<!-- Summary cards -->
+<div class="cards" id="cards">
+  <div class="loading"><span class="spinner"></span>กำลังคำนวณ…</div>
+</div>
+
+<!-- Customer table -->
+<div class="section">
+  <h2 id="table-title">รายชื่อลูกค้าแยกตาม Segment</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>ชื่อลูกค้า</th>
+        <th>Segment</th>
+        <th>R Score</th>
+        <th>M Score</th>
+        <th>avg/เดือน</th>
+        <th>ซื้อล่าสุด</th>
+        <th>ห่างมา</th>
+      </tr>
+    </thead>
+    <tbody id="tbl"></tbody>
+  </table>
+</div>
+
+<script>
+const SHEET_ID = '1KDtB1FjvwoD-yzlswzWxhc5-3eOvktQzDfEUABsRZLE';
+const THAI_MO = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+
+// ── New thresholds ────────────────────────────────────────────
+function rScore(days) {
+  if (days <= 7)  return 4;
+  if (days <= 15) return 3;
+  if (days <= 30) return 2;
+  return 1;
+}
+function mScore(avg) {
+  if (avg >= 30000) return 5;
+  if (avg >= 10000) return 4;
+  if (avg >= 3000)  return 3;
+  if (avg >= 500)   return 2;
+  return 1;
+}
+function getSegment(r, m, months, growth) {
+  if (months <= 2)              return 'new';
+  if (r === 1 && m >= 3)        return 'rescue';    // 🆘 กู้ด่วน (R1 only + M3+)
+  if (r === 1)                  return 'sleeping';  // 💤 หลับยาว
+  if (r === 4 && m === 5)       return 'premium';   // 🏆 พรีเมียม
+  if (r >= 3 && m >= 4)         return 'promising'; // 📈 โปรมิสซิ่ง
+  if (growth !== null && growth < -0.2) return 'declining'; // 📉 ขาลง
+  return 'regular';                                 // 🔄 ประจำ
+}
+
+const SEG_META = {
+  rescue:   { label:'🆘 กู้ด่วน',    cls:'seg-rescue',    card:'c-rescue',    desc:'ไม่ซื้อ >30 วัน + เคยซื้อ ≥฿3K/เดือน' },
+  sleeping: { label:'💤 หลับยาว',    cls:'seg-sleeping',  card:'c-sleeping',  desc:'ไม่ซื้อ >30 วัน + ซื้อน้อย' },
+  premium:  { label:'🏆 พรีเมียม',   cls:'seg-premium',   card:'c-premium',   desc:'ซื้อ ≤7 วัน + avg ≥฿30K/เดือน' },
+  promising:{ label:'📈 โปรมิสซิ่ง', cls:'seg-promising', card:'c-promising', desc:'ซื้อสม่ำเสมอ + avg ≥฿10K' },
+  declining:{ label:'📉 ขาลง',       cls:'seg-declining', card:'c-declining', desc:'ยอดลดลง >20%' },
+  regular:  { label:'🔄 ประจำ',      cls:'seg-regular',   card:'c-regular',   desc:'ยังซื้ออยู่ ไม่เข้าเกณฑ์อื่น' },
+  new:      { label:'✨ ใหม่',        cls:'seg-new',       card:'c-new',       desc:'เป็นลูกค้าไม่เกิน 2 เดือน' },
+};
+
+const fmt = v => v>=1000?'฿'+(v/1000).toFixed(0)+'K':'฿'+Math.round(v).toLocaleString();
+
+async function gvizFetch(tq) {
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&tq=${encodeURIComponent(tq)}`;
+  const res = await fetch(url);
+  const txt = await res.text();
+  return JSON.parse(txt.slice(txt.indexOf('{'), txt.lastIndexOf('}')+1)).table;
+}
+
+async function run() {
+  const now = new Date();
+  // Use May as most recent complete month
+  const months = [{y:2026,m:5},{y:2026,m:4},{y:2026,m:3}];
+  const mLabels = months.map(x=>`${THAI_MO[x.m-1]} ${x.y+543}`);
+
+  document.getElementById('period-sub').textContent =
+    `ใช้ข้อมูล ${mLabels[2]}–${mLabels[0]} | วันนี้: ${now.getDate()} ${THAI_MO[now.getMonth()]} ${now.getFullYear()+543}`;
+
+  const filterStr = months.map(x=>`(O=${x.y} and M=${x.m})`).join(' or ');
+  const tbl = await gvizFetch(
+    `select G, O, M, K, sum(AN) where (${filterStr}) and AN>0 and G is not null and G != '' and G != 'ไม่มีชื่อ' group by G, O, M, K`
+  );
+
+  // ── Aggregate per customer ──
+  const cmap = {};
+  for (const r of (tbl.rows||[])) {
+    const name=r.c[0]?.v, y=r.c[1]?.v, mo=r.c[2]?.v, d=r.c[3]?.v, rev=r.c[4]?.v||0;
+    if (!name||!y||!mo||!d||rev<=0) continue;
+    if (!cmap[name]) cmap[name]={ moRevs:{}, lastNum:0 };
+    const dn = y*10000+mo*100+d;
+    if (dn>cmap[name].lastNum) cmap[name].lastNum=dn;
+    cmap[name].moRevs[mo] = (cmap[name].moRevs[mo]||0)+rev;
+  }
+
+  // ── Compute scores ──
+  const customers = Object.entries(cmap).map(([name, c]) => {
+    const yr=Math.floor(c.lastNum/10000), mo=Math.floor((c.lastNum%10000)/100), da=c.lastNum%100;
+    const lastDate = new Date(yr, mo-1, da);
+    const days = Math.floor((now-lastDate)/864e5);
+
+    const moVals = Object.values(c.moRevs);
+    const monthsWithData = moVals.length;
+    const avgM = moVals.reduce((a,b)=>a+b,0) / Math.max(monthsWithData,1);
+
+    // growth: compare latest month vs avg of earlier months
+    const latestMo = Math.max(...Object.keys(c.moRevs).map(Number));
+    const latestRev = c.moRevs[latestMo]||0;
+    const prevRevs = Object.entries(c.moRevs)
+      .filter(([k])=>+k<latestMo).map(([,v])=>v);
+    const prevAvg = prevRevs.length ? prevRevs.reduce((a,b)=>a+b,0)/prevRevs.length : null;
+    const growth = prevAvg ? (latestRev-prevAvg)/prevAvg : null;
+
+    const r = rScore(days);
+    const m = mScore(avgM);
+    const seg = getSegment(r, m, monthsWithData, growth);
+
+    return { name, days, lastDate, avgM, r, m, seg, monthsWithData, growth,
+             lastStr: `${da} ${THAI_MO[mo-1]} ${yr+543}` };
+  });
+
+  // ── Render summary cards ──
+  const counts = {};
+  Object.keys(SEG_META).forEach(k=>counts[k]=0);
+  customers.forEach(c=>counts[c.seg]=(counts[c.seg]||0)+1);
+
+  const segOrder = ['rescue','sleeping','premium','promising','declining','regular','new'];
+  document.getElementById('cards').innerHTML = segOrder.map(k => {
+    const s = SEG_META[k];
+    return `<div class="card ${s.card}">
+      <div class="card-count">${counts[k]||0}</div>
+      <div class="card-label">${s.label}</div>
+      <div class="card-sub">${s.desc}</div>
+    </div>`;
+  }).join('');
+
+  // ── Render table (sorted by seg priority, then M desc) ──
+  const segPrio = {rescue:0,sleeping:1,premium:2,promising:3,declining:4,regular:5,new:6};
+  customers.sort((a,b)=>(segPrio[a.seg]??9)-(segPrio[b.seg]??9)||b.avgM-a.avgM);
+
+  document.getElementById('table-title').textContent =
+    `รายชื่อลูกค้า ${customers.length} ราย แยกตาม Segment (ใหม่)`;
+
+  document.getElementById('tbl').innerHTML = customers.map(c => {
+    const s = SEG_META[c.seg];
+    const growthStr = c.growth!==null
+      ? `<span style="color:${c.growth<-0.2?'#dc2626':c.growth>0.2?'#16a34a':'#64748b'};font-size:10px;">
+          ${c.growth>0?'+':''}${(c.growth*100).toFixed(0)}%</span>` : '';
+    return `<tr>
+      <td style="font-weight:600;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+          title="${c.name}">${c.name}</td>
+      <td><span class="seg ${s.cls}">${s.label}</span></td>
+      <td><span class="rb r${c.r}">R${c.r}</span></td>
+      <td><span class="rb m${c.m}">M${c.m}</span></td>
+      <td style="text-align:right;font-weight:600;">${fmt(c.avgM)}/ด. ${growthStr}</td>
+      <td>${c.lastStr}</td>
+      <td style="color:${c.days>30?'#dc2626':c.days>15?'#d97706':'#16a34a'};font-weight:600;">${c.days} วัน</td>
+    </tr>`;
+  }).join('');
+}
+
+run().catch(e=>{
+  document.getElementById('cards').innerHTML=`<div style="color:#dc2626">❌ ${e.message}</div>`;
+});
+</script>
+</body>
+</html>
