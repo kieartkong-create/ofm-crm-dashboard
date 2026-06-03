@@ -7,7 +7,6 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:#f8fafc;color:#1e293b;font-size:13px;}
-a{text-decoration:none;}
 
 /* ── Header ── */
 .hdr{background:linear-gradient(135deg,#1e293b 0%,#334155 100%);color:#fff;padding:14px 20px;
@@ -40,13 +39,19 @@ a{text-decoration:none;}
   font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;}
 .btn-reload:hover{background:#4338ca;}
 
+/* ── Auto-shift notice ── */
+.shift-notice{background:#fffbeb;border-bottom:2px solid #fde68a;padding:8px 20px;
+  font-size:12px;color:#92400e;display:none;}
+.shift-notice b{font-weight:700;}
+
 /* ── Table wrapper ── */
 .tbl-wrap{overflow-x:auto;padding:16px 20px 0;}
 table{border-collapse:collapse;width:100%;min-width:900px;}
 thead th{background:#f1f5f9;padding:8px 10px;text-align:left;font-size:11px;font-weight:700;
   color:#475569;border-bottom:2px solid #e2e8f0;white-space:nowrap;position:sticky;top:0;z-index:2;}
 thead th.cat-hdr{text-align:center;min-width:90px;}
-tbody tr:hover{background:#f8fafc;}
+tbody tr{cursor:pointer;}
+tbody tr:hover{background:#eef2ff;}
 tbody tr td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:middle;}
 
 /* name cell */
@@ -79,14 +84,68 @@ tbody tr td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:midd
 .leak-card .lk-amt{font-size:16px;font-weight:800;color:#dc2626;}
 .leak-card .lk-sub{font-size:10px;color:#94a3b8;}
 
-/* Loading */
+/* ── Loading / empty ── */
 .loading{text-align:center;padding:40px;color:#64748b;font-size:13px;}
 @keyframes spin{to{transform:rotate(360deg)}}
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid #e2e8f0;
   border-top-color:#4f46e5;border-radius:50%;animation:spin .8s linear infinite;margin-right:8px;}
-
-/* empty */
 .empty-row td{text-align:center;padding:40px;color:#94a3b8;font-size:12px;}
+
+/* ── Modal overlay ── */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;
+  align-items:center;justify-content:center;}
+.modal-ov.open{display:flex;}
+.modal-box{background:#fff;border-radius:14px;width:92%;max-width:680px;
+  max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);}
+.modal-hdr{padding:20px 24px 14px;border-bottom:1px solid #f1f5f9;
+  display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+  position:sticky;top:0;background:#fff;z-index:1;}
+.modal-hdr-info{}
+.modal-title{font-size:16px;font-weight:800;color:#1e293b;margin-bottom:2px;}
+.modal-sub{font-size:11px;color:#64748b;}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;
+  color:#94a3b8;padding:2px 6px;border-radius:6px;line-height:1;}
+.modal-close:hover{background:#f1f5f9;color:#1e293b;}
+.modal-body{padding:16px 24px 20px;}
+
+/* modal table */
+.dtbl{width:100%;border-collapse:collapse;}
+.dtbl th{font-size:11px;font-weight:700;color:#475569;padding:6px 10px;
+  text-align:right;border-bottom:2px solid #e2e8f0;white-space:nowrap;}
+.dtbl th:first-child{text-align:left;}
+.dtbl td{padding:8px 10px;border-bottom:1px solid #f8fafc;font-size:12px;
+  vertical-align:middle;}
+.dtbl td:first-child{font-weight:600;}
+.dtbl td:nth-child(2),.dtbl td:nth-child(3){text-align:right;font-variant-numeric:tabular-nums;}
+.drow-stop{background:#fef2f2;}
+.drow-down{background:#fffbeb;}
+.drow-up{background:#f0fdf4;}
+.drow-new{background:#eff6ff;}
+
+/* signal pill */
+.spill{display:inline-block;padding:3px 9px;border-radius:20px;
+  font-size:11px;font-weight:700;white-space:nowrap;}
+.spill-stop{background:#fef2f2;color:#dc2626;}
+.spill-down{background:#fffbeb;color:#d97706;}
+.spill-stable{background:#f1f5f9;color:#64748b;}
+.spill-up{background:#f0fdf4;color:#16a34a;}
+.spill-new{background:#eff6ff;color:#2563eb;}
+
+/* SKU button */
+.btn-sku{padding:3px 10px;background:#fff;border:1px solid #e2e8f0;border-radius:6px;
+  font-family:inherit;font-size:11px;cursor:pointer;color:#4f46e5;font-weight:600;
+  white-space:nowrap;}
+.btn-sku:hover{background:#eef2ff;border-color:#6366f1;}
+
+/* back button */
+.btn-back{padding:5px 12px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;
+  font-family:inherit;font-size:12px;cursor:pointer;color:#475569;font-weight:600;margin-bottom:14px;}
+.btn-back:hover{background:#e2e8f0;}
+
+/* period badges in modal header */
+.modal-periods{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.badge-prev{background:#f1f5f9;color:#64748b;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.badge-cur{background:#e0f2fe;color:#0369a1;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
 </style>
 </head>
 <body>
@@ -123,6 +182,11 @@ tbody tr td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:midd
   <span class="f-count" id="f-count"></span>
 </div>
 
+<!-- ── Auto-shift notice ── -->
+<div class="shift-notice" id="shift-notice">
+  ⚠️ <b id="sn-no-month"></b> ยังไม่มีข้อมูล — แสดง <b id="sn-cur-month"></b> เทียบกับ <b id="sn-prev-range"></b> แทน
+</div>
+
 <!-- ── Table ── -->
 <div class="tbl-wrap">
   <table id="tbl">
@@ -133,25 +197,89 @@ tbody tr td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:midd
   </table>
 </div>
 
-<!-- ── No-data notice ── -->
-<div id="no-cur-notice" style="display:none;background:#fffbeb;border-bottom:1px solid #fde68a;
-  padding:8px 20px;font-size:12px;color:#92400e;">
-  ⚠️ <b id="no-cur-month"></b> ยังไม่มีข้อมูล — สัญญาณ ✕ คือลูกค้าที่ซื้อใน <span id="no-cur-range"></span>
-  แต่ยังไม่มีออเดอร์เดือนนี้
-</div>
-
 <!-- ── Leakage Alerts ── -->
 <div class="leak-section" id="leak-section" style="display:none;">
   <h2>🚨 Leakage Alerts — ลูกค้าหยุดซื้อหมวดที่เคยซื้อสูง</h2>
   <div class="leak-grid" id="leak-grid"></div>
 </div>
 
+<!-- ══════════════════════════════════════════════════════
+     Modal — Level 1: Category drill-down
+═══════════════════════════════════════════════════════ -->
+<div class="modal-ov" id="modal1" onclick="if(event.target===this)closeModal1()">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <div class="modal-hdr-info">
+        <div class="modal-title" id="m1-title">—</div>
+        <div class="modal-sub" id="m1-sub"></div>
+        <div class="modal-periods">
+          <span class="badge-prev" id="m1-prev-badge"></span>
+          <span style="font-size:11px;color:#94a3b8;align-self:center;">→</span>
+          <span class="badge-cur" id="m1-cur-badge"></span>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeModal1()">✕</button>
+    </div>
+    <div class="modal-body">
+      <table class="dtbl">
+        <thead>
+          <tr>
+            <th style="text-align:left;">หมวดสินค้า</th>
+            <th id="m1-th-prev">avg ก่อน</th>
+            <th id="m1-th-cur">เดือนนี้</th>
+            <th>Signal</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="m1-body">
+          <tr><td colspan="5" class="loading"><span class="spinner"></span>กำลังโหลด…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     Modal — Level 2: SKU drill-down
+═══════════════════════════════════════════════════════ -->
+<div class="modal-ov" id="modal2" onclick="if(event.target===this)closeModal2()">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <div class="modal-hdr-info">
+        <div class="modal-title" id="m2-title">—</div>
+        <div class="modal-sub" id="m2-sub"></div>
+        <div class="modal-periods">
+          <span class="badge-prev" id="m2-prev-badge"></span>
+          <span style="font-size:11px;color:#94a3b8;align-self:center;">→</span>
+          <span class="badge-cur" id="m2-cur-badge"></span>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeModal2()">✕</button>
+    </div>
+    <div class="modal-body">
+      <button class="btn-back" onclick="closeModal2()">← กลับ</button>
+      <table class="dtbl">
+        <thead>
+          <tr>
+            <th style="text-align:left;">ชื่อสินค้า</th>
+            <th id="m2-th-prev">avg ก่อน</th>
+            <th id="m2-th-cur">เดือนนี้</th>
+            <th>Signal</th>
+          </tr>
+        </thead>
+        <tbody id="m2-body">
+          <tr><td colspan="4" class="loading"><span class="spinner"></span>กำลังโหลด…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 <script>
 // ── Config ────────────────────────────────────────────────────────────────────
 const SHEET_ID = '1KDtB1FjvwoD-yzlswzWxhc5-3eOvktQzDfEUABsRZLE';
-const LEAKAGE_THR = 3000; // บาท/เดือน → trigger leakage alert
+const LEAKAGE_THR = 3000;
 
-// หมวดสินค้า OFM (column Y = Dept Name)
 const CATS = [
   { key:'paper',    label:'กระดาษ',       match: s => s === 'PAPER' },
   { key:'it',       label:'IT',            match: s => s === 'IT' },
@@ -166,8 +294,12 @@ const CATS = [
 const THAI_MO = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 const fmt  = v => v>=1000000?'฿'+(v/1000000).toFixed(2)+'M' : v>=1000?'฿'+(v/1000).toFixed(0)+'K' : v>0?'฿'+Math.round(v).toLocaleString():'—';
 const fmtS = v => v>=1000?'฿'+(v/1000).toFixed(0)+'K' : v>0?'฿'+Math.round(v):'—';
+const moLabel = (y,m) => `${THAI_MO[m-1]} ${y+543}`;
 
 let DATA = [], LEAKS = [];
+
+// ── module-level period state (shared with drill-down) ───────────────────────
+let CUR_Y, CUR_M, P1_Y, P1_M, P2_Y, P2_M;
 
 // ── gviz helper ───────────────────────────────────────────────────────────────
 async function gvizFetch(tq) {
@@ -179,7 +311,10 @@ async function gvizFetch(tq) {
   return obj.table;
 }
 
-// ── Normalize dept name → cat key ────────────────────────────────────────────
+// ── escape customer name for gviz string literal ──────────────────────────────
+const escQ = s => (s||'').replace(/'/g, "''");
+
+// ── cat key lookup ────────────────────────────────────────────────────────────
 function catKey(dept) {
   if (!dept) return null;
   const d = dept.trim().toUpperCase();
@@ -187,115 +322,149 @@ function catKey(dept) {
   return c ? c.key : null;
 }
 
-// ── Load + process ────────────────────────────────────────────────────────────
+// ── compute signal from cur / rec values ──────────────────────────────────────
+function calcSig(cur, rec) {
+  if (rec > 0 && cur === 0)    return 'stop';
+  if (rec === 0 && cur > 0)    return 'new';
+  if (rec === 0 && cur === 0)  return 'none';
+  if (cur > rec * 1.2)         return 'up';
+  if (cur < rec * 0.8)         return 'down';
+  return 'stable';
+}
+
+// ── signal pill HTML ──────────────────────────────────────────────────────────
+function pillHTML(sig, pct) {
+  const map = {
+    stop:  ['spill-stop',  '✕ หยุดซื้อ'],
+    down:  ['spill-down',  '⬇ ลด>20%'],
+    stable:['spill-stable','→ ทรงตัว'],
+    up:    ['spill-up',    '⬆ โต>20%'],
+    new:   ['spill-new',   '★ เพิ่งซื้อ'],
+    none:  ['spill-stable','—'],
+  };
+  const [cls, lbl] = map[sig] || map.none;
+  const pctStr = (sig !== 'stop' && sig !== 'new' && pct !== null)
+    ? ` <span style="font-size:10px;opacity:.8">(${pct>0?'+':''}${pct}%)</span>` : '';
+  return `<span class="spill ${cls}">${lbl}${pctStr}</span>`;
+}
+
+// ── Load + process signals ────────────────────────────────────────────────────
 async function loadSignals() {
   document.getElementById('tbl-body').innerHTML =
     `<tr><td class="loading" colspan="${CATS.length+3}"><span class="spinner"></span>กำลังโหลดข้อมูล…</td></tr>`;
   document.getElementById('period-lbl').textContent = 'กำลังโหลด…';
   document.getElementById('leak-section').style.display = 'none';
+  document.getElementById('shift-notice').style.display = 'none';
 
   try {
-    const now  = new Date();
-    const curY = now.getFullYear(), curM = now.getMonth() + 1;
-
-    // Previous 2 months (baseline)
+    const now = new Date();
+    let curY = now.getFullYear(), curM = now.getMonth() + 1;
     let p1Y = curY, p1M = curM - 1;
     let p2Y = curY, p2M = curM - 2;
     if (p1M <= 0) { p1M += 12; p1Y--; }
     if (p2M <= 0) { p2M += 12; p2Y--; }
 
-    const CUST_FILTER = `G is not null and G != '' and G != 'ไม่มีชื่อ'`;
+    const CF = `G is not null and G != '' and G != 'ไม่มีชื่อ'`;
+    const dateFilter = (y, m) => `O=${y} and M=${m}`;
 
-    // ── Query current month ──
-    const curTbl = await gvizFetch(
-      `select G, Y, sum(AN) where O=${curY} and M=${curM} and AN>0 and ${CUST_FILTER} group by G, Y`
+    // ── Fetch current month ──
+    let curTbl = await gvizFetch(
+      `select G, Y, sum(AN) where ${dateFilter(curY,curM)} and AN>0 and ${CF} group by G, Y`
     );
 
-    // ── Query prev 2 months (sum) ──
+    // ── Auto-shift if no current month data ──
+    let shifted = false, origY = curY, origM = curM;
+    if (!(curTbl.rows || []).length) {
+      shifted = true;
+      // shift: cur → p1, p1 → p2, p2 → p3
+      let p3Y = p2Y, p3M = p2M - 1;
+      if (p3M <= 0) { p3M += 12; p3Y--; }
+      curY = p1Y; curM = p1M;
+      p1Y  = p2Y; p1M  = p2M;
+      p2Y  = p3Y; p2M  = p3M;
+      curTbl = await gvizFetch(
+        `select G, Y, sum(AN) where ${dateFilter(curY,curM)} and AN>0 and ${CF} group by G, Y`
+      );
+    }
+
+    // ── Fetch baseline (prev 2 months avg) ──
     const prevTbl = await gvizFetch(
-      `select G, Y, sum(AN) where ((O=${p1Y} and M=${p1M}) or (O=${p2Y} and M=${p2M})) and AN>0 and ${CUST_FILTER} group by G, Y`
+      `select G, Y, sum(AN) where ((${dateFilter(p1Y,p1M)}) or (${dateFilter(p2Y,p2M)})) and AN>0 and ${CF} group by G, Y`
     );
 
-    // ── Aggregate ──
+    // ── Save state for drill-down ──
+    CUR_Y = curY; CUR_M = curM;
+    P1_Y  = p1Y;  P1_M  = p1M;
+    P2_Y  = p2Y;  P2_M  = p2M;
+
+    // ── Aggregate per customer ──
     const map = {};
-    const ensure = name => { if (!map[name]) map[name] = { name, cur:{}, prev:{} }; };
+    const ensure = n => { if (!map[n]) map[n] = { name:n, cur:{}, prev:{} }; };
 
     for (const r of (curTbl.rows || [])) {
-      const name = r.c[0]?.v, dept = r.c[1]?.v, rev = r.c[2]?.v || 0;
-      if (!name || rev <= 0) continue;
+      const name=r.c[0]?.v, dept=r.c[1]?.v, rev=r.c[2]?.v||0;
+      if (!name||rev<=0) continue;
       const ck = catKey(dept); if (!ck) continue;
       ensure(name);
-      map[name].cur[ck] = (map[name].cur[ck] || 0) + rev;
+      map[name].cur[ck] = (map[name].cur[ck]||0) + rev;
     }
     for (const r of (prevTbl.rows || [])) {
-      const name = r.c[0]?.v, dept = r.c[1]?.v, rev = r.c[2]?.v || 0;
-      if (!name || rev <= 0) continue;
+      const name=r.c[0]?.v, dept=r.c[1]?.v, rev=r.c[2]?.v||0;
+      if (!name||rev<=0) continue;
       const ck = catKey(dept); if (!ck) continue;
       ensure(name);
-      map[name].prev[ck] = (map[name].prev[ck] || 0) + rev;
+      map[name].prev[ck] = (map[name].prev[ck]||0) + rev;
     }
 
-    // ── Compute signals ──
+    // ── Compute signals per customer ──
     DATA = Object.values(map).map(c => {
       const cats = {};
-      let stopCount = 0, downCount = 0, upCount = 0, newCount = 0;
-
+      let stopCount=0, downCount=0, upCount=0, newCount=0;
       CATS.forEach(cat => {
-        const cur = c.cur[cat.key] || 0;
-        const rec = (c.prev[cat.key] || 0) / 2; // avg of 2 months
-
-        let sig;
-        if (rec > 0 && cur === 0)   { sig = 'stop'; stopCount++; }
-        else if (rec === 0 && cur > 0) { sig = 'new';  newCount++;  }
-        else if (rec === 0 && cur === 0) sig = 'none';
-        else if (cur > rec * 1.2)    { sig = 'up';   upCount++;   }
-        else if (cur < rec * 0.8)    { sig = 'down'; downCount++; }
-        else                           sig = 'stable';
-
-        const pct = rec > 0 ? Math.round((cur - rec) / rec * 100) : null;
+        const cur = c.cur[cat.key]||0;
+        const rec = (c.prev[cat.key]||0)/2;
+        const sig = calcSig(cur, rec);
+        const pct = rec>0 ? Math.round((cur-rec)/rec*100) : null;
         cats[cat.key] = { cur, rec, sig, pct };
+        if (sig==='stop') stopCount++;
+        if (sig==='down') downCount++;
+        if (sig==='up')   upCount++;
+        if (sig==='new')  newCount++;
       });
-
-      const totalCur  = CATS.reduce((s, cat) => s + (c.cur[cat.key]  || 0), 0);
-      const totalPrev = CATS.reduce((s, cat) => s + (c.prev[cat.key] || 0)/2, 0);
-
-      return { name: c.name, totalCur, totalPrev, cats, stopCount, downCount, upCount, newCount };
+      const totalCur  = CATS.reduce((s,c2)=>s+(c.cur[c2.key]||0),0);
+      const totalPrev = CATS.reduce((s,c2)=>s+(c.prev[c2.key]||0)/2,0);
+      return { name:c.name, totalCur, totalPrev, cats, stopCount, downCount, upCount, newCount };
     });
 
-    // Sort priority: stops → downs → total revenue
-    DATA.sort((a, b) =>
-      b.stopCount !== a.stopCount ? b.stopCount - a.stopCount :
-      b.downCount !== a.downCount ? b.downCount - a.downCount :
-      b.totalCur  - a.totalCur
+    DATA.sort((a,b)=>
+      b.stopCount!==a.stopCount ? b.stopCount-a.stopCount :
+      b.downCount!==a.downCount ? b.downCount-a.downCount :
+      b.totalCur - a.totalCur
     );
 
-    // ── Leakage alerts: rec > LEAKAGE_THR and cur = 0 ──
+    // ── Leakage ──
     LEAKS = [];
     DATA.forEach(c => {
       CATS.forEach(cat => {
         const d = c.cats[cat.key];
-        if (d && d.sig === 'stop' && d.rec >= LEAKAGE_THR) {
-          LEAKS.push({ name: c.name, catLabel: cat.label, rec: d.rec });
-        }
+        if (d && d.sig==='stop' && d.rec>=LEAKAGE_THR)
+          LEAKS.push({ name:c.name, catLabel:cat.label, rec:d.rec });
       });
     });
-    LEAKS.sort((a, b) => b.rec - a.rec);
+    LEAKS.sort((a,b)=>b.rec-a.rec);
 
-    // ── Update period label ──
+    // ── Period label ──
     document.getElementById('period-lbl').textContent =
-      `${THAI_MO[curM-1]} ${curY+543}  เทียบกับ avg ${THAI_MO[p2M-1]}–${THAI_MO[p1M-1]} ${p1Y+543}`;
+      `${moLabel(curY,curM)}  vs avg ${moLabel(p2Y,p2M)}–${moLabel(p1Y,p1M)}`;
 
-    // แจ้งเตือนถ้าเดือนปัจจุบันไม่มีข้อมูล
-    const hasCurData = (curTbl.rows || []).length > 0;
-    const noNotice = document.getElementById('no-cur-notice');
-    if (!hasCurData) {
-      noNotice.style.display = 'block';
-      document.getElementById('no-cur-month').textContent =
-        `${THAI_MO[curM-1]} ${curY+543}`;
-      document.getElementById('no-cur-range').textContent =
-        `${THAI_MO[p2M-1]}–${THAI_MO[p1M-1]} ${p1Y+543}`;
-    } else {
-      noNotice.style.display = 'none';
+    // ── Auto-shift notice ──
+    if (shifted) {
+      const sn = document.getElementById('shift-notice');
+      sn.style.display = 'block';
+      document.getElementById('sn-no-month').textContent  = moLabel(origY, origM);
+      document.getElementById('sn-cur-month').textContent = moLabel(curY, curM);
+      document.getElementById('sn-prev-range').textContent =
+        `avg ${moLabel(p2Y,p2M)}–${moLabel(p1Y,p1M)}`;
     }
 
     buildHeader();
@@ -304,7 +473,7 @@ async function loadSignals() {
 
   } catch(e) {
     document.getElementById('tbl-body').innerHTML =
-      `<tr><td colspan="${CATS.length+3}" style="padding:20px;color:#dc2626;font-size:13px;">❌ โหลดไม่ได้: ${e.message}</td></tr>`;
+      `<tr><td colspan="${CATS.length+3}" style="padding:20px;color:#dc2626;">❌ โหลดไม่ได้: ${e.message}</td></tr>`;
   }
 }
 
@@ -312,85 +481,221 @@ async function loadSignals() {
 function buildHeader() {
   document.getElementById('tbl-head').innerHTML = `
     <tr>
-      <th style="min-width:180px;">ชื่อลูกค้า</th>
+      <th style="min-width:180px;">ชื่อลูกค้า <span style="font-weight:400;color:#94a3b8;">(คลิกเพื่อดูรายละเอียด)</span></th>
       <th style="text-align:right;min-width:80px;">ยอดรวม</th>
       ${CATS.map(c=>`<th class="cat-hdr">${c.label}</th>`).join('')}
     </tr>`;
 }
 
-// ── Signal cell HTML ──────────────────────────────────────────────────────────
+// ── Signal cell (main table) ──────────────────────────────────────────────────
 function sigCell(d) {
-  if (!d || d.sig === 'none') return `<td><div class="sig-cell sig-none">·</div></td>`;
-
-  const cls = { stop:'sig-stop', down:'sig-down', stable:'sig-stable', up:'sig-up', new:'sig-new' }[d.sig];
-  const icon = { stop:'✕', down:'⬇', stable:'→', up:'⬆', new:'★' }[d.sig];
-
-  // stop → แสดง baseline (เคยซื้อเท่าไหร่) แทน cur=0
-  const displayAmt = d.sig === 'stop' ? d.rec : d.cur;
-  // stop → ไม่ต้องแสดง -100% (ไม่มีประโยชน์), others → แสดง %change
-  const pctTxt = d.sig === 'stop' ? '' :
-    (d.pct !== null ? (d.pct > 0 ? `+${d.pct}%` : `${d.pct}%`) : '');
-
-  return `<td>
-    <div class="sig-cell ${cls}">
-      <span class="sig-icon">${icon}</span>
-      <span class="sig-amt">${fmtS(displayAmt)}</span>
-      ${pctTxt ? `<span class="sig-pct">${pctTxt}</span>` : ''}
-    </div>
-  </td>`;
+  if (!d||d.sig==='none') return `<td><div class="sig-cell sig-none">·</div></td>`;
+  const cls = {stop:'sig-stop',down:'sig-down',stable:'sig-stable',up:'sig-up',new:'sig-new'}[d.sig];
+  const icon = {stop:'✕',down:'⬇',stable:'→',up:'⬆',new:'★'}[d.sig];
+  const displayAmt = d.sig==='stop' ? d.rec : d.cur;
+  const pctTxt = (d.sig==='stop'||d.sig==='new') ? '' :
+    (d.pct!==null?(d.pct>0?`+${d.pct}%`:`${d.pct}%`):'');
+  return `<td><div class="sig-cell ${cls}">
+    <span class="sig-icon">${icon}</span>
+    <span class="sig-amt">${fmtS(displayAmt)}</span>
+    ${pctTxt?`<span class="sig-pct">${pctTxt}</span>`:''}
+  </div></td>`;
 }
 
-// ── Render table ──────────────────────────────────────────────────────────────
+// ── Render main table ─────────────────────────────────────────────────────────
 function render() {
-  const sigFilter  = document.getElementById('f-sig').value;
-  const searchVal  = document.getElementById('f-search').value.toLowerCase().trim();
-
+  const sigFilter = document.getElementById('f-sig').value;
+  const searchVal = document.getElementById('f-search').value.toLowerCase().trim();
   let rows = DATA;
-
-  // Filter by signal: keep customer if ANY category matches the selected signal
-  if (sigFilter) {
-    rows = rows.filter(c => CATS.some(cat => c.cats[cat.key]?.sig === sigFilter));
-  }
-  // Filter by search
-  if (searchVal) {
-    rows = rows.filter(c => c.name.toLowerCase().includes(searchVal));
-  }
+  if (sigFilter) rows = rows.filter(c=>CATS.some(cat=>c.cats[cat.key]?.sig===sigFilter));
+  if (searchVal) rows = rows.filter(c=>c.name.toLowerCase().includes(searchVal));
 
   document.getElementById('f-count').textContent = `แสดง ${rows.length} ราย จาก ${DATA.length} ราย`;
 
   if (!rows.length) {
     document.getElementById('tbl-body').innerHTML =
-      `<tr class="empty-row"><td colspan="${CATS.length+2}">ไม่พบข้อมูลที่ตรงกัน</td></tr>`;
+      `<tr class="empty-row"><td colspan="${CATS.length+2}">ไม่พบข้อมูล</td></tr>`;
     return;
   }
 
   document.getElementById('tbl-body').innerHTML = rows.map(c => `
-    <tr>
-      <td>
-        <div class="cust-name" title="${c.name}">${c.name}</div>
-      </td>
+    <tr data-cust="${escHTML(c.name)}" onclick="openDrilldown(this.dataset.cust)">
+      <td><div class="cust-name" title="${escHTML(c.name)}">${escHTML(c.name)}</div></td>
       <td class="cust-total">
-        ${c.totalCur > 0 ? fmt(c.totalCur) : (c.totalPrev > 0 ? `<span style="color:#94a3b8;font-size:11px;">ยังไม่มีข้อมูล</span>` : '—')}
-        ${c.totalPrev > 0 ? `<div class="cust-total-sub">avg ${fmt(c.totalPrev)}/ด.</div>` : ''}
+        ${c.totalCur>0 ? fmt(c.totalCur) : `<span style="color:#94a3b8;font-size:11px">ยังไม่มีข้อมูล</span>`}
+        ${c.totalPrev>0?`<div class="cust-total-sub">avg ${fmt(c.totalPrev)}/ด.</div>`:''}
       </td>
-      ${CATS.map(cat => sigCell(c.cats[cat.key])).join('')}
+      ${CATS.map(cat=>sigCell(c.cats[cat.key])).join('')}
     </tr>`).join('');
 }
 
-// ── Render leakage alerts ─────────────────────────────────────────────────────
+// ── Render leakage ────────────────────────────────────────────────────────────
 function renderLeakage() {
-  if (!LEAKS.length) {
-    document.getElementById('leak-section').style.display = 'none';
-    return;
-  }
+  if (!LEAKS.length) { document.getElementById('leak-section').style.display='none'; return; }
   document.getElementById('leak-section').style.display = 'block';
-  document.getElementById('leak-grid').innerHTML = LEAKS.slice(0, 12).map(l => `
+  document.getElementById('leak-grid').innerHTML = LEAKS.slice(0,12).map(l=>`
     <div class="leak-card">
-      <div class="lk-name" title="${l.name}">${l.name}</div>
+      <div class="lk-name" title="${escHTML(l.name)}">${escHTML(l.name)}</div>
       <div class="lk-cat">✕ หยุดซื้อหมวด ${l.catLabel}</div>
       <div class="lk-amt">${fmt(l.rec)}<span class="lk-sub">/เดือน (baseline)</span></div>
     </div>`).join('');
 }
+
+// ══════════════════════════════════════════════════════════════════
+//  DRILL-DOWN LEVEL 1  —  per-customer category breakdown
+// ══════════════════════════════════════════════════════════════════
+async function openDrilldown(custName) {
+  // show modal immediately with loading state
+  document.getElementById('m1-title').textContent = custName;
+  document.getElementById('m1-sub').textContent   = '';
+  document.getElementById('m1-prev-badge').textContent =
+    `avg ${moLabel(P2_Y,P2_M)}–${moLabel(P1_Y,P1_M)}`;
+  document.getElementById('m1-cur-badge').textContent  = moLabel(CUR_Y, CUR_M);
+  document.getElementById('m1-th-prev').textContent =
+    `avg ${THAI_MO[P2_M-1]}–${THAI_MO[P1_M-1]}`;
+  document.getElementById('m1-th-cur').textContent  = THAI_MO[CUR_M-1];
+  document.getElementById('m1-body').innerHTML =
+    `<tr><td colspan="5" class="loading"><span class="spinner"></span>กำลังโหลด…</td></tr>`;
+  document.getElementById('modal1').classList.add('open');
+
+  try {
+    const cq = `G = '${escQ(custName)}'`;
+    const [curTbl, prevTbl] = await Promise.all([
+      gvizFetch(`select Y, sum(AN) where O=${CUR_Y} and M=${CUR_M} and AN>0 and ${cq} group by Y`),
+      gvizFetch(`select Y, sum(AN) where ((O=${P1_Y} and M=${P1_M}) or (O=${P2_Y} and M=${P2_M})) and AN>0 and ${cq} group by Y`)
+    ]);
+
+    // aggregate by dept name (ALL depts, not filtered)
+    const dmap = {};
+    for (const r of (prevTbl.rows||[])) {
+      const dept=r.c[0]?.v, rev=r.c[1]?.v||0;
+      if (!dept||rev<=0) continue;
+      if (!dmap[dept]) dmap[dept]={dept,cur:0,prev:0};
+      dmap[dept].prev += rev;
+    }
+    for (const r of (curTbl.rows||[])) {
+      const dept=r.c[0]?.v, rev=r.c[1]?.v||0;
+      if (!dept||rev<=0) continue;
+      if (!dmap[dept]) dmap[dept]={dept,cur:0,prev:0};
+      dmap[dept].cur += rev;
+    }
+
+    const drows = Object.values(dmap).map(d => {
+      const rec = d.prev/2;
+      const sig = calcSig(d.cur, rec);
+      const pct = rec>0 ? Math.round((d.cur-rec)/rec*100) : null;
+      return {...d, rec, sig, pct};
+    }).sort((a,b)=>{
+      const ord={stop:0,down:1,stable:2,up:3,new:4,none:5};
+      return (ord[a.sig]??5)-(ord[b.sig]??5) || b.rec-a.rec;
+    });
+
+    const rowCls = {stop:'drow-stop',down:'drow-down',up:'drow-up',new:'drow-new'};
+    document.getElementById('m1-body').innerHTML = drows.length ? drows.map(d=>`
+      <tr class="${rowCls[d.sig]||''}">
+        <td>${escHTML(d.dept)}</td>
+        <td>${fmt(d.rec)}</td>
+        <td>${d.cur>0?fmt(d.cur):'<span style="color:#94a3b8">—</span>'}</td>
+        <td>${pillHTML(d.sig, d.pct)}</td>
+        <td>
+          <button class="btn-sku"
+            onclick="event.stopPropagation();openSKUDrilldown('${escJS(custName)}','${escJS(d.dept)}')">
+            SKU ▶
+          </button>
+        </td>
+      </tr>`).join('')
+      : `<tr><td colspan="5" style="text-align:center;padding:24px;color:#94a3b8;">ไม่พบข้อมูลหมวดสินค้า</td></tr>`;
+
+  } catch(e) {
+    document.getElementById('m1-body').innerHTML =
+      `<tr><td colspan="5" style="color:#dc2626;padding:16px;">❌ ${e.message}</td></tr>`;
+  }
+}
+
+function closeModal1() {
+  document.getElementById('modal1').classList.remove('open');
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  DRILL-DOWN LEVEL 2  —  per-customer per-dept product breakdown
+// ══════════════════════════════════════════════════════════════════
+async function openSKUDrilldown(custName, deptName) {
+  document.getElementById('m2-title').textContent = deptName;
+  document.getElementById('m2-sub').textContent   = custName;
+  document.getElementById('m2-prev-badge').textContent =
+    `avg ${moLabel(P2_Y,P2_M)}–${moLabel(P1_Y,P1_M)}`;
+  document.getElementById('m2-cur-badge').textContent  = moLabel(CUR_Y, CUR_M);
+  document.getElementById('m2-th-prev').textContent =
+    `avg ${THAI_MO[P2_M-1]}–${THAI_MO[P1_M-1]}`;
+  document.getElementById('m2-th-cur').textContent  = THAI_MO[CUR_M-1];
+  document.getElementById('m2-body').innerHTML =
+    `<tr><td colspan="4" class="loading"><span class="spinner"></span>กำลังโหลด…</td></tr>`;
+  document.getElementById('modal2').classList.add('open');
+
+  try {
+    const cq = `G = '${escQ(custName)}' and Y = '${escQ(deptName)}'`;
+    const [curTbl, prevTbl] = await Promise.all([
+      gvizFetch(`select V, sum(AN) where O=${CUR_Y} and M=${CUR_M} and AN>0 and ${cq} group by V`),
+      gvizFetch(`select V, sum(AN) where ((O=${P1_Y} and M=${P1_M}) or (O=${P2_Y} and M=${P2_M})) and AN>0 and ${cq} group by V`)
+    ]);
+
+    const pmap = {};
+    for (const r of (prevTbl.rows||[])) {
+      const prod=r.c[0]?.v, rev=r.c[1]?.v||0;
+      if (!prod||rev<=0) continue;
+      if (!pmap[prod]) pmap[prod]={prod,cur:0,prev:0};
+      pmap[prod].prev += rev;
+    }
+    for (const r of (curTbl.rows||[])) {
+      const prod=r.c[0]?.v, rev=r.c[1]?.v||0;
+      if (!prod||rev<=0) continue;
+      if (!pmap[prod]) pmap[prod]={prod,cur:0,prev:0};
+      pmap[prod].cur += rev;
+    }
+
+    const prows = Object.values(pmap).map(p => {
+      const rec = p.prev/2;
+      const sig = calcSig(p.cur, rec);
+      const pct = rec>0 ? Math.round((p.cur-rec)/rec*100) : null;
+      return {...p, rec, sig, pct};
+    }).sort((a,b)=>{
+      const ord={stop:0,down:1,stable:2,up:3,new:4,none:5};
+      return (ord[a.sig]??5)-(ord[b.sig]??5) || b.rec-a.rec;
+    });
+
+    const rowCls = {stop:'drow-stop',down:'drow-down',up:'drow-up',new:'drow-new'};
+    document.getElementById('m2-body').innerHTML = prows.length ? prows.map(p=>`
+      <tr class="${rowCls[p.sig]||''}">
+        <td style="max-width:300px;word-break:break-word;">${escHTML(p.prod)}</td>
+        <td>${fmt(p.rec)}</td>
+        <td>${p.cur>0?fmt(p.cur):'<span style="color:#94a3b8">—</span>'}</td>
+        <td>${pillHTML(p.sig, p.pct)}</td>
+      </tr>`).join('')
+      : `<tr><td colspan="4" style="text-align:center;padding:24px;color:#94a3b8;">ไม่พบข้อมูลสินค้า</td></tr>`;
+
+  } catch(e) {
+    document.getElementById('m2-body').innerHTML =
+      `<tr><td colspan="4" style="color:#dc2626;padding:16px;">❌ ${e.message}</td></tr>`;
+  }
+}
+
+function closeModal2() {
+  document.getElementById('modal2').classList.remove('open');
+}
+
+// ── HTML / JS escape helpers ──────────────────────────────────────────────────
+function escHTML(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+                .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function escJS(s) {
+  return (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+}
+
+// close modals on Escape key
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeModal2(); closeModal1(); }
+});
 
 // ── Init ─────────────────────────────────────────────────────────────────────
 buildHeader();
