@@ -86,10 +86,13 @@ tbody tr td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:midd
 
 /* ── Segment badges ── */
 .seg-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;margin-top:3px;}
-.seg-champ{background:#fef9c3;color:#854d0e;}
-.seg-loyal{background:#dbeafe;color:#1e40af;}
-.seg-risk {background:#ffedd5;color:#c2410c;}
-.seg-sleep{background:#f1f5f9;color:#64748b;}
+.seg-rescue   {background:#fef2f2;color:#dc2626;}
+.seg-sleep    {background:#f1f5f9;color:#64748b;}
+.seg-premium  {background:#fef9c3;color:#854d0e;}
+.seg-promising{background:#ede9fe;color:#6d28d9;}
+.seg-declining{background:#ffedd5;color:#c2410c;}
+.seg-regular  {background:#eff6ff;color:#1d4ed8;}
+.seg-new      {background:#f0fdf4;color:#15803d;}
 
 /* ── Loading / empty ── */
 .loading{text-align:center;padding:40px;color:#64748b;font-size:13px;}
@@ -314,10 +317,13 @@ let DATA = [], LEAKS = [], RFM_MAP = {};
 
 // ── Segment config ────────────────────────────────────────────────────────────
 const SEG = {
-  champion: { label:'Champion', emoji:'🏆', cls:'seg-champ' },
-  loyal:    { label:'Loyal',    emoji:'💎', cls:'seg-loyal' },
-  atrisk:   { label:'At Risk',  emoji:'⚠️', cls:'seg-risk'  },
-  sleeping: { label:'Sleeping', emoji:'💤', cls:'seg-sleep' },
+  rescue:   { label:'กู้ด่วน',    emoji:'🆘', cls:'seg-rescue'   },
+  sleeping: { label:'หลับยาว',    emoji:'💤', cls:'seg-sleep'    },
+  premium:  { label:'พรีเมียม',   emoji:'🏆', cls:'seg-premium'  },
+  promising:{ label:'โปรมิสซิ่ง', emoji:'📈', cls:'seg-promising'},
+  declining:{ label:'ขาลง',       emoji:'📉', cls:'seg-declining'},
+  regular:  { label:'ประจำ',      emoji:'🔄', cls:'seg-regular'  },
+  new:      { label:'ใหม่',        emoji:'✨', cls:'seg-new'      },
 };
 function segBadge(name) {
   const s = SEG[RFM_MAP[name]?.seg]; if (!s) return '';
@@ -379,32 +385,54 @@ function pillHTML(sig, pct) {
   return `<span class="spill ${cls}">${lbl}${pctStr}</span>`;
 }
 
-// ── Compute RFM from raw table ────────────────────────────────────────────────
+// ── Compute RFM from raw table (new framework: R+M only, absolute thresholds) ─
 function computeRFM(tbl) {
   const cmap = {};
   for (const r of (tbl.rows||[])) {
     const name=r.c[0]?.v, y=r.c[1]?.v, mo=r.c[2]?.v, d=r.c[3]?.v, rev=r.c[4]?.v||0;
     if (!name||!y||!mo||!d||rev<=0) continue;
-    if (!cmap[name]) cmap[name]={lastNum:0,inv:0,rev:0};
+    if (!cmap[name]) cmap[name]={lastNum:0,months:new Set(),moRevs:{},rev:0};
     const dn = y*10000+mo*100+d;
     if (dn>cmap[name].lastNum) cmap[name].lastNum=dn;
-    cmap[name].inv++; cmap[name].rev+=rev;
+    const mk=`${y}-${mo}`;
+    cmap[name].months.add(mk);
+    cmap[name].moRevs[mk]=(cmap[name].moRevs[mk]||0)+rev;
+    cmap[name].rev+=rev;
   }
   const today = new Date();
-  const arr = Object.entries(cmap).map(([name,c])=>{
+  const map={};
+  Object.entries(cmap).forEach(([name,c])=>{
     const yr=Math.floor(c.lastNum/10000), mo=Math.floor((c.lastNum%10000)/100), da=c.lastNum%100;
     const days = Math.floor((today-new Date(yr,mo-1,da))/864e5);
-    const r = days<=30?5:days<=60?4:days<=120?3:days<=240?2:1;
-    return {name,r,inv:c.inv,rev:c.rev};
-  });
-  const n=arr.length, q=i=>Math.min(5,Math.floor(i/n*5)+1);
-  [...arr].sort((a,b)=>a.inv-b.inv).forEach((c,i)=>{c.f=q(i);});
-  [...arr].sort((a,b)=>a.rev-b.rev).forEach((c,i)=>{c.m=q(i);});
-  const map={};
-  arr.forEach(c=>{
-    const total=c.r+c.f+c.m;
-    map[c.name]={r:c.r,f:c.f,m:c.m,total,
-      seg:total>=12?'champion':total>=8?'loyal':total>=5?'atrisk':'sleeping'};
+
+    // R score — new thresholds
+    const r = days<=14?4 : days<=45?3 : days<=90?2 : 1;
+
+    // M score — avg monthly revenue (absolute thresholds)
+    const monthsCount = c.months.size;
+    const avgM = c.rev / Math.max(monthsCount,1);
+    const m = avgM>=30000?5 : avgM>=10000?4 : avgM>=3000?3 : avgM>=500?2 : 1;
+
+    // Growth: compare latest month vs avg of prior months
+    const moNums = [...c.months].map(k=>+k.replace('-','')).sort((a,b)=>a-b);
+    const latestKey = moNums.slice(-1)[0];
+    const lk = `${Math.floor(latestKey/100)}-${latestKey%100}`;
+    const latestRev = c.moRevs[lk]||0;
+    const prevRevs = Object.entries(c.moRevs).filter(([k])=>k!==lk).map(([,v])=>v);
+    const prevAvg = prevRevs.length ? prevRevs.reduce((a,b)=>a+b,0)/prevRevs.length : null;
+    const growth = prevAvg ? (latestRev-prevAvg)/prevAvg : null;
+
+    // Segment priority
+    let seg;
+    if (monthsCount<=2)             seg='new';
+    else if (r===1 && m>=3)         seg='rescue';
+    else if (r===1)                 seg='sleeping';
+    else if (r===4 && m===5)        seg='premium';
+    else if (r>=3 && m>=4)          seg='promising';
+    else if (growth!==null && growth<-0.2) seg='declining';
+    else                            seg='regular';
+
+    map[name]={r,m,avgM:Math.round(avgM),monthsCount,growth,seg};
   });
   return map;
 }

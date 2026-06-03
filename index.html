@@ -34,10 +34,13 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
 .px:hover{color:#dc2626;}
 .pro-note{background:#fef9c3;border:1px solid #fde047;border-radius:6px;
           padding:6px 12px;font-size:12px;color:#713f12;margin-bottom:10px;display:inline-block;}
-.seg-champion{background:#ede9fe;color:#4f46e5;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;}
-.seg-loyal{background:#dcfce7;color:#15803d;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;}
-.seg-atrisk{background:#fef3c7;color:#b45309;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;}
-.seg-sleeping{background:#fee2e2;color:#dc2626;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.seg-rescue   {background:#fef2f2;color:#dc2626;   padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.seg-sleeping {background:#f1f5f9;color:#64748b;   padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.seg-premium  {background:#fef9c3;color:#854d0e;   padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.seg-promising{background:#ede9fe;color:#6d28d9;   padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.seg-declining{background:#ffedd5;color:#c2410c;   padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.seg-regular  {background:#eff6ff;color:#1d4ed8;   padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.seg-new      {background:#f0fdf4;color:#15803d;   padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;}
 .bar-track{background:#e2e8f0;border-radius:4px;height:6px;width:80px;display:inline-block;vertical-align:middle;}
 .bar-fill{height:6px;border-radius:4px;}
 .sc-card{background:#fff;border-radius:10px;padding:16px 20px;box-shadow:0 1px 4px rgba(0,0,0,.08);
@@ -116,34 +119,48 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
 
   <!-- Segment Cards (clickable filter) -->
   <h2>🏷 Customer Segments <span style="font-size:11px;font-weight:400;color:#94a3b8;">คลิกเพื่อกรองตาราง</span></h2>
-  <div class="cr" style="margin-bottom:22px;">
-    <div class="sc-card" onclick="filterSeg('Champion')" style="flex:1;min-width:160px;border-color:#6366f1;">
-      <div style="font-size:11px;color:#64748b;font-weight:600;">🏆 CHAMPION</div>
-      <div id="seg-champion-count" style="font-size:28px;font-weight:800;color:#4f46e5;">19</div>
-      <div style="font-size:12px;color:#94a3b8;">ราย · RFM ≥ 12</div>
-      <div id="seg-champion-rev" style="font-size:13px;font-weight:600;color:#4f46e5;margin-top:6px;">~฿5.4M</div>
-      <div class="bar-track" style="margin-top:6px;"><div class="bar-fill" style="width:100%;background:#6366f1;"></div></div>
+  <div class="cr" style="margin-bottom:22px;flex-wrap:wrap;">
+    <div class="sc-card" onclick="filterSeg('rescue')"   style="flex:1;min-width:130px;border-color:#dc2626;">
+      <div style="font-size:11px;color:#64748b;font-weight:600;">🆘 กู้ด่วน</div>
+      <div id="seg-rescue-count"   style="font-size:28px;font-weight:800;color:#dc2626;">—</div>
+      <div style="font-size:11px;color:#94a3b8;">R1 + M3+</div>
+      <div id="seg-rescue-rev"     style="font-size:12px;font-weight:600;color:#dc2626;margin-top:4px;">—</div>
     </div>
-    <div class="sc-card" onclick="filterSeg('Loyal')" style="flex:1;min-width:160px;border-color:#10b981;">
-      <div style="font-size:11px;color:#64748b;font-weight:600;">📈 LOYAL</div>
-      <div id="seg-loyal-count" style="font-size:28px;font-weight:800;color:#059669;">51</div>
-      <div style="font-size:12px;color:#94a3b8;">ราย · RFM 8–11</div>
-      <div id="seg-loyal-rev" style="font-size:13px;font-weight:600;color:#059669;margin-top:6px;">~฿2.8M</div>
-      <div class="bar-track" style="margin-top:6px;"><div class="bar-fill" style="width:68%;background:#10b981;"></div></div>
+    <div class="sc-card" onclick="filterSeg('sleeping')" style="flex:1;min-width:130px;border-color:#94a3b8;">
+      <div style="font-size:11px;color:#64748b;font-weight:600;">💤 หลับยาว</div>
+      <div id="seg-sleeping-count" style="font-size:28px;font-weight:800;color:#64748b;">—</div>
+      <div style="font-size:11px;color:#94a3b8;">R1 + M1-2</div>
+      <div id="seg-sleeping-rev"   style="font-size:12px;font-weight:600;color:#64748b;margin-top:4px;">—</div>
     </div>
-    <div class="sc-card" onclick="filterSeg('At Risk')" style="flex:1;min-width:160px;border-color:#f59e0b;">
-      <div style="font-size:11px;color:#64748b;font-weight:600;">⚠️ AT RISK</div>
-      <div id="seg-at-risk-count" style="font-size:28px;font-weight:800;color:#d97706;">25</div>
-      <div style="font-size:12px;color:#94a3b8;">ราย · RFM 5–7</div>
-      <div id="seg-at-risk-rev" style="font-size:13px;font-weight:600;color:#d97706;margin-top:6px;">~฿0.6M</div>
-      <div class="bar-track" style="margin-top:6px;"><div class="bar-fill" style="width:33%;background:#f59e0b;"></div></div>
+    <div class="sc-card" onclick="filterSeg('premium')"  style="flex:1;min-width:130px;border-color:#d97706;">
+      <div style="font-size:11px;color:#64748b;font-weight:600;">🏆 พรีเมียม</div>
+      <div id="seg-premium-count"  style="font-size:28px;font-weight:800;color:#d97706;">—</div>
+      <div style="font-size:11px;color:#94a3b8;">R4 + M5</div>
+      <div id="seg-premium-rev"    style="font-size:12px;font-weight:600;color:#d97706;margin-top:4px;">—</div>
     </div>
-    <div class="sc-card" onclick="filterSeg('Sleeping')" style="flex:1;min-width:160px;border-color:#ef4444;">
-      <div style="font-size:11px;color:#64748b;font-weight:600;">😴 SLEEPING</div>
-      <div id="seg-sleeping-count" style="font-size:28px;font-weight:800;color:#dc2626;">5</div>
-      <div style="font-size:12px;color:#94a3b8;">ราย · RFM ≤ 4</div>
-      <div id="seg-sleeping-rev" style="font-size:13px;font-weight:600;color:#dc2626;margin-top:6px;">~฿0.2M</div>
-      <div class="bar-track" style="margin-top:6px;"><div class="bar-fill" style="width:12%;background:#ef4444;"></div></div>
+    <div class="sc-card" onclick="filterSeg('promising')" style="flex:1;min-width:130px;border-color:#7c3aed;">
+      <div style="font-size:11px;color:#64748b;font-weight:600;">📈 โปรมิสซิ่ง</div>
+      <div id="seg-promising-count" style="font-size:28px;font-weight:800;color:#7c3aed;">—</div>
+      <div style="font-size:11px;color:#94a3b8;">R3-4 + M4+</div>
+      <div id="seg-promising-rev"   style="font-size:12px;font-weight:600;color:#7c3aed;margin-top:4px;">—</div>
+    </div>
+    <div class="sc-card" onclick="filterSeg('declining')" style="flex:1;min-width:130px;border-color:#f97316;">
+      <div style="font-size:11px;color:#64748b;font-weight:600;">📉 ขาลง</div>
+      <div id="seg-declining-count" style="font-size:28px;font-weight:800;color:#f97316;">—</div>
+      <div style="font-size:11px;color:#94a3b8;">ยอดลด &gt;20%</div>
+      <div id="seg-declining-rev"   style="font-size:12px;font-weight:600;color:#f97316;margin-top:4px;">—</div>
+    </div>
+    <div class="sc-card" onclick="filterSeg('regular')"  style="flex:1;min-width:130px;border-color:#2563eb;">
+      <div style="font-size:11px;color:#64748b;font-weight:600;">🔄 ประจำ</div>
+      <div id="seg-regular-count"  style="font-size:28px;font-weight:800;color:#2563eb;">—</div>
+      <div style="font-size:11px;color:#94a3b8;">ซื้ออยู่ปกติ</div>
+      <div id="seg-regular-rev"    style="font-size:12px;font-weight:600;color:#2563eb;margin-top:4px;">—</div>
+    </div>
+    <div class="sc-card" onclick="filterSeg('new')"      style="flex:1;min-width:130px;border-color:#16a34a;">
+      <div style="font-size:11px;color:#64748b;font-weight:600;">✨ ใหม่</div>
+      <div id="seg-new-count"      style="font-size:28px;font-weight:800;color:#16a34a;">—</div>
+      <div style="font-size:11px;color:#94a3b8;">≤2 เดือน</div>
+      <div id="seg-new-rev"        style="font-size:12px;font-weight:600;color:#16a34a;margin-top:4px;">—</div>
     </div>
   </div>
 
@@ -209,7 +226,7 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
 ════════════════════════════════════════════════════════════ -->
 <div id="tp-rfm" class="tp" style="padding:18px 24px;max-width:1600px;margin:0 auto;">
   <h2>🎯 RFM Analysis — Customer Segments (Top 100) <span style="font-size:11px;font-weight:400;color:#94a3b8;">จากข้อมูล POS จริง</span></h2>
-  <div class="pro-note">🏆 Champion: RFM ≥ 12 &nbsp;|&nbsp; 📈 Loyal: 8–11 &nbsp;|&nbsp; ⚠️ At Risk: 5–7 &nbsp;|&nbsp; 😴 Sleeping: ≤ 4 &nbsp;|&nbsp; คลิกแถวเพื่อกรอง</div>
+  <div class="pro-note">R4≤14วัน · R3 15-45วัน · R2 46-90วัน · R1&gt;90วัน &nbsp;|&nbsp; M5≥฿30K · M4≥฿10K · M3≥฿3K · M2≥฿500 · M1&lt;฿500 (avg/เดือน) &nbsp;|&nbsp; คลิกแถวเพื่อกรอง</div>
 
   <div class="cr" style="margin-bottom:20px;">
     <div class="card" style="flex:1;min-width:140px;text-align:center;">
@@ -263,10 +280,13 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
     <div style="padding:12px 14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-bottom:1px solid #f1f5f9;">
       <select id="rfm-seg-filter" onchange="renderRFMTable()" style="font-size:12px;">
         <option value="">ทุก Segment</option>
-        <option value="Champion">🏆 Champion</option>
-        <option value="Loyal">📈 Loyal</option>
-        <option value="At Risk">⚠️ At Risk</option>
-        <option value="Sleeping">😴 Sleeping</option>
+        <option value="rescue">🆘 กู้ด่วน</option>
+        <option value="sleeping">💤 หลับยาว</option>
+        <option value="premium">🏆 พรีเมียม</option>
+        <option value="promising">📈 โปรมิสซิ่ง</option>
+        <option value="declining">📉 ขาลง</option>
+        <option value="regular">🔄 ประจำ</option>
+        <option value="new">✨ ใหม่</option>
       </select>
       <span id="rfm-count" style="font-size:12px;color:#64748b;"></span>
     </div>
@@ -276,10 +296,8 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
           <th onclick="sortRFM('name')">#  บริษัท ↕</th>
           <th style="text-align:center;">Segment</th>
           <th style="text-align:center;" onclick="sortRFM('r')">R ↕</th>
-          <th style="text-align:center;" onclick="sortRFM('f')">F ↕</th>
           <th style="text-align:center;" onclick="sortRFM('m')">M ↕</th>
-          <th style="text-align:center;" onclick="sortRFM('total')">Total ↕</th>
-          <th style="text-align:right;" onclick="sortRFM('freq')">รายการ ↕</th>
+          <th style="text-align:right;" onclick="sortRFM('avgM')">avg/เดือน ↕</th>
           <th style="text-align:right;" onclick="sortRFM('monetary')">ยอดรวม ↕</th>
           <th>ซื้อล่าสุด</th>
           <th>Action</th>
@@ -298,10 +316,13 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center;">
       <select id="cs-seg" onchange="renderCustTable()">
         <option value="">ทุก Segment</option>
-        <option value="Champion">🏆 Champion</option>
-        <option value="Loyal">📈 Loyal</option>
-        <option value="At Risk">⚠️ At Risk</option>
-        <option value="Sleeping">😴 Sleeping</option>
+        <option value="rescue">🆘 กู้ด่วน</option>
+        <option value="sleeping">💤 หลับยาว</option>
+        <option value="premium">🏆 พรีเมียม</option>
+        <option value="promising">📈 โปรมิสซิ่ง</option>
+        <option value="declining">📉 ขาลง</option>
+        <option value="regular">🔄 ประจำ</option>
+        <option value="new">✨ ใหม่</option>
       </select>
       <input id="cs-search" placeholder="ค้นหาชื่อบริษัท..." style="min-width:200px;" oninput="renderCustTable()">
       <button onclick="clearCust()" class="btn" style="color:#dc2626;">ล้าง ✕</button>
@@ -554,15 +575,13 @@ const CUSTOMERS = [
 })();
 
 function renderSegCards(){
-  // อัปเดต segment cards ด้วยตัวเลขจริงจาก CUSTOMERS ที่คำนวณแล้ว
-  [['Champion','champion'],['Loyal','loyal'],['At Risk','at-risk'],['Sleeping','sleeping']]
-  .forEach(([seg,id])=>{
+  ['rescue','sleeping','premium','promising','declining','regular','new'].forEach(seg=>{
     const grp = CUSTOMERS.filter(x=>x.seg===seg);
     const rev = grp.reduce((s,x)=>s+x.monetary,0);
-    const ec  = document.getElementById(`seg-${id}-count`);
-    const er  = document.getElementById(`seg-${id}-rev`);
+    const ec = document.getElementById(`seg-${seg}-count`);
+    const er = document.getElementById(`seg-${seg}-rev`);
     if(ec) ec.textContent = grp.length;
-    if(er) er.textContent = `~${fmtK(rev)}`;
+    if(er) er.textContent = grp.length ? `~${fmtK(rev)}` : '—';
   });
 }
 
@@ -587,9 +606,19 @@ const fmt = v => v ? '฿'+Math.round(v).toLocaleString() : '—';
 const fmtK  = v => v >= 1000000 ? '฿'+(v/1000000).toFixed(2)+'M' : v >= 1000 ? '฿'+(v/1000).toFixed(0)+'K' : fmt(v);
 const fmtK1 = v => v >= 1000000 ? '฿'+(v/1000000).toFixed(2)+'M' : v >= 1000 ? '฿'+(v/1000).toFixed(1)+'K' : fmt(v); // 1 decimal สำหรับ AOV
 
-const segCls = s => ({Champion:'seg-champion',Loyal:'seg-loyal','At Risk':'seg-atrisk',Sleeping:'seg-sleeping'}[s]||'');
-const segIcon = s => ({Champion:'🏆',Loyal:'📈','At Risk':'⚠️',Sleeping:'😴'}[s]||'');
-const segColor = s => ({Champion:'#4f46e5',Loyal:'#059669','At Risk':'#d97706',Sleeping:'#dc2626'}[s]||'#64748b');
+const SEG_META = {
+  rescue:   {cls:'seg-rescue',   icon:'🆘',color:'#dc2626', label:'กู้ด่วน'   },
+  sleeping: {cls:'seg-sleeping', icon:'💤',color:'#64748b', label:'หลับยาว'   },
+  premium:  {cls:'seg-premium',  icon:'🏆',color:'#d97706', label:'พรีเมียม'  },
+  promising:{cls:'seg-promising',icon:'📈',color:'#7c3aed', label:'โปรมิสซิ่ง'},
+  declining:{cls:'seg-declining',icon:'📉',color:'#f97316', label:'ขาลง'      },
+  regular:  {cls:'seg-regular',  icon:'🔄',color:'#2563eb', label:'ประจำ'     },
+  new:      {cls:'seg-new',      icon:'✨',color:'#16a34a', label:'ใหม่'       },
+};
+const segCls   = s => SEG_META[s]?.cls   || '';
+const segIcon  = s => SEG_META[s]?.icon  || '—';
+const segColor = s => SEG_META[s]?.color || '#64748b';
+const segLabel = s => SEG_META[s]?.label || s;
 
 const scoreColor = v => ['','#ddd6fe','#c4b5fd','#a78bfa','#7c3aed','#4f46e5'][v]||'#e2e8f0';
 const scoreBadge = v => `<span style="background:${scoreColor(v)};color:${v>=3?'#fff':'#64748b'};
@@ -861,23 +890,22 @@ function renderRFMTable(){
   let data = seg ? CUSTOMERS.filter(c=>c.seg===seg) : CUSTOMERS;
   data = [...data].sort((a,b) => rfmSort.dir * ((a[rfmSort.col]||0) < (b[rfmSort.col]||0) ? -1 : 1));
   document.getElementById('rfm-count').textContent = `แสดง ${data.length} ราย`;
-  const actionMap = {Champion:'โทรสัมพันธ์ + เสนอสินค้าใหม่',Loyal:'Cross-sell + Bundle Pack','At Risk':'Win-back ด่วน 30 วัน',Sleeping:'Re-engage หรือ Inactive'};
-  document.getElementById('rfm-table-body').innerHTML = data.map((c,i) => `
-    <tr>
+  const actionMap = {rescue:'โทรด่วนวันนี้ — ทำไมเงียบ?',sleeping:'Re-engage หรือ Inactive',premium:'รักษา + Early Access สินค้าใหม่',promising:'Cross-sell + Bundle Pack',declining:'วิเคราะห์หมวดที่ลด + เสนอทางแก้',regular:'ติดตามปกติ',new:'Onboard + แนะนำสินค้าหลัก'};
+  document.getElementById('rfm-table-body').innerHTML = data.map((c,i) => {
+    const growthStr = c.growth!=null
+      ? `<span style="font-size:10px;color:${c.growth<-0.2?'#dc2626':c.growth>0.2?'#16a34a':'#94a3b8'}">
+          ${c.growth>0?'+':''}${(c.growth*100).toFixed(0)}%</span>` : '';
+    return `<tr>
       <td style="font-size:12px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
         <span style="color:#94a3b8;margin-right:6px;">${i+1}</span>${c.name}</td>
-      <td style="text-align:center;"><span class="${segCls(c.seg)}">${segIcon(c.seg)} ${c.seg}</span></td>
+      <td style="text-align:center;"><span class="${segCls(c.seg)}">${segIcon(c.seg)} ${segLabel(c.seg)}</span></td>
       <td style="text-align:center;">${scoreBadge(c.r)}</td>
-      <td style="text-align:center;">${scoreBadge(c.f)}</td>
       <td style="text-align:center;">${scoreBadge(c.m)}</td>
-      <td style="text-align:center;">
-        <strong style="color:${segColor(c.seg)}">${c.total}</strong>
-        <span style="color:#cbd5e1;font-size:11px;">/15</span></td>
-      <td style="text-align:right;font-size:12px;">${c.freq.toLocaleString()}</td>
+      <td style="text-align:right;font-size:12px;font-weight:600;">${fmtK(c.avgM||0)}/ด. ${growthStr}</td>
       <td style="text-align:right;font-weight:600;font-size:12px;">${fmtK(c.monetary)}</td>
       <td style="font-size:11px;color:#94a3b8;">${c.lastFmt||c.last}</td>
       <td style="font-size:11px;color:${segColor(c.seg)};font-weight:500;">${actionMap[c.seg]||''}</td>
-    </tr>`).join('');
+    </tr>`;}).join('');
 }
 
 // ── CUSTOMER LIST TABLE ──────────────────────────────────────────────────────
@@ -1214,14 +1242,17 @@ async function loadRFM() {
       const rev = row.c[5]?.v || 0;
       if (!name || !yr || !mo || !d) continue;
 
-      if (!map[name]) map[name] = { name, lastNum:0, lastYr:0, lastMo:0, lastD:0, invCount:0, rev:0 };
+      if (!map[name]) map[name] = { name, lastNum:0, lastYr:0, lastMo:0, lastD:0, invCount:0, rev:0, months:new Set(), moRevs:{} };
       const c = map[name];
 
       // Track latest purchase date as single integer (YYYYMMDD)
       const dn = yr*10000 + mo*100 + d;
       if (dn > c.lastNum) { c.lastNum=dn; c.lastYr=yr; c.lastMo=mo; c.lastD=d; }
-      c.invCount++;   // already 1 per invoice (grouped by G,O,M,K,Q)
+      c.invCount++;
       c.rev += rev;
+      const mk = `${yr}-${mo}`;
+      c.months.add(mk);
+      c.moRevs[mk] = (c.moRevs[mk]||0) + rev;
     }
 
     const arr = Object.values(map);
@@ -1241,22 +1272,44 @@ async function loadRFM() {
     const TH_MO = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 
     arr.forEach(c => {
-      // R: วันล่าสุดที่ซื้อ → days ห่างจากวันนี้
+      // ── R score (new thresholds) ──────────────────────────────────────────
       const lastDt = new Date(c.lastYr, c.lastMo-1, c.lastD);
       const days   = Math.floor((now - lastDt) / 864e5);
-      c.r = days<=0?5 : days<=30?5 : days<=60?4 : days<=120?3 : days<=240?2 : 1;
+      c.r = days<=14?4 : days<=45?3 : days<=90?2 : 1;
 
-      // F / M จาก quintile
-      c.f    = fMap[c.name] || 1;
-      c.freq = c.invCount;
-      c.m        = mMap[c.name] || 1;
+      // ── M score (avg monthly, absolute thresholds) ────────────────────────
+      c.monthsCount = c.months ? c.months.size : 1;
+      c.avgM  = Math.round(c.rev / Math.max(c.monthsCount, 1));
+      c.m     = c.avgM>=30000?5 : c.avgM>=10000?4 : c.avgM>=3000?3 : c.avgM>=500?2 : 1;
       c.monetary = Math.round(c.rev);
+      c.freq  = c.invCount;
 
-      // Total & segment
-      c.total = c.r + c.f + c.m;
-      c.seg   = c.total>=12?'Champion' : c.total>=8?'Loyal' : c.total>=5?'At Risk':'Sleeping';
+      // ── Growth: latest month vs avg of prior months ───────────────────────
+      let growth = null;
+      if (c.moRevs) {
+        const moNums = Object.keys(c.moRevs).map(k=>+k.replace('-','')).sort((a,b)=>a-b);
+        const latestKey = moNums.slice(-1)[0];
+        const lk = `${Math.floor(latestKey/100)}-${latestKey%100}`;
+        const latestRev = c.moRevs[lk]||0;
+        const prevRevs = Object.entries(c.moRevs).filter(([k])=>k!==lk).map(([,v])=>v);
+        if (prevRevs.length) {
+          const prevAvg = prevRevs.reduce((a,b)=>a+b,0)/prevRevs.length;
+          growth = prevAvg ? (latestRev-prevAvg)/prevAvg : null;
+        }
+      }
+      c.growth = growth;
 
-      // Display date  "25 พ.ค. 69"
+      // ── Segment (new 7-segment framework) ────────────────────────────────
+      if      (c.monthsCount<=2)              c.seg='new';
+      else if (c.r===1 && c.m>=3)             c.seg='rescue';
+      else if (c.r===1)                        c.seg='sleeping';
+      else if (c.r===4 && c.m===5)             c.seg='premium';
+      else if (c.r>=3 && c.m>=4)               c.seg='promising';
+      else if (growth!==null && growth<-0.2)   c.seg='declining';
+      else                                      c.seg='regular';
+
+      // ── Display ───────────────────────────────────────────────────────────
+      c.total = c.r + c.m;  // R+M (no F)
       c.lastFmt = `${c.lastD} ${TH_MO[c.lastMo-1]} ${(c.lastYr+543)%100}`;
       c.last    = `${c.lastYr}-${c.lastMo}-${c.lastD}`;
     });
