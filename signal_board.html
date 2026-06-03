@@ -84,6 +84,13 @@ tbody tr td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:midd
 .leak-card .lk-amt{font-size:16px;font-weight:800;color:#dc2626;}
 .leak-card .lk-sub{font-size:10px;color:#94a3b8;}
 
+/* ── Segment badges ── */
+.seg-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;margin-top:3px;}
+.seg-champ{background:#fef9c3;color:#854d0e;}
+.seg-loyal{background:#dbeafe;color:#1e40af;}
+.seg-risk {background:#ffedd5;color:#c2410c;}
+.seg-sleep{background:#f1f5f9;color:#64748b;}
+
 /* ── Loading / empty ── */
 .loading{text-align:center;padding:40px;color:#64748b;font-size:13px;}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -176,6 +183,13 @@ tbody tr td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:midd
     <option value="up">⬆ โต &gt;20%</option>
     <option value="new">★ เพิ่งซื้อ</option>
     <option value="stable">→ ทรงตัว</option>
+  </select>
+  <select id="f-seg" onchange="render()">
+    <option value="">ทุก Segment</option>
+    <option value="champion">🏆 Champion</option>
+    <option value="loyal">💎 Loyal</option>
+    <option value="atrisk">⚠️ At Risk</option>
+    <option value="sleeping">💤 Sleeping</option>
   </select>
   <input id="f-search" type="text" placeholder="🔍 ค้นหาลูกค้า..." oninput="render()">
   <button class="btn-reload" onclick="loadSignals()">🔄 Refresh</button>
@@ -296,7 +310,24 @@ const fmt  = v => v>=1000000?'฿'+(v/1000000).toFixed(2)+'M' : v>=1000?'฿'+(v
 const fmtS = v => v>=1000?'฿'+(v/1000).toFixed(0)+'K' : v>0?'฿'+Math.round(v):'—';
 const moLabel = (y,m) => `${THAI_MO[m-1]} ${y+543}`;
 
-let DATA = [], LEAKS = [];
+let DATA = [], LEAKS = [], RFM_MAP = {};
+
+// ── Segment config ────────────────────────────────────────────────────────────
+const SEG = {
+  champion: { label:'Champion', emoji:'🏆', cls:'seg-champ' },
+  loyal:    { label:'Loyal',    emoji:'💎', cls:'seg-loyal' },
+  atrisk:   { label:'At Risk',  emoji:'⚠️', cls:'seg-risk'  },
+  sleeping: { label:'Sleeping', emoji:'💤', cls:'seg-sleep' },
+};
+function segBadge(name) {
+  const s = SEG[RFM_MAP[name]?.seg]; if (!s) return '';
+  return `<span class="seg-badge ${s.cls}">${s.emoji} ${s.label}</span>`;
+}
+function segInfo(name) {
+  const r = RFM_MAP[name]; if (!r) return '';
+  const s = SEG[r.seg]; if (!s) return '';
+  return `${s.emoji} ${s.label} · R${r.r} F${r.f} M${r.m}`;
+}
 
 // ── module-level period state (shared with drill-down) ───────────────────────
 let CUR_Y, CUR_M, P1_Y, P1_M, P2_Y, P2_M;
@@ -348,6 +379,36 @@ function pillHTML(sig, pct) {
   return `<span class="spill ${cls}">${lbl}${pctStr}</span>`;
 }
 
+// ── Compute RFM from raw table ────────────────────────────────────────────────
+function computeRFM(tbl) {
+  const cmap = {};
+  for (const r of (tbl.rows||[])) {
+    const name=r.c[0]?.v, y=r.c[1]?.v, mo=r.c[2]?.v, d=r.c[3]?.v, rev=r.c[4]?.v||0;
+    if (!name||!y||!mo||!d||rev<=0) continue;
+    if (!cmap[name]) cmap[name]={lastNum:0,inv:0,rev:0};
+    const dn = y*10000+mo*100+d;
+    if (dn>cmap[name].lastNum) cmap[name].lastNum=dn;
+    cmap[name].inv++; cmap[name].rev+=rev;
+  }
+  const today = new Date();
+  const arr = Object.entries(cmap).map(([name,c])=>{
+    const yr=Math.floor(c.lastNum/10000), mo=Math.floor((c.lastNum%10000)/100), da=c.lastNum%100;
+    const days = Math.floor((today-new Date(yr,mo-1,da))/864e5);
+    const r = days<=30?5:days<=60?4:days<=120?3:days<=240?2:1;
+    return {name,r,inv:c.inv,rev:c.rev};
+  });
+  const n=arr.length, q=i=>Math.min(5,Math.floor(i/n*5)+1);
+  [...arr].sort((a,b)=>a.inv-b.inv).forEach((c,i)=>{c.f=q(i);});
+  [...arr].sort((a,b)=>a.rev-b.rev).forEach((c,i)=>{c.m=q(i);});
+  const map={};
+  arr.forEach(c=>{
+    const total=c.r+c.f+c.m;
+    map[c.name]={r:c.r,f:c.f,m:c.m,total,
+      seg:total>=12?'champion':total>=8?'loyal':total>=5?'atrisk':'sleeping'};
+  });
+  return map;
+}
+
 // ── Load + process signals ────────────────────────────────────────────────────
 async function loadSignals() {
   document.getElementById('tbl-body').innerHTML =
@@ -366,6 +427,11 @@ async function loadSignals() {
 
     const CF = `G is not null and G != '' and G != 'ไม่มีชื่อ'`;
     const dateFilter = (y, m) => `O=${y} and M=${m}`;
+
+    // ── Fetch RFM data concurrently (all-time) ──
+    const rfmPromise = gvizFetch(
+      `select G, O, M, K, sum(AN) where AN>0 and ${CF} group by G, O, M, K`
+    );
 
     // ── Fetch current month ──
     let curTbl = await gvizFetch(
@@ -396,6 +462,9 @@ async function loadSignals() {
     CUR_Y = curY; CUR_M = curM;
     P1_Y  = p1Y;  P1_M  = p1M;
     P2_Y  = p2Y;  P2_M  = p2M;
+
+    // ── Process RFM (await here — likely already done) ──
+    try { RFM_MAP = computeRFM(await rfmPromise); } catch(_) { RFM_MAP = {}; }
 
     // ── Aggregate per customer ──
     const map = {};
@@ -436,9 +505,11 @@ async function loadSignals() {
       return { name:c.name, totalCur, totalPrev, cats, stopCount, downCount, upCount, newCount };
     });
 
+    const segOrd = {champion:0,loyal:1,atrisk:2,sleeping:3};
     DATA.sort((a,b)=>
       b.stopCount!==a.stopCount ? b.stopCount-a.stopCount :
       b.downCount!==a.downCount ? b.downCount-a.downCount :
+      (segOrd[RFM_MAP[a.name]?.seg]??4)-(segOrd[RFM_MAP[b.name]?.seg]??4) ||
       b.totalCur - a.totalCur
     );
 
@@ -505,9 +576,11 @@ function sigCell(d) {
 // ── Render main table ─────────────────────────────────────────────────────────
 function render() {
   const sigFilter = document.getElementById('f-sig').value;
+  const segFilter = document.getElementById('f-seg').value;
   const searchVal = document.getElementById('f-search').value.toLowerCase().trim();
   let rows = DATA;
   if (sigFilter) rows = rows.filter(c=>CATS.some(cat=>c.cats[cat.key]?.sig===sigFilter));
+  if (segFilter) rows = rows.filter(c=>RFM_MAP[c.name]?.seg===segFilter);
   if (searchVal) rows = rows.filter(c=>c.name.toLowerCase().includes(searchVal));
 
   document.getElementById('f-count').textContent = `แสดง ${rows.length} ราย จาก ${DATA.length} ราย`;
@@ -520,7 +593,7 @@ function render() {
 
   document.getElementById('tbl-body').innerHTML = rows.map(c => `
     <tr data-cust="${escHTML(c.name)}" onclick="openDrilldown(this.dataset.cust)">
-      <td><div class="cust-name" title="${escHTML(c.name)}">${escHTML(c.name)}</div></td>
+      <td><div class="cust-name" title="${escHTML(c.name)}">${escHTML(c.name)}</div>${segBadge(c.name)}</td>
       <td class="cust-total">
         ${c.totalCur>0 ? fmt(c.totalCur) : `<span style="color:#94a3b8;font-size:11px">ยังไม่มีข้อมูล</span>`}
         ${c.totalPrev>0?`<div class="cust-total-sub">avg ${fmt(c.totalPrev)}/ด.</div>`:''}
@@ -547,7 +620,7 @@ function renderLeakage() {
 async function openDrilldown(custName) {
   // show modal immediately with loading state
   document.getElementById('m1-title').textContent = custName;
-  document.getElementById('m1-sub').textContent   = '';
+  document.getElementById('m1-sub').textContent   = segInfo(custName);
   document.getElementById('m1-prev-badge').textContent =
     `avg ${moLabel(P2_Y,P2_M)}–${moLabel(P1_Y,P1_M)}`;
   document.getElementById('m1-cur-badge').textContent  = moLabel(CUR_Y, CUR_M);
