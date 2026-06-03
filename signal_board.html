@@ -133,6 +133,13 @@ tbody tr td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:midd
   </table>
 </div>
 
+<!-- ── No-data notice ── -->
+<div id="no-cur-notice" style="display:none;background:#fffbeb;border-bottom:1px solid #fde68a;
+  padding:8px 20px;font-size:12px;color:#92400e;">
+  ⚠️ <b id="no-cur-month"></b> ยังไม่มีข้อมูล — สัญญาณ ✕ คือลูกค้าที่ซื้อใน <span id="no-cur-range"></span>
+  แต่ยังไม่มีออเดอร์เดือนนี้
+</div>
+
 <!-- ── Leakage Alerts ── -->
 <div class="leak-section" id="leak-section" style="display:none;">
   <h2>🚨 Leakage Alerts — ลูกค้าหยุดซื้อหมวดที่เคยซื้อสูง</h2>
@@ -142,7 +149,7 @@ tbody tr td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:midd
 <script>
 // ── Config ────────────────────────────────────────────────────────────────────
 const SHEET_ID = '1KDtB1FjvwoD-yzlswzWxhc5-3eOvktQzDfEUABsRZLE';
-const LEAKAGE_THR = 20000; // บาท/เดือน → trigger leakage alert
+const LEAKAGE_THR = 3000; // บาท/เดือน → trigger leakage alert
 
 // หมวดสินค้า OFM (column Y = Dept Name)
 const CATS = [
@@ -278,6 +285,19 @@ async function loadSignals() {
     document.getElementById('period-lbl').textContent =
       `${THAI_MO[curM-1]} ${curY+543}  เทียบกับ avg ${THAI_MO[p2M-1]}–${THAI_MO[p1M-1]} ${p1Y+543}`;
 
+    // แจ้งเตือนถ้าเดือนปัจจุบันไม่มีข้อมูล
+    const hasCurData = (curTbl.rows || []).length > 0;
+    const noNotice = document.getElementById('no-cur-notice');
+    if (!hasCurData) {
+      noNotice.style.display = 'block';
+      document.getElementById('no-cur-month').textContent =
+        `${THAI_MO[curM-1]} ${curY+543}`;
+      document.getElementById('no-cur-range').textContent =
+        `${THAI_MO[p2M-1]}–${THAI_MO[p1M-1]} ${p1Y+543}`;
+    } else {
+      noNotice.style.display = 'none';
+    }
+
     buildHeader();
     render();
     renderLeakage();
@@ -304,12 +324,17 @@ function sigCell(d) {
 
   const cls = { stop:'sig-stop', down:'sig-down', stable:'sig-stable', up:'sig-up', new:'sig-new' }[d.sig];
   const icon = { stop:'✕', down:'⬇', stable:'→', up:'⬆', new:'★' }[d.sig];
-  const pctTxt = d.pct !== null ? (d.pct > 0 ? `+${d.pct}%` : `${d.pct}%`) : '';
+
+  // stop → แสดง baseline (เคยซื้อเท่าไหร่) แทน cur=0
+  const displayAmt = d.sig === 'stop' ? d.rec : d.cur;
+  // stop → ไม่ต้องแสดง -100% (ไม่มีประโยชน์), others → แสดง %change
+  const pctTxt = d.sig === 'stop' ? '' :
+    (d.pct !== null ? (d.pct > 0 ? `+${d.pct}%` : `${d.pct}%`) : '');
 
   return `<td>
     <div class="sig-cell ${cls}">
       <span class="sig-icon">${icon}</span>
-      <span class="sig-amt">${fmtS(d.cur)}</span>
+      <span class="sig-amt">${fmtS(displayAmt)}</span>
       ${pctTxt ? `<span class="sig-pct">${pctTxt}</span>` : ''}
     </div>
   </td>`;
@@ -345,8 +370,8 @@ function render() {
         <div class="cust-name" title="${c.name}">${c.name}</div>
       </td>
       <td class="cust-total">
-        ${fmt(c.totalCur)}
-        ${c.totalPrev>0 ? `<div class="cust-total-sub">avg ${fmt(c.totalPrev)}/ด.</div>` : ''}
+        ${c.totalCur > 0 ? fmt(c.totalCur) : (c.totalPrev > 0 ? `<span style="color:#94a3b8;font-size:11px;">ยังไม่มีข้อมูล</span>` : '—')}
+        ${c.totalPrev > 0 ? `<div class="cust-total-sub">avg ${fmt(c.totalPrev)}/ด.</div>` : ''}
       </td>
       ${CATS.map(cat => sigCell(c.cats[cat.key])).join('')}
     </tr>`).join('');
