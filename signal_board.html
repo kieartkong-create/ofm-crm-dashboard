@@ -463,9 +463,6 @@ async function loadSignals() {
     P1_Y  = p1Y;  P1_M  = p1M;
     P2_Y  = p2Y;  P2_M  = p2M;
 
-    // ── Process RFM (await here — likely already done) ──
-    try { RFM_MAP = computeRFM(await rfmPromise); } catch(_) { RFM_MAP = {}; }
-
     // ── Aggregate per customer ──
     const map = {};
     const ensure = n => { if (!map[n]) map[n] = { name:n, cur:{}, prev:{} }; };
@@ -505,11 +502,9 @@ async function loadSignals() {
       return { name:c.name, totalCur, totalPrev, cats, stopCount, downCount, upCount, newCount };
     });
 
-    const segOrd = {champion:0,loyal:1,atrisk:2,sleeping:3};
     DATA.sort((a,b)=>
       b.stopCount!==a.stopCount ? b.stopCount-a.stopCount :
       b.downCount!==a.downCount ? b.downCount-a.downCount :
-      (segOrd[RFM_MAP[a.name]?.seg]??4)-(segOrd[RFM_MAP[b.name]?.seg]??4) ||
       b.totalCur - a.totalCur
     );
 
@@ -541,6 +536,19 @@ async function loadSignals() {
     buildHeader();
     render();
     renderLeakage();
+
+    // ── RFM โหลด background — re-render พอเสร็จ ──
+    rfmPromise.then(tbl => {
+      try { RFM_MAP = computeRFM(tbl); } catch(_) { return; }
+      const segOrd = {champion:0,loyal:1,atrisk:2,sleeping:3};
+      DATA.sort((a,b)=>
+        b.stopCount!==a.stopCount ? b.stopCount-a.stopCount :
+        b.downCount!==a.downCount ? b.downCount-a.downCount :
+        (segOrd[RFM_MAP[a.name]?.seg]??4)-(segOrd[RFM_MAP[b.name]?.seg]??4) ||
+        b.totalCur - a.totalCur
+      );
+      render();
+    }).catch(()=>{});
 
   } catch(e) {
     document.getElementById('tbl-body').innerHTML =
