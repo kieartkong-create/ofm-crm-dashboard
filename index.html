@@ -1242,12 +1242,13 @@ async function loadRFM() {
       const rev = row.c[5]?.v || 0;
       if (!name || !yr || !mo || !d) continue;
 
-      if (!map[name]) map[name] = { name, lastNum:0, lastYr:0, lastMo:0, lastD:0, invCount:0, rev:0, months:new Set(), moRevs:{} };
+      if (!map[name]) map[name] = { name, firstNum:0, lastNum:0, lastYr:0, lastMo:0, lastD:0, invCount:0, rev:0, months:new Set(), moRevs:{} };
       const c = map[name];
 
-      // Track latest purchase date as single integer (YYYYMMDD)
+      // Track latest and first purchase date as single integer (YYYYMMDD)
       const dn = yr*10000 + mo*100 + d;
       if (dn > c.lastNum) { c.lastNum=dn; c.lastYr=yr; c.lastMo=mo; c.lastD=d; }
+      if (c.firstNum===0 || dn < c.firstNum) c.firstNum=dn;
       c.invCount++;
       c.rev += rev;
       const mk = `${yr}-${mo}`;
@@ -1299,8 +1300,13 @@ async function loadRFM() {
       }
       c.growth = growth;
 
+      // ── Days since first purchase ────────────────────────────────────────────
+      const fyrst = Math.floor(c.firstNum/10000), fmo = Math.floor((c.firstNum%10000)/100), fda = c.firstNum%100;
+      const firstDt = new Date(fyrst, fmo-1, fda);
+      const daysSinceFirst = Math.floor((now - firstDt) / 864e5);
+
       // ── Segment (new 7-segment framework) ────────────────────────────────
-      if      (c.monthsCount<=2)              c.seg='new';
+      if      (daysSinceFirst<=60)            c.seg='new';
       else if (c.r===1 && c.m>=3)             c.seg='rescue';
       else if (c.r===1)                        c.seg='sleeping';
       else if (c.r===4 && c.m===5)             c.seg='premium';

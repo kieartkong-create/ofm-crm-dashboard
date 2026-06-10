@@ -394,9 +394,10 @@ function computeRFM(tbl) {
   for (const r of (tbl.rows||[])) {
     const name=r.c[0]?.v, y=r.c[1]?.v, mo=r.c[2]?.v, d=r.c[3]?.v, rev=r.c[4]?.v||0;
     if (!name||!y||!mo||!d||rev<=0) continue;
-    if (!cmap[name]) cmap[name]={lastNum:0,months:new Set(),moRevs:{},rev:0};
+    if (!cmap[name]) cmap[name]={firstNum:0,lastNum:0,months:new Set(),moRevs:{},rev:0};
     const dn = y*10000+mo*100+d;
     if (dn>cmap[name].lastNum) cmap[name].lastNum=dn;
+    if (cmap[name].firstNum===0 || dn<cmap[name].firstNum) cmap[name].firstNum=dn;
     const mk=`${y}-${mo}`;
     cmap[name].months.add(mk);
     cmap[name].moRevs[mk]=(cmap[name].moRevs[mk]||0)+rev;
@@ -425,9 +426,13 @@ function computeRFM(tbl) {
     const prevAvg = prevRevs.length ? prevRevs.reduce((a,b)=>a+b,0)/prevRevs.length : null;
     const growth = prevAvg ? (latestRev-prevAvg)/prevAvg : null;
 
+    // Days since first purchase
+    const fyrst=Math.floor(c.firstNum/10000), fmo=Math.floor((c.firstNum%10000)/100), fda=c.firstNum%100;
+    const daysSinceFirst = Math.floor((today-new Date(fyrst,fmo-1,fda))/864e5);
+
     // Segment priority
     let seg;
-    if (monthsCount<=2)             seg='new';
+    if (daysSinceFirst<=60)             seg='new';
     else if (r===1 && m>=3)         seg='rescue';
     else if (r===1)                 seg='sleeping';
     else if (r===4 && m===5)        seg='premium';
