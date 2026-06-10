@@ -84,6 +84,28 @@ tbody tr td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:midd
 .leak-card .lk-amt{font-size:16px;font-weight:800;color:#dc2626;}
 .leak-card .lk-sub{font-size:10px;color:#94a3b8;}
 
+/* ── Lost customers section ── */
+.lost-section{padding:20px;margin-top:4px;border-top:2px solid #fee2e2;}
+.lost-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+.lost-header h2{font-size:14px;font-weight:700;color:#7c3aed;}
+.lost-tabs{display:flex;gap:8px;}
+.lost-tab{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid transparent;}
+.lost-tab.rescue{background:#fef3c7;color:#92400e;border-color:#f59e0b;}
+.lost-tab.sleeping{background:#f1f5f9;color:#64748b;border-color:#cbd5e1;}
+.lost-tab.active{opacity:1;box-shadow:0 2px 6px rgba(0,0,0,.15);}
+.lost-tab:not(.active){opacity:.55;}
+.lost-tbl{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;
+  box-shadow:0 1px 4px rgba(0,0,0,.08);}
+.lost-tbl th{background:#f8fafc;padding:8px 12px;text-align:left;font-size:11px;font-weight:700;
+  color:#64748b;border-bottom:1px solid #e2e8f0;}
+.lost-tbl td{padding:9px 12px;border-bottom:1px solid #f1f5f9;font-size:12px;vertical-align:middle;}
+.lost-tbl tr:last-child td{border-bottom:none;}
+.lost-tbl tr:hover td{background:#fafafa;}
+.lost-days-pill{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;}
+.lost-days-pill.hot{background:#fef2f2;color:#dc2626;}
+.lost-days-pill.warm{background:#fffbeb;color:#d97706;}
+.lost-days-pill.cold{background:#f1f5f9;color:#64748b;}
+
 /* ── Segment badges ── */
 .seg-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;margin-top:3px;}
 .seg-rescue   {background:#fef2f2;color:#dc2626;}
@@ -223,6 +245,22 @@ tbody tr td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:midd
   <div class="leak-grid" id="leak-grid"></div>
 </div>
 
+<!-- ── Lost Customers ── -->
+<div class="lost-section" id="lost-section" style="display:none;">
+  <div class="lost-header">
+    <h2>⚠️ ลูกค้าหายตัว (ไม่ซื้อ &gt;90 วัน)</h2>
+    <div class="lost-tabs">
+      <span class="lost-tab rescue active" id="lost-tab-rescue" onclick="switchLostTab('rescue')">
+        🆘 กู้ด่วน <span id="lost-rescue-count">—</span> ราย
+      </span>
+      <span class="lost-tab sleeping" id="lost-tab-sleeping" onclick="switchLostTab('sleeping')">
+        💤 หลับยาว <span id="lost-sleeping-count">—</span> ราย
+      </span>
+    </div>
+  </div>
+  <div id="lost-body"></div>
+</div>
+
 <!-- ══════════════════════════════════════════════════════
      Modal — Level 1: Category drill-down
 ═══════════════════════════════════════════════════════ -->
@@ -316,7 +354,7 @@ const fmt  = v => v>=1000000?'฿'+(v/1000000).toFixed(2)+'M' : v>=1000?'฿'+(v
 const fmtS = v => v>=1000?'฿'+(v/1000).toFixed(0)+'K' : v>0?'฿'+Math.round(v):'—';
 const moLabel = (y,m) => `${THAI_MO[m-1]} ${y+543}`;
 
-let DATA = [], LEAKS = [], RFM_MAP = {};
+let DATA = [], LEAKS = [], RFM_MAP = {}, LOST = {rescue:[], sleeping:[]};
 
 // ── Segment config ────────────────────────────────────────────────────────────
 const SEG = {
@@ -445,12 +483,74 @@ function computeRFM(tbl) {
   return map;
 }
 
+// ── Compute lost customers from all-time RFM table ───────────────────────────
+function computeLost(tbl) {
+  const activeNames = new Set(DATA.map(c => c.name));
+  const cmap = {};
+  for (const r of (tbl.rows||[])) {
+    const name=r.c[0]?.v, y=r.c[1]?.v, mo=r.c[2]?.v, d=r.c[3]?.v, rev=r.c[4]?.v||0;
+    if (!name||!y||!mo||!d||rev<=0) continue;
+    if (!cmap[name]) cmap[name]={lastNum:0,lastY:0,lastM:0,lastD:0,months:new Set(),rev:0};
+    const dn=y*10000+mo*100+d;
+    if (dn>cmap[name].lastNum){cmap[name].lastNum=dn;cmap[name].lastY=y;cmap[name].lastM=mo;cmap[name].lastD=d;}
+    cmap[name].months.add(`${y}-${mo}`);
+    cmap[name].rev+=rev;
+  }
+  const today=new Date();
+  const THAI_MO=['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const rescue=[], sleeping=[];
+  for (const [name,c] of Object.entries(cmap)) {
+    if (activeNames.has(name)) continue;
+    const days=Math.floor((today-new Date(c.lastY,c.lastM-1,c.lastD))/864e5);
+    if (days<90) continue;
+    const avgM=Math.round(c.rev/Math.max(c.months.size,1));
+    const lastFmt=`${c.lastD} ${THAI_MO[c.lastM]} ${c.lastY+543}`;
+    const obj={name,days,avgM,lastFmt};
+    if (avgM>=3000) rescue.push(obj); else sleeping.push(obj);
+  }
+  rescue.sort((a,b)=>b.avgM-a.avgM);
+  sleeping.sort((a,b)=>b.avgM-a.avgM);
+  return {rescue, sleeping};
+}
+
+// ── Render lost customers table ───────────────────────────────────────────────
+let _lostTab = 'rescue';
+function switchLostTab(tab) {
+  _lostTab = tab;
+  document.getElementById('lost-tab-rescue').classList.toggle('active', tab==='rescue');
+  document.getElementById('lost-tab-sleeping').classList.toggle('active', tab==='sleeping');
+  renderLost();
+}
+
+function renderLost() {
+  const rows = LOST[_lostTab];
+  if (!rows.length) { document.getElementById('lost-body').innerHTML='<p style="color:#94a3b8;font-size:12px;padding:8px 0;">ไม่มีข้อมูล</p>'; return; }
+  document.getElementById('lost-body').innerHTML = `
+    <table class="lost-tbl">
+      <thead><tr>
+        <th>#</th><th>ชื่อลูกค้า</th><th>ซื้อครั้งสุดท้าย</th><th>หยุดซื้อมา</th><th>avg/เดือน</th>
+      </tr></thead>
+      <tbody>${rows.slice(0,30).map((c,i)=>{
+        const pillCls = c.days>365?'hot':c.days>180?'warm':'cold';
+        return `<tr>
+          <td style="color:#94a3b8;font-size:11px;">${i+1}</td>
+          <td style="font-weight:600;">${escHTML(c.name)}</td>
+          <td style="color:#64748b;">${c.lastFmt}</td>
+          <td><span class="lost-days-pill ${pillCls}">${c.days} วัน</span></td>
+          <td style="font-weight:700;color:#7c3aed;">${fmt(c.avgM)}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>
+    ${rows.length>30?`<p style="font-size:11px;color:#94a3b8;margin-top:8px;">แสดง 30 จาก ${rows.length} ราย</p>`:''}`;
+}
+
 // ── Load + process signals ────────────────────────────────────────────────────
 async function loadSignals() {
   document.getElementById('tbl-body').innerHTML =
     `<tr><td class="loading" colspan="${CATS.length+3}"><span class="spinner"></span>กำลังโหลดข้อมูล…</td></tr>`;
   document.getElementById('period-lbl').textContent = 'กำลังโหลด…';
   document.getElementById('leak-section').style.display = 'none';
+  document.getElementById('lost-section').style.display = 'none';
   document.getElementById('shift-notice').style.display = 'none';
 
   try {
@@ -575,12 +675,22 @@ async function loadSignals() {
 
     // ── RFM โหลด background — re-render พอเสร็จ ──
     rfmPromise.then(tbl => {
-      try { RFM_MAP = computeRFM(tbl); } catch(_) { return; }
-      const segOrd = {champion:0,loyal:1,atrisk:2,sleeping:3};
+      try { RFM_MAP = computeRFM(tbl); } catch(_) {}
+      // Lost customers
+      try {
+        LOST = computeLost(tbl);
+        document.getElementById('lost-rescue-count').textContent = LOST.rescue.length;
+        document.getElementById('lost-sleeping-count').textContent = LOST.sleeping.length;
+        if (LOST.rescue.length || LOST.sleeping.length) {
+          document.getElementById('lost-section').style.display = 'block';
+          renderLost();
+        }
+      } catch(_) {}
+      const segOrd = {rescue:0,premium:1,promising:2,declining:3,regular:4,sleeping:5,new:6};
       DATA.sort((a,b)=>
         b.stopCount!==a.stopCount ? b.stopCount-a.stopCount :
         b.downCount!==a.downCount ? b.downCount-a.downCount :
-        (segOrd[RFM_MAP[a.name]?.seg]??4)-(segOrd[RFM_MAP[b.name]?.seg]??4) ||
+        (segOrd[RFM_MAP[a.name]?.seg]??99)-(segOrd[RFM_MAP[b.name]?.seg]??99) ||
         b.totalCur - a.totalCur
       );
       render();
