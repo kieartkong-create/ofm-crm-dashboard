@@ -106,6 +106,26 @@ tbody tr td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:midd
 .lost-days-pill.warm{background:#fffbeb;color:#d97706;}
 .lost-days-pill.cold{background:#f1f5f9;color:#64748b;}
 
+/* ── Recovery section ── */
+.recovery-section{padding:20px;margin-top:4px;border-top:2px solid #dcfce7;}
+.recovery-section h2{font-size:14px;font-weight:700;color:#16a34a;margin-bottom:14px;}
+.rec-firstrun{background:#fff;border:1.5px dashed #cbd5e1;border-radius:10px;padding:16px;font-size:13px;font-weight:600;color:#475569;}
+.rec-kpis{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+.rec-kpi{flex:1;min-width:140px;background:#fff;border:1.5px solid;border-radius:10px;padding:12px 14px;
+  display:flex;align-items:center;gap:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.rec-kpi-ic{font-size:22px;}
+.rec-kpi-val{font-size:20px;font-weight:800;line-height:1.1;}
+.rec-kpi-lb{font-size:11px;font-weight:700;color:#334155;}
+.rec-kpi-sub{font-size:10px;color:#94a3b8;}
+.rec-cols{display:flex;gap:12px;flex-wrap:wrap;}
+.rec-col{flex:1;min-width:230px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px;}
+.rec-col-h{font-size:12px;font-weight:700;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f1f5f9;}
+.rec-item{display:flex;justify-content:space-between;gap:8px;padding:5px 0;font-size:12px;border-bottom:1px solid #f8fafc;}
+.rec-item span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;}
+.rec-amt{font-weight:700;white-space:nowrap;font-size:11px;}
+.rec-empty{font-size:12px;color:#94a3b8;padding:6px 0;}
+.rec-foot{margin-top:12px;font-size:11px;color:#94a3b8;}
+
 /* ── Segment badges ── */
 .seg-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;margin-top:3px;}
 .seg-rescue   {background:#fef2f2;color:#dc2626;}
@@ -241,6 +261,12 @@ tbody tr td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:midd
 <div class="leak-section" id="leak-section" style="display:none;">
   <h2>🚨 Leakage Alerts — ลูกค้าหยุดซื้อหมวดที่เคยซื้อสูง</h2>
   <div class="leak-grid" id="leak-grid"></div>
+</div>
+
+<!-- ── Recovery Tracking ── -->
+<div class="recovery-section" id="recovery-section" style="display:none;">
+  <h2>📈 ผลการกู้ลูกค้า — เทียบกับสัปดาห์ก่อน (กู้ด่วน + ขาลง)</h2>
+  <div id="recovery-body"></div>
 </div>
 
 <!-- ── Lost Customers ── -->
@@ -546,6 +572,150 @@ function renderLost() {
     ${rows.length>30?`<p style="font-size:11px;color:#94a3b8;margin-top:8px;">แสดง 30 จาก ${rows.length} ราย</p>`:''}`;
 }
 
+// ══════════════════════════════════════════════════════════════════
+//  RECOVERY TRACKING — เทียบลิสต์สัปดาห์นี้กับ baseline สัปดาห์ก่อน
+//  เก็บ snapshot ใน localStorage (per-device) baseline เลื่อนทุก 7 วัน
+// ══════════════════════════════════════════════════════════════════
+const RECOVERY_KEY = 'ofm_recovery_v1';
+const WEEK_MS = 7*864e5;
+
+// รวมรายชื่อ "ลูกค้าที่ต้องตาม" = กู้ด่วน (rescue) + ขาลง (declining)
+function currentBadList() {
+  const bad = {};
+  (LOST.rescue||[]).forEach(c => { bad[c.name] = {type:'rescue', avgM:c.avgM, growth:null}; });
+  DATA.forEach(c => {
+    const r = RFM_MAP[c.name];
+    if (r && r.seg==='declining') bad[c.name] = {type:'declining', avgM:r.avgM, growth:r.growth, cur:c.totalCur||0};
+  });
+  return bad;
+}
+
+function runRecovery() {
+  const todayStr = new Date().toISOString().slice(0,10);
+  const today = new Date(todayStr);
+  const bad = currentBadList();
+  let store = null;
+  try { store = JSON.parse(localStorage.getItem(RECOVERY_KEY)||'null'); } catch(_) {}
+
+  // ครั้งแรกสุด — ยังไม่มี baseline → ตั้งฐาน แล้วบอกผู้ใช้
+  if (!store || !store.baseline) {
+    saveBaseline(bad, todayStr, {});
+    renderRecovery(null, bad, todayStr);
+    return;
+  }
+
+  // เทียบ live ปัจจุบัน กับ baseline (สัปดาห์ก่อน)
+  const base = store.baseline;
+  const baseNames = Object.keys(base);
+  const recovered = [], stuck = [], moving = [], newly = [];
+
+  baseNames.forEach(n => {
+    if (!bad[n]) {
+      // หลุดจากลิสต์ = กลับมาซื้อ → กู้สำเร็จ
+      const cur = (DATA.find(c=>c.name===n)?.totalCur)||0;
+      recovered.push({name:n, avgM:base[n].avgM, cur});
+    } else {
+      // ยังอยู่ในลิสต์
+      const weeks = Math.max(1, Math.round((today - new Date(base[n].since||store.baselineDate))/WEEK_MS)+1);
+      const improved = base[n].growth!=null && bad[n].growth!=null && bad[n].growth > base[n].growth+0.15;
+      (improved?moving:stuck).push({name:n, avgM:base[n].avgM, weeks,
+        gFrom:base[n].growth, gTo:bad[n].growth});
+    }
+  });
+  Object.keys(bad).forEach(n => { if (!base[n]) newly.push({name:n, avgM:bad[n].avgM, type:bad[n].type}); });
+
+  recovered.sort((a,b)=>b.avgM-a.avgM);
+  stuck.sort((a,b)=>b.weeks-a.weeks || b.avgM-a.avgM);
+  newly.sort((a,b)=>b.avgM-a.avgM);
+
+  renderRecovery({recovered, stuck, moving, newly, baseSize:baseNames.length,
+                  baselineDate:store.baselineDate}, bad, todayStr);
+
+  // เลื่อน baseline เมื่อครบ 7 วัน (carry "since" ของคนที่ยังค้าง)
+  const daysSince = (today - new Date(store.baselineDate))/864e5;
+  if (daysSince >= 7) {
+    const carry = {};
+    Object.keys(bad).forEach(n => { carry[n] = base[n]?.since || todayStr; });
+    saveBaseline(bad, todayStr, carry);
+  }
+}
+
+function saveBaseline(bad, dateStr, sinceMap) {
+  const baseline = {};
+  Object.keys(bad).forEach(n => {
+    baseline[n] = {avgM:bad[n].avgM, growth:bad[n].growth, type:bad[n].type, since:sinceMap[n]||dateStr};
+  });
+  try { localStorage.setItem(RECOVERY_KEY, JSON.stringify({baselineDate:dateStr, baseline})); } catch(_) {}
+}
+
+// ปุ่มตั้งสัปดาห์นี้เป็นฐานใหม่ (ให้ boss กดตอนประชุมเพื่อ sync cadence)
+function resetRecoveryBaseline() {
+  if (!confirm('ตั้งลิสต์ปัจจุบันเป็นฐานเทียบใหม่? (ข้อมูลกู้สำเร็จสะสมจะเริ่มนับใหม่จากสัปดาห์นี้)')) return;
+  saveBaseline(currentBadList(), new Date().toISOString().slice(0,10), {});
+  runRecovery();
+}
+
+function renderRecovery(res, bad, todayStr) {
+  const sec = document.getElementById('recovery-section');
+  if (!sec) return;
+  sec.style.display = 'block';
+  const totalBad = Object.keys(bad).length;
+
+  if (!res) {
+    document.getElementById('recovery-body').innerHTML =
+      `<div class="rec-firstrun">📸 เริ่มเก็บข้อมูลสัปดาห์นี้แล้ว (${totalBad} ราย ในลิสต์กู้ด่วน+ขาลง)<br>
+       <span style="color:#94a3b8;">สัปดาห์หน้าเปิด board อีกครั้ง จะเริ่มเทียบได้ว่ากู้กลับมากี่ราย</span></div>`;
+    return;
+  }
+
+  const recoveredBaht = res.recovered.reduce((s,c)=>s+(c.cur||0),0);
+  const net = res.recovered.length - res.newly.length;
+  const rate = res.baseSize ? Math.round(res.recovered.length/res.baseSize*100) : 0;
+
+  const kpi = (icon,label,val,sub,color)=>`
+    <div class="rec-kpi" style="border-color:${color};">
+      <div class="rec-kpi-ic">${icon}</div>
+      <div><div class="rec-kpi-val" style="color:${color};">${val}</div>
+      <div class="rec-kpi-lb">${label}</div>${sub?`<div class="rec-kpi-sub">${sub}</div>`:''}</div>
+    </div>`;
+
+  document.getElementById('recovery-body').innerHTML = `
+    <div class="rec-kpis">
+      ${kpi('🟢','กู้สำเร็จ', res.recovered.length+' ราย', `฿${fmt(recoveredBaht).replace('฿','')} กลับมา`, '#16a34a')}
+      ${kpi('🟡','กำลังขยับ', res.moving.length+' ราย', 'ยอดเริ่มดีขึ้น', '#d97706')}
+      ${kpi('🔴','ยังเงียบ', res.stuck.length+' ราย', 'ต้องเร่งตาม', '#dc2626')}
+      ${kpi('⚫','หลุดใหม่', res.newly.length+' ราย', 'รั่วเพิ่มสัปดาห์นี้', '#475569')}
+      ${kpi(net>=0?'📈':'📉','Net Flow', (net>=0?'+':'')+net, net>=0?'กู้ทันการรั่ว':'รั่วเร็วกว่าอุด', net>=0?'#16a34a':'#dc2626')}
+      ${kpi('🎯','% กู้สำเร็จ', rate+'%', `จาก ${res.baseSize} ราย`, '#7c3aed')}
+    </div>
+    <div class="rec-cols">
+      <div class="rec-col">
+        <div class="rec-col-h" style="color:#16a34a;">🟢 กู้กลับมาได้ (${res.recovered.length})</div>
+        ${res.recovered.length? res.recovered.slice(0,10).map(c=>
+          `<div class="rec-item"><span>${escHTML(c.name)}</span>
+           <span class="rec-amt" style="color:#16a34a;">${c.cur?'+'+fmt(c.cur):'กลับมาแล้ว'}</span></div>`).join('')
+          : '<div class="rec-empty">— ยังไม่มีสัปดาห์นี้ —</div>'}
+      </div>
+      <div class="rec-col">
+        <div class="rec-col-h" style="color:#dc2626;">🔴 ยังเงียบ — ค้างนานสุด (${res.stuck.length})</div>
+        ${res.stuck.slice(0,10).map(c=>
+          `<div class="rec-item"><span>${escHTML(c.name)}</span>
+           <span class="rec-amt" style="color:${c.weeks>=3?'#dc2626':'#94a3b8'};">ค้าง ${c.weeks} สัปดาห์</span></div>`).join('')
+          || '<div class="rec-empty">— ไม่มี —</div>'}
+      </div>
+      <div class="rec-col">
+        <div class="rec-col-h" style="color:#475569;">⚫ หลุดใหม่ — ต้องรีบจับ (${res.newly.length})</div>
+        ${res.newly.slice(0,10).map(c=>
+          `<div class="rec-item"><span>${escHTML(c.name)}</span>
+           <span class="rec-amt" style="color:#475569;">${c.type==='rescue'?'กู้ด่วน':'ขาลง'}</span></div>`).join('')
+          || '<div class="rec-empty">— ไม่มี —</div>'}
+      </div>
+    </div>
+    <div class="rec-foot">
+      ฐานเทียบ: ${res.baselineDate} · <a onclick="resetRecoveryBaseline()" style="color:#7c3aed;cursor:pointer;text-decoration:underline;">ตั้งสัปดาห์นี้เป็นฐานใหม่</a>
+    </div>`;
+}
+
 // ── Load + process signals ────────────────────────────────────────────────────
 async function loadSignals() {
   document.getElementById('tbl-body').innerHTML =
@@ -553,6 +723,7 @@ async function loadSignals() {
   document.getElementById('period-lbl').textContent = 'กำลังโหลด…';
   document.getElementById('leak-section').style.display = 'none';
   document.getElementById('lost-section').style.display = 'none';
+  document.getElementById('recovery-section').style.display = 'none';
   document.getElementById('shift-notice').style.display = 'none';
 
   try {
@@ -688,6 +859,8 @@ async function loadSignals() {
           renderLost();
         }
       } catch(_) {}
+      // Recovery tracking (week-over-week, localStorage)
+      try { runRecovery(); } catch(_) {}
       const segOrd = {rescue:0,premium:1,promising:2,declining:3,regular:4,sleeping:5,new:6};
       DATA.sort((a,b)=>
         b.stopCount!==a.stopCount ? b.stopCount-a.stopCount :
