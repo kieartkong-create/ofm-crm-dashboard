@@ -453,28 +453,26 @@ function computeRFM(tbl) {
     const avgM = c.rev / Math.max(monthsCount,1);
     const m = avgM>=30000?5 : avgM>=10000?4 : avgM>=3000?3 : avgM>=500?2 : 1;
 
-    // Growth: compare latest month vs avg of prior months
-    const moNums = [...c.months].map(k=>+k.replace('-','')).sort((a,b)=>a-b);
-    const latestKey = moNums.slice(-1)[0];
-    const lk = `${Math.floor(latestKey/100)}-${latestKey%100}`;
-    const latestRev = c.moRevs[lk]||0;
-    const prevRevs = Object.entries(c.moRevs).filter(([k])=>k!==lk).map(([,v])=>v);
-    const prevAvg = prevRevs.length ? prevRevs.reduce((a,b)=>a+b,0)/prevRevs.length : null;
-    const growth = prevAvg ? (latestRev-prevAvg)/prevAvg : null;
+    // Growth: current month vs avg of prior 2 baseline months (matches signal table)
+    const curRev  = c.moRevs[`${CUR_Y}-${CUR_M}`] || 0;
+    const baseVals = [c.moRevs[`${P1_Y}-${P1_M}`]||0, c.moRevs[`${P2_Y}-${P2_M}`]||0].filter(v=>v>0);
+    const baseAvg = baseVals.length ? baseVals.reduce((a,b)=>a+b,0)/baseVals.length : null;
+    const growth = baseAvg ? (curRev-baseAvg)/baseAvg : null;
 
     // Days since first purchase
     const fyrst=Math.floor(c.firstNum/10000), fmo=Math.floor((c.firstNum%10000)/100), fda=c.firstNum%100;
     const daysSinceFirst = Math.floor((today-new Date(fyrst,fmo-1,fda))/864e5);
 
-    // Segment priority
+    // Segment priority — ดิ่งแรงขึ้นก่อน premium/promising
     let seg;
-    if (daysSinceFirst<=60)             seg='new';
-    else if (r===1 && m>=3)         seg='rescue';
-    else if (r===1)                 seg='sleeping';
-    else if (r===4 && m===5)        seg='premium';
-    else if (r>=3 && m>=4)          seg='promising';
-    else if (growth!==null && growth<-0.2) seg='declining';
-    else                            seg='regular';
+    if (daysSinceFirst<=60)                  seg='new';
+    else if (r===1 && m>=3)                  seg='rescue';
+    else if (r===1)                          seg='sleeping';
+    else if (growth!==null && growth<-0.4)   seg='declining';   // ดิ่งแรง = โทรด่วน แม้ยังคะแนนสูง
+    else if (r===4 && m===5)                 seg='premium';
+    else if (r>=3 && m>=4)                   seg='promising';
+    else if (growth!==null && growth<-0.2)   seg='declining';   // ดิ่งปานกลาง
+    else                                     seg='regular';
 
     map[name]={r,m,avgM:Math.round(avgM),monthsCount,growth,seg};
   });
