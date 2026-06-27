@@ -1224,6 +1224,10 @@ async function loadRFM() {
   try {
     const now  = new Date();
     const curY = now.getFullYear(), curM = now.getMonth()+1, curD = now.getDate();
+    // baseline = 2 เดือนก่อนหน้า (สำหรับคำนวณ growth แบบ cur-vs-baseline)
+    let p1Y = curY, p1M = curM-1, p2Y = curY, p2M = curM-2;
+    if (p1M<=0){ p1M+=12; p1Y--; }
+    if (p2M<=0){ p2M+=12; p2Y--; }
     const DATE_FILTER =
       `(O < ${curY} or (O = ${curY} and M < ${curM}) or (O = ${curY} and M = ${curM} and K <= ${curD}))`;
     const WHERE =
@@ -1285,17 +1289,17 @@ async function loadRFM() {
       c.monetary = Math.round(c.rev);
       c.freq  = c.invCount;
 
-      // ── Growth: latest month vs avg of prior months ───────────────────────
+      // ── Growth: current month (prorated) vs avg of prior 2 baseline months ──
       let growth = null;
       if (c.moRevs) {
-        const moNums = Object.keys(c.moRevs).map(k=>+k.replace('-','')).sort((a,b)=>a-b);
-        const latestKey = moNums.slice(-1)[0];
-        const lk = `${Math.floor(latestKey/100)}-${latestKey%100}`;
-        const latestRev = c.moRevs[lk]||0;
-        const prevRevs = Object.entries(c.moRevs).filter(([k])=>k!==lk).map(([,v])=>v);
-        if (prevRevs.length) {
-          const prevAvg = prevRevs.reduce((a,b)=>a+b,0)/prevRevs.length;
-          growth = prevAvg ? (latestRev-prevAvg)/prevAvg : null;
+        const rawCur = c.moRevs[`${curY}-${curM}`] || 0;
+        const daysInCur = new Date(curY, curM, 0).getDate();
+        const prorate = daysInCur / Math.max(curD, 1);   // คูณยอดเดือนนี้ให้เต็มเดือน
+        const curRev = rawCur * prorate;
+        const baseVals = [c.moRevs[`${p1Y}-${p1M}`]||0, c.moRevs[`${p2Y}-${p2M}`]||0].filter(v=>v>0);
+        if (baseVals.length) {
+          const baseAvg = baseVals.reduce((a,b)=>a+b,0)/baseVals.length;
+          growth = baseAvg ? (curRev-baseAvg)/baseAvg : null;
         }
       }
       c.growth = growth;
@@ -1305,13 +1309,14 @@ async function loadRFM() {
       const firstDt = new Date(fyrst, fmo-1, fda);
       const daysSinceFirst = Math.floor((now - firstDt) / 864e5);
 
-      // ── Segment (new 7-segment framework) ────────────────────────────────
+      // ── Segment (new 7-segment framework — ดิ่งแรงขึ้นก่อน premium/promising) ─
       if      (daysSinceFirst<=60)            c.seg='new';
       else if (c.r===1 && c.m>=3)             c.seg='rescue';
       else if (c.r===1)                        c.seg='sleeping';
+      else if (growth!==null && growth<-0.4)   c.seg='declining';   // ดิ่งแรง = โทรด่วน แม้คะแนนสูง
       else if (c.r===4 && c.m===5)             c.seg='premium';
       else if (c.r>=3 && c.m>=4)               c.seg='promising';
-      else if (growth!==null && growth<-0.2)   c.seg='declining';
+      else if (growth!==null && growth<-0.2)   c.seg='declining';   // ดิ่งปานกลาง
       else                                      c.seg='regular';
 
       // ── Display ───────────────────────────────────────────────────────────

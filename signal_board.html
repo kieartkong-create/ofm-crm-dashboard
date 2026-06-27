@@ -454,7 +454,13 @@ function computeRFM(tbl) {
     const m = avgM>=30000?5 : avgM>=10000?4 : avgM>=3000?3 : avgM>=500?2 : 1;
 
     // Growth: current month vs avg of prior 2 baseline months (matches signal table)
-    const curRev  = c.moRevs[`${CUR_Y}-${CUR_M}`] || 0;
+    // Prorate the current month if it hasn't finished yet (tip: avoid false "decline")
+    const rawCur  = c.moRevs[`${CUR_Y}-${CUR_M}`] || 0;
+    const _now = new Date();
+    const isCurPartial = (CUR_Y === _now.getFullYear() && CUR_M === _now.getMonth()+1);
+    const daysInCur = new Date(CUR_Y, CUR_M, 0).getDate();
+    const prorate = isCurPartial ? daysInCur / Math.max(_now.getDate(),1) : 1;
+    const curRev = rawCur * prorate;
     const baseVals = [c.moRevs[`${P1_Y}-${P1_M}`]||0, c.moRevs[`${P2_Y}-${P2_M}`]||0].filter(v=>v>0);
     const baseAvg = baseVals.length ? baseVals.reduce((a,b)=>a+b,0)/baseVals.length : null;
     const growth = baseAvg ? (curRev-baseAvg)/baseAvg : null;
