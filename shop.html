@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- ══════════ SEO ══════════ -->
+<title>Office Mate Plus สระบุรี | อุปกรณ์สำนักงานครบวงจร ส่งไวถึงที่</title>
+<meta name="description" content="ร้านอุปกรณ์สำนักงานครบวงจรในสระบุรี — กระดาษ A4, เครื่องเขียน, หมึกพิมพ์, เฟอร์นิเจอร์สำนักงาน, อุปกรณ์ IT ราคาส่ง ส่งไวถึงที่ มีเครดิตสำหรับองค์กร สั่งออนไลน์ได้เลย">
+<meta name="keywords" content="อุปกรณ์สำนักงาน สระบุรี, เครื่องเขียน สระบุรี, กระดาษ A4 สระบุรี, หมึกพิมพ์ สระบุรี, เฟอร์นิเจอร์สำนักงาน สระบุรี, Office Mate Plus สระบุรี, ร้านเครื่องเขียนสระบุรี">
+<link rel="canonical" href="https://kieartkong-create.github.io/ofm-crm-dashboard/shop.html">
+
+<!-- Open Graph (Facebook/LINE share) -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Office Mate Plus สระบุรี | อุปกรณ์สำนักงานครบวงจร">
+<meta property="og:description" content="กระดาษ เครื่องเขียน หมึกพิมพ์ เฟอร์นิเจอร์ IT ราคาส่ง ส่งไวถึงที่ในสระบุรี สั่งออนไลน์ได้เลย">
+<meta property="og:locale" content="th_TH">
+
+<!-- Schema.org LocalBusiness → ช่วยขึ้น Google Maps / Local Search -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "OfficeEquipmentStore",
+  "name": "Office Mate Plus สระบุรี",
+  "description": "ร้านอุปกรณ์สำนักงานครบวงจรในจังหวัดสระบุรี ราคาส่ง ส่งไวถึงที่",
+  "areaServed": "สระบุรี",
+  "priceRange": "฿฿",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "สระบุรี",
+    "addressCountry": "TH"
+  },
+  "sameAs": ["https://www.facebook.com/officemateplussaraburi"]
+}
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
+:root{
+  --red:#e11d2a; --red-dark:#b91620; --navy:#152238; --ink:#1e293b;
+  --muted:#64748b; --line:#e5e9f0; --bg:#f6f8fb; --card:#fff;
+  --ok:#16a34a; --radius:14px; --shadow:0 4px 20px rgba(21,34,56,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Sarabun',system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;}
+img{max-width:100%;display:block;}
+a{text-decoration:none;color:inherit;}
+.wrap{max-width:1160px;margin:0 auto;padding:0 18px;}
+
+/* ── Top bar ── */
+.topbar{background:var(--navy);color:#cbd5e1;font-size:12.5px;padding:6px 0;}
+.topbar .wrap{display:flex;gap:16px;justify-content:space-between;flex-wrap:wrap;}
+.topbar b{color:#fff;}
+
+/* ── Header ── */
+header{position:sticky;top:0;z-index:40;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 2px 12px rgba(21,34,56,.04);}
+.hd{display:flex;align-items:center;gap:16px;padding:12px 0;}
+.logo{display:flex;align-items:center;gap:11px;}
+.logo-mark{width:44px;height:44px;border-radius:11px;background:linear-gradient(135deg,var(--red),var(--red-dark));
+  display:grid;place-items:center;color:#fff;font-weight:800;font-size:19px;box-shadow:0 4px 12px rgba(225,29,42,.3);}
+.logo-txt b{display:block;font-size:18px;font-weight:800;color:var(--navy);letter-spacing:-.3px;line-height:1.1;}
+.logo-txt span{font-size:11.5px;color:var(--muted);font-weight:600;}
+.search{flex:1;max-width:440px;margin:0 auto;position:relative;}
+.search input{width:100%;padding:10px 14px 10px 38px;border:1.5px solid var(--line);border-radius:10px;
+  font-family:inherit;font-size:14px;background:var(--bg);}
+.search input:focus{outline:none;border-color:var(--red);background:#fff;}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--muted);}
+.hd-actions{display:flex;align-items:center;gap:10px;}
+.cart-btn{position:relative;display:flex;align-items:center;gap:8px;background:var(--red);color:#fff;
+  border:none;padding:10px 16px;border-radius:10px;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer;
+  box-shadow:0 4px 12px rgba(225,29,42,.28);transition:transform .1s;}
+.cart-btn:active{transform:scale(.96);}
+.cart-count{position:absolute;top:-7px;right:-7px;background:var(--navy);color:#fff;font-size:11px;font-weight:800;
+  min-width:20px;height:20px;border-radius:10px;display:grid;place-items:center;padding:0 5px;border:2px solid #fff;}
+
+/* ── Hero ── */
+.hero{background:linear-gradient(120deg,var(--navy) 0%,#243b5e 100%);color:#fff;position:relative;overflow:hidden;}
+.hero::after{content:"";position:absolute;right:-80px;top:-80px;width:340px;height:340px;border-radius:50%;
+  background:radial-gradient(circle,rgba(225,29,42,.35),transparent 70%);}
+.hero .wrap{padding:54px 18px;position:relative;z-index:1;}
+.hero h1{font-size:38px;font-weight:800;line-height:1.15;letter-spacing:-.6px;max-width:640px;}
+.hero h1 em{color:#ff6b78;font-style:normal;}
+.hero p{margin-top:14px;font-size:16px;color:#c7d2e0;max-width:560px;}
+.hero-cta{margin-top:26px;display:flex;gap:12px;flex-wrap:wrap;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:13px 24px;border-radius:11px;font-weight:700;
+  font-size:15px;cursor:pointer;border:none;font-family:inherit;transition:transform .1s;}
+.btn:active{transform:scale(.97);}
+.btn-red{background:var(--red);color:#fff;box-shadow:0 6px 18px rgba(225,29,42,.35);}
+.btn-ghost{background:rgba(255,255,255,.12);color:#fff;border:1.5px solid rgba(255,255,255,.3);}
+.hero-badges{margin-top:30px;display:flex;gap:22px;flex-wrap:wrap;}
+.hero-badge{display:flex;align-items:center;gap:9px;font-size:13.5px;color:#e2e8f0;font-weight:600;}
+.hero-badge .ic{width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.12);display:grid;place-items:center;font-size:17px;}
+
+/* ── Categories ── */
+section{padding:44px 0;}
+.sec-head{display:flex;align-items:end;justify-content:space-between;margin-bottom:22px;gap:12px;flex-wrap:wrap;}
+.sec-head h2{font-size:24px;font-weight:800;color:var(--navy);letter-spacing:-.4px;}
+.sec-head p{font-size:13.5px;color:var(--muted);margin-top:2px;}
+.cats{display:grid;grid-template-columns:repeat(8,1fr);gap:12px;}
+.cat{background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);padding:18px 8px;text-align:center;
+  cursor:pointer;transition:.15s;}
+.cat:hover{border-color:var(--red);transform:translateY(-3px);box-shadow:var(--shadow);}
+.cat.active{border-color:var(--red);background:#fff5f5;}
+.cat-ic{font-size:30px;margin-bottom:8px;}
+.cat b{font-size:12.5px;font-weight:700;color:var(--ink);display:block;}
+
+/* ── Products ── */
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
+  display:flex;flex-direction:column;transition:.15s;}
+.card:hover{box-shadow:var(--shadow);transform:translateY(-3px);border-color:#d5deea;}
+.card-img{aspect-ratio:1/1;position:relative;background:linear-gradient(135deg,#eef2f8,#dde5f0);
+  display:grid;place-items:center;}
+.card-img .ph{font-size:52px;opacity:.5;}
+.card-img .ph-tag{position:absolute;bottom:8px;left:8px;background:rgba(21,34,56,.6);color:#fff;font-size:10px;
+  padding:3px 8px;border-radius:6px;font-weight:600;}
+.card-tag{position:absolute;top:8px;left:8px;background:var(--red);color:#fff;font-size:10.5px;font-weight:700;
+  padding:3px 9px;border-radius:6px;}
+.card-body{padding:13px 14px 15px;display:flex;flex-direction:column;flex:1;}
+.card-cat{font-size:11px;color:var(--muted);font-weight:600;}
+.card-name{font-size:14px;font-weight:700;color:var(--ink);margin:3px 0 auto;line-height:1.35;min-height:38px;}
+.card-foot{display:flex;align-items:center;justify-content:space-between;margin-top:11px;gap:8px;}
+.price{font-size:19px;font-weight:800;color:var(--red);}
+.price small{font-size:11px;color:var(--muted);font-weight:600;}
+.add{background:var(--navy);color:#fff;border:none;width:38px;height:38px;border-radius:10px;cursor:pointer;
+  font-size:19px;display:grid;place-items:center;transition:.12s;flex-shrink:0;}
+.add:hover{background:var(--red);}
+.add:active{transform:scale(.9);}
+
+/* ── Why us ── */
+.why{background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
+.why-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.why-item{text-align:center;padding:14px;}
+.why-item .ic{width:56px;height:56px;border-radius:15px;background:#fff5f5;color:var(--red);display:grid;
+  place-items:center;font-size:26px;margin:0 auto 12px;}
+.why-item b{display:block;font-size:15px;color:var(--navy);margin-bottom:4px;}
+.why-item span{font-size:13px;color:var(--muted);}
+
+/* ── Contact ── */
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.contact-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:24px;}
+.contact-card h3{font-size:18px;color:var(--navy);margin-bottom:14px;font-weight:800;}
+.contact-row{display:flex;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--bg);font-size:14px;}
+.contact-row .ic{width:36px;height:36px;border-radius:9px;background:var(--bg);display:grid;place-items:center;font-size:17px;flex-shrink:0;}
+.fb-embed{background:linear-gradient(135deg,#1877f2,#0d5fc4);border-radius:var(--radius);padding:26px;color:#fff;text-align:center;}
+.fb-embed .ic{font-size:44px;margin-bottom:8px;}
+.fb-embed b{font-size:18px;display:block;}
+.fb-embed a{display:inline-block;margin-top:14px;background:#fff;color:#1877f2;padding:10px 22px;border-radius:9px;font-weight:700;}
+
+/* ── Footer ── */
+footer{background:var(--navy);color:#94a3b8;padding:30px 0;font-size:13px;text-align:center;}
+footer b{color:#fff;}
+
+/* ══════════ Cart drawer ══════════ */
+.overlay{position:fixed;inset:0;background:rgba(21,34,56,.5);z-index:60;opacity:0;pointer-events:none;transition:.2s;}
+.overlay.open{opacity:1;pointer-events:auto;}
+.drawer{position:fixed;top:0;right:0;height:100%;width:400px;max-width:92vw;background:#fff;z-index:70;
+  transform:translateX(100%);transition:.25s;display:flex;flex-direction:column;box-shadow:-8px 0 30px rgba(0,0,0,.15);}
+.drawer.open{transform:translateX(0);}
+.drawer-hd{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;}
+.drawer-hd b{font-size:17px;color:var(--navy);}
+.x{background:var(--bg);border:none;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:17px;color:var(--muted);}
+.drawer-body{flex:1;overflow-y:auto;padding:14px 20px;}
+.ci{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--bg);}
+.ci-img{width:64px;height:64px;border-radius:10px;background:linear-gradient(135deg,#eef2f8,#dde5f0);
+  display:grid;place-items:center;font-size:26px;opacity:.7;flex-shrink:0;}
+.ci-info{flex:1;min-width:0;}
+.ci-name{font-size:13.5px;font-weight:700;line-height:1.3;}
+.ci-price{font-size:13px;color:var(--red);font-weight:700;margin-top:2px;}
+.qty{display:flex;align-items:center;gap:8px;margin-top:7px;}
+.qty button{width:26px;height:26px;border:1.5px solid var(--line);background:#fff;border-radius:7px;cursor:pointer;font-size:15px;color:var(--ink);}
+.qty span{font-size:14px;font-weight:700;min-width:22px;text-align:center;}
+.ci-rm{background:none;border:none;color:#cbd5e1;cursor:pointer;font-size:15px;align-self:start;}
+.ci-rm:hover{color:var(--red);}
+.cart-empty{text-align:center;color:var(--muted);padding:50px 20px;}
+.cart-empty .ic{font-size:48px;opacity:.4;margin-bottom:10px;}
+.drawer-foot{border-top:1px solid var(--line);padding:18px 20px;}
+.total-row{display:flex;justify-content:space-between;margin-bottom:14px;}
+.total-row b{font-size:20px;color:var(--navy);}
+.total-row span{font-size:13px;color:var(--muted);align-self:center;}
+
+/* ══════════ Checkout modal ══════════ */
+.modal{position:fixed;inset:0;z-index:80;display:none;align-items:flex-start;justify-content:center;
+  padding:30px 16px;overflow-y:auto;}
+.modal.open{display:flex;}
+.modal-bg{position:fixed;inset:0;background:rgba(21,34,56,.55);}
+.modal-card{position:relative;background:#fff;border-radius:18px;max-width:720px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);
+  overflow:hidden;z-index:1;}
+.modal-hd{background:var(--navy);color:#fff;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;}
+.modal-hd b{font-size:18px;}
+.modal-hd .x{background:rgba(255,255,255,.15);color:#fff;}
+.modal-body{padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+.co-sec h4{font-size:14px;color:var(--navy);font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:7px;}
+.field{margin-bottom:13px;}
+.field label{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:5px;}
+.field input,.field textarea{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:9px;
+  font-family:inherit;font-size:14px;}
+.field input:focus,.field textarea:focus{outline:none;border-color:var(--red);}
+.pay-box{background:var(--bg);border-radius:12px;padding:18px;text-align:center;}
+.qr-wrap{width:170px;height:170px;margin:0 auto 12px;background:#fff;border-radius:12px;padding:10px;box-shadow:var(--shadow);
+  display:grid;place-items:center;}
+.qr-wrap canvas,.qr-wrap img{width:100%!important;height:100%!important;}
+.bank-line{font-size:13px;color:var(--ink);margin:4px 0;}
+.bank-line b{color:var(--navy);}
+.pay-amt{font-size:24px;font-weight:800;color:var(--red);margin:8px 0;}
+.slip-up{margin-top:12px;border:1.5px dashed var(--line);border-radius:10px;padding:14px;cursor:pointer;font-size:13px;color:var(--muted);}
+.co-summary{background:var(--bg);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:13px;}
+.co-summary .r{display:flex;justify-content:space-between;padding:3px 0;}
+.co-summary .r.tot{border-top:1px solid var(--line);margin-top:6px;padding-top:8px;font-weight:800;font-size:15px;color:var(--navy);}
+.modal-foot{padding:0 24px 24px;grid-column:1/-1;}
+.note{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:11px 13px;font-size:12px;color:#92400e;margin-top:12px;}
+
+/* success */
+.done{text-align:center;padding:40px 24px;}
+.done .ic{width:80px;height:80px;border-radius:50%;background:#dcfce7;color:var(--ok);display:grid;place-items:center;
+  font-size:42px;margin:0 auto 18px;}
+.done h3{font-size:22px;color:var(--navy);margin-bottom:8px;}
+.done p{color:var(--muted);font-size:14px;}
+
+.proto-flag{background:#fef3c7;color:#92400e;text-align:center;font-size:12px;font-weight:600;padding:5px;}
+
+@media(max-width:900px){
+  .cats{grid-template-columns:repeat(4,1fr);}
+  .grid{grid-template-columns:repeat(2,1fr);}
+  .why-grid{grid-template-columns:repeat(2,1fr);}
+  .contact-grid{grid-template-columns:1fr;}
+  .modal-body{grid-template-columns:1fr;}
+  .hero h1{font-size:29px;}
+  .search{display:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="proto-flag">🧪 ตัวอย่าง (Prototype) — รูปสินค้า/ราคา/เลขบัญชี เป็นตัวอย่าง รอใส่ของจริง</div>
+
+<!-- Top bar -->
+<div class="topbar"><div class="wrap">
+  <span>📍 สาขาสระบุรี · เปิด จ–ส 8:00–18:00</span>
+  <span>🚚 <b>ส่งฟรี</b>ในเขตเทศบาล เมื่อสั่งครบ ฿500 · 📞 <b>036-XXX-XXX</b></span>
+</div></div>
+
+<!-- Header -->
+<header><div class="wrap hd">
+  <div class="logo">
+    <div class="logo-mark">OM+</div>
+    <div class="logo-txt"><b>Office Mate Plus</b><span>สาขาสระบุรี · อุปกรณ์สำนักงานครบวงจร</span></div>
+  </div>
+  <div class="search">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+    <input id="search" type="text" placeholder="ค้นหาสินค้า เช่น กระดาษ A4, ปากกา, หมึกพิมพ์…" oninput="renderProducts()">
+  </div>
+  <div class="hd-actions">
+    <button class="cart-btn" onclick="openCart()">
+      🛒 ตะกร้า <span class="cart-count" id="cart-count">0</span>
+    </button>
+  </div>
+</div></header>
+
+<!-- Hero -->
+<div class="hero"><div class="wrap">
+  <h1>อุปกรณ์สำนักงานครบวงจร<br><em>ส่งไวถึงที่</em> ในสระบุรี</h1>
+  <p>กระดาษ เครื่องเขียน หมึกพิมพ์ เฟอร์นิเจอร์ และอุปกรณ์ IT ครบทุกอย่างสำหรับออฟฟิศ ราคาส่ง มีเครดิตสำหรับองค์กร สั่งออนไลน์ได้เลย</p>
+  <div class="hero-cta">
+    <button class="btn btn-red" onclick="document.getElementById('products').scrollIntoView()">🛍️ เลือกซื้อสินค้า</button>
+    <a class="btn btn-ghost" href="https://www.facebook.com/officemateplussaraburi" target="_blank" rel="noopener">📘 ดูเพจ Facebook</a>
+  </div>
+  <div class="hero-badges">
+    <div class="hero-badge"><span class="ic">🚚</span> ส่งไวในสระบุรี</div>
+    <div class="hero-badge"><span class="ic">💳</span> มีเครดิตองค์กร</div>
+    <div class="hero-badge"><span class="ic">🧾</span> ออกใบกำกับภาษีได้</div>
+    <div class="hero-badge"><span class="ic">📦</span> ราคาส่ง ซื้อเยอะยิ่งถูก</div>
+  </div>
+</div></div>
+
+<!-- Categories -->
+<section id="cats"><div class="wrap">
+  <div class="sec-head"><div><h2>หมวดสินค้า</h2><p>เลือกหมวดที่ต้องการ</p></div></div>
+  <div class="cats" id="cat-list"></div>
+</div></section>
+
+<!-- Products -->
+<section id="products" style="padding-top:0;"><div class="wrap">
+  <div class="sec-head"><div><h2 id="prod-title">สินค้าทั้งหมด</h2><p id="prod-sub">แสดงสินค้าตัวอย่าง</p></div></div>
+  <div class="grid" id="grid"></div>
+</div></section>
+
+<!-- Why us -->
+<section class="why"><div class="wrap">
+  <div class="sec-head"><div><h2>ทำไมต้องเรา</h2></div></div>
+  <div class="why-grid">
+    <div class="why-item"><div class="ic">🚚</div><b>ส่งไวถึงที่</b><span>จัดส่งในเขตสระบุรีรวดเร็ว ทันใช้งาน</span></div>
+    <div class="why-item"><div class="ic">💳</div><b>เครดิตองค์กร</b><span>ลูกค้าองค์กรเปิดเครดิตเทอมได้</span></div>
+    <div class="why-item"><div class="ic">🏷️</div><b>ราคาส่ง</b><span>ซื้อจำนวนมากได้ราคาพิเศษ</span></div>
+    <div class="why-item"><div class="ic">🧾</div><b>ครบเรื่องเอกสาร</b><span>ใบกำกับภาษี ใบเสนอราคา พร้อม</span></div>
+  </div>
+</div></section>
+
+<!-- Contact -->
+<section><div class="wrap">
+  <div class="sec-head"><div><h2>ติดต่อเรา</h2></div></div>
+  <div class="contact-grid">
+    <div class="contact-card">
+      <h3>Office Mate Plus สระบุรี</h3>
+      <div class="contact-row"><span class="ic">📍</span><span>สาขาสระบุรี (ใส่ที่อยู่จริงตรงนี้)</span></div>
+      <div class="contact-row"><span class="ic">📞</span><span>036-XXX-XXX / 08X-XXX-XXXX</span></div>
+      <div class="contact-row"><span class="ic">🕐</span><span>จันทร์–เสาร์ 8:00–18:00 น.</span></div>
+      <div class="contact-row" style="border:none;"><span class="ic">✉️</span><span>officematepplus.saraburi@email.com</span></div>
+    </div>
+    <div class="fb-embed">
+      <div class="ic">📘</div>
+      <b>ติดตามข่าวสาร & โปรโมชัน</b>
+      <span style="font-size:13px;opacity:.9;">บนเพจ Facebook ของเรา</span>
+      <a href="https://www.facebook.com/officemateplussaraburi" target="_blank" rel="noopener">ไปที่เพจ →</a>
+    </div>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <b>Office Mate Plus สระบุรี</b> · อุปกรณ์สำนักงานครบวงจร<br>
+  <span style="font-size:12px;">© 2025 · ตัวอย่างเว็บไซต์ (Prototype)</span>
+</div></footer>
+
+<!-- ══════════ Cart drawer ══════════ -->
+<div class="overlay" id="overlay" onclick="closeCart()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-hd"><b>🛒 ตะกร้าสินค้า</b><button class="x" onclick="closeCart()">✕</button></div>
+  <div class="drawer-body" id="cart-items"></div>
+  <div class="drawer-foot">
+    <div class="total-row"><span>ยอดรวม</span><b id="cart-total">฿0</b></div>
+    <button class="btn btn-red" style="width:100%;justify-content:center;" onclick="openCheckout()">ชำระเงิน →</button>
+  </div>
+</div>
+
+<!-- ══════════ Checkout modal ══════════ -->
+<div class="modal" id="modal">
+  <div class="modal-bg" onclick="closeCheckout()"></div>
+  <div class="modal-card">
+    <div class="modal-hd"><b>ชำระเงิน</b><button class="x" onclick="closeCheckout()">✕</button></div>
+    <div id="checkout-content"></div>
+  </div>
+</div>
+
+<script>
+/* ══════════ ข้อมูลสินค้า (ตัวอย่าง — จริงจะดึงจาก Google Sheet) ══════════ */
+const CATS = [
+  {key:'paper',    ic:'📄', name:'กระดาษ'},
+  {key:'it',       ic:'🖨️', name:'IT'},
+  {key:'office',   ic:'📎', name:'ออฟฟิศ'},
+  {key:'appliance',ic:'🔌', name:'เครื่องใช้'},
+  {key:'hygiene',  ic:'🧴', name:'สุขอนามัย'},
+  {key:'writing',  ic:'✏️', name:'เครื่องเขียน'},
+  {key:'furniture',ic:'🪑', name:'เฟอร์นิเจอร์'},
+  {key:'computer', ic:'💻', name:'คอมพิวเตอร์'},
+];
+const CATMAP = Object.fromEntries(CATS.map(c=>[c.key,c]));
+
+// ตัวอย่างสินค้า — แต่ละตัวมี id, ชื่อ, หมวด, ราคา, emoji (แทนรูป 1:1)
+const PRODUCTS = [
+  {id:1, name:'กระดาษถ่ายเอกสาร Double A A4 80 แกรม', cat:'paper', price:125, tag:'ขายดี', ph:'📄'},
+  {id:2, name:'กระดาษ A4 IK Plus 70 แกรม', cat:'paper', price:105, ph:'📄'},
+  {id:3, name:'กระดาษการ์ดสี A4 (แพ็ค 100)', cat:'paper', price:89, ph:'🗂️'},
+  {id:4, name:'หมึกพิมพ์ HP 680 สีดำ', cat:'it', price:420, tag:'ขายดี', ph:'🖨️'},
+  {id:5, name:'ตลับหมึก Canon 810 Black', cat:'it', price:650, ph:'🖨️'},
+  {id:6, name:'สาย HDMI 1.5 เมตร', cat:'it', price:159, ph:'🔌'},
+  {id:7, name:'ลวดเย็บกระดาษ Max เบอร์ 10', cat:'office', price:15, ph:'📎'},
+  {id:8, name:'แฟ้มสันกว้าง ตราช้าง 3 นิ้ว', cat:'office', price:75, ph:'🗄️'},
+  {id:9, name:'เทปใส 1 นิ้ว (แพ็ค 8 ม้วน)', cat:'office', price:120, ph:'📦'},
+  {id:10, name:'ปลั๊กพ่วง 5 ช่อง 3 เมตร', cat:'appliance', price:290, ph:'🔌'},
+  {id:11, name:'พัดลมตั้งโต๊ะ 12 นิ้ว', cat:'appliance', price:520, ph:'💨'},
+  {id:12, name:'เจลล้างมือแอลกอฮอล์ 500ml', cat:'hygiene', price:95, ph:'🧴'},
+  {id:13, name:'ทิชชู่ม้วนใหญ่ (แพ็ค 12)', cat:'hygiene', price:145, tag:'ขายดี', ph:'🧻'},
+  {id:14, name:'ปากกาลูกลื่น Quantum (แพ็ค 12)', cat:'writing', price:60, ph:'🖊️'},
+  {id:15, name:'ปากกาเน้นข้อความ (แพ็ค 5 สี)', cat:'writing', price:85, ph:'🖍️'},
+  {id:16, name:'ดินสอกด Pentel 0.5', cat:'writing', price:45, ph:'✏️'},
+  {id:17, name:'เก้าอี้สำนักงาน มีล้อ ปรับระดับ', cat:'furniture', price:1890, tag:'ขายดี', ph:'🪑'},
+  {id:18, name:'โต๊ะทำงาน 120 ซม. สีโอ๊ค', cat:'furniture', price:2450, ph:'🪑'},
+  {id:19, name:'ตู้เอกสาร 2 ชั้น เหล็ก', cat:'furniture', price:3200, ph:'🗄️'},
+  {id:20, name:'เมาส์ไร้สาย Logitech M170', cat:'computer', price:390, ph:'🖱️'},
+  {id:21, name:'คีย์บอร์ด USB มาตรฐาน', cat:'computer', price:290, ph:'⌨️'},
+  {id:22, name:'USB Flash Drive 32GB', cat:'computer', price:199, ph:'💾'},
+];
+
+let activeCat = '';
+let cart = JSON.parse(localStorage.getItem('ofm_cart')||'{}');
+const fmt = n => '฿'+n.toLocaleString();
+
+/* ── Render categories ── */
+document.getElementById('cat-list').innerHTML = CATS.map(c=>`
+  <div class="cat" data-cat="${c.key}" onclick="filterCat('${c.key}')">
+    <div class="cat-ic">${c.ic}</div><b>${c.name}</b>
+  </div>`).join('');
+
+function filterCat(key){
+  activeCat = (activeCat===key)?'':key;
+  document.querySelectorAll('.cat').forEach(el=>el.classList.toggle('active',el.dataset.cat===activeCat));
+  document.getElementById('prod-title').textContent = activeCat? CATMAP[activeCat].name : 'สินค้าทั้งหมด';
+  renderProducts();
+  document.getElementById('products').scrollIntoView({behavior:'smooth'});
+}
+
+/* ── Render products ── */
+function renderProducts(){
+  const q = (document.getElementById('search').value||'').toLowerCase();
+  let list = PRODUCTS.filter(p=>
+    (!activeCat || p.cat===activeCat) &&
+    (!q || p.name.toLowerCase().includes(q)));
+  document.getElementById('prod-sub').textContent = `พบ ${list.length} รายการ`;
+  document.getElementById('grid').innerHTML = list.map(p=>`
+    <div class="card">
+      <div class="card-img">
+        ${p.tag?`<span class="card-tag">${p.tag}</span>`:''}
+        <span class="ph">${p.ph}</span>
+        <span class="ph-tag">รูป 1:1 (รอใส่จริง)</span>
+      </div>
+      <div class="card-body">
+        <span class="card-cat">${CATMAP[p.cat].ic} ${CATMAP[p.cat].name}</span>
+        <div class="card-name">${p.name}</div>
+        <div class="card-foot">
+          <div class="price">${fmt(p.price)} <small>/ ชิ้น</small></div>
+          <button class="add" onclick="addToCart(${p.id})" title="ใส่ตะกร้า">+</button>
+        </div>
+      </div>
+    </div>`).join('') || '<p style="color:#94a3b8;padding:30px;">ไม่พบสินค้า</p>';
+}
+
+/* ══════════ Cart logic ══════════ */
+function saveCart(){ localStorage.setItem('ofm_cart', JSON.stringify(cart)); updateCartUI(); }
+function addToCart(id){ cart[id]=(cart[id]||0)+1; saveCart(); openCart(); }
+function setQty(id,d){ cart[id]=(cart[id]||0)+d; if(cart[id]<=0) delete cart[id]; saveCart(); }
+function removeItem(id){ delete cart[id]; saveCart(); }
+function cartCount(){ return Object.values(cart).reduce((a,b)=>a+b,0); }
+function cartTotal(){ return Object.entries(cart).reduce((s,[id,q])=>s+(PRODUCTS.find(p=>p.id==id)?.price||0)*q,0); }
+
+function updateCartUI(){
+  document.getElementById('cart-count').textContent = cartCount();
+  document.getElementById('cart-total').textContent = fmt(cartTotal());
+  const box = document.getElementById('cart-items');
+  const ids = Object.keys(cart);
+  if(!ids.length){ box.innerHTML = `<div class="cart-empty"><div class="ic">🛒</div>ตะกร้ายังว่างอยู่<br><span style="font-size:13px;">เลือกสินค้าที่ต้องการได้เลย</span></div>`; return; }
+  box.innerHTML = ids.map(id=>{
+    const p = PRODUCTS.find(x=>x.id==id); const q = cart[id];
+    return `<div class="ci">
+      <div class="ci-img">${p.ph}</div>
+      <div class="ci-info">
+        <div class="ci-name">${p.name}</div>
+        <div class="ci-price">${fmt(p.price)} × ${q} = ${fmt(p.price*q)}</div>
+        <div class="qty">
+          <button onclick="setQty(${id},-1)">−</button><span>${q}</span><button onclick="setQty(${id},1)">+</button>
+        </div>
+      </div>
+      <button class="ci-rm" onclick="removeItem(${id})">🗑️</button>
+    </div>`;
+  }).join('');
+}
+
+function openCart(){ document.getElementById('drawer').classList.add('open'); document.getElementById('overlay').classList.add('open'); }
+function closeCart(){ document.getElementById('drawer').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); }
+
+/* ══════════ Checkout ══════════ */
+function openCheckout(){
+  if(!cartCount()){ alert('ตะกร้ายังว่างอยู่'); return; }
+  closeCart();
+  renderCheckout();
+  document.getElementById('modal').classList.add('open');
+}
+function closeCheckout(){ document.getElementById('modal').classList.remove('open'); }
+
+function renderCheckout(){
+  const total = cartTotal();
+  const items = Object.entries(cart).map(([id,q])=>{
+    const p = PRODUCTS.find(x=>x.id==id);
+    return `<div class="r"><span>${p.name} × ${q}</span><span>${fmt(p.price*q)}</span></div>`;
+  }).join('');
+
+  document.getElementById('checkout-content').innerHTML = `
+  <div class="modal-body">
+    <div class="co-sec">
+      <h4>📦 ข้อมูลจัดส่ง</h4>
+      <div class="co-summary">
+        ${items}
+        <div class="r tot"><span>ยอดรวมทั้งสิ้น</span><span>${fmt(total)}</span></div>
+      </div>
+      <div class="field"><label>ชื่อ–นามสกุล / บริษัท *</label><input id="f-name" placeholder="เช่น บริษัท ABC จำกัด"></div>
+      <div class="field"><label>เบอร์โทร *</label><input id="f-phone" placeholder="08X-XXX-XXXX"></div>
+      <div class="field"><label>ที่อยู่จัดส่ง *</label><textarea id="f-addr" rows="2" placeholder="บ้านเลขที่ ถนน ตำบล อำเภอ จังหวัด รหัสไปรษณีย์"></textarea></div>
+      <div class="field"><label>หมายเหตุ (ถ้ามี)</label><input id="f-note" placeholder="เช่น ต้องการใบกำกับภาษี"></div>
+    </div>
+    <div class="co-sec">
+      <h4>💳 ชำระเงินโดยโอน</h4>
+      <div class="pay-box">
+        <div class="qr-wrap" id="qr"></div>
+        <div class="pay-amt">${fmt(total)}</div>
+        <div class="bank-line">📱 พร้อมเพย์ <b>0XX-XXX-XXXX</b></div>
+        <div class="bank-line">🏦 กสิกรไทย <b>XXX-X-XXXXX-X</b></div>
+        <div class="bank-line" style="color:#64748b;font-size:12px;">ชื่อบัญชี: Office Mate Plus สระบุรี</div>
+        <div class="slip-up" onclick="document.getElementById('slip').click()">
+          📎 <span id="slip-label">แนบสลิปโอนเงิน (แตะเพื่อเลือกรูป)</span>
+          <input type="file" id="slip" accept="image/*" hidden onchange="document.getElementById('slip-label').textContent='✅ แนบสลิปแล้ว: '+this.files[0].name">
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-red" style="width:100%;justify-content:center;" onclick="submitOrder()">✅ ยืนยันสั่งซื้อ</button>
+      <div class="note">🧪 <b>โหมดตัวอย่าง:</b> ตอนใช้จริง ออเดอร์จะถูกส่งเข้า Google Sheet ของร้านอัตโนมัติ (พร้อมสลิป) ให้คุณเช็คเงินเข้าแล้วจัดส่ง — เลข PromptPay/บัญชีด้านบนเป็นตัวอย่าง</div>
+    </div>
+  </div>`;
+
+  // สร้าง QR PromptPay ตามยอด (ตัวอย่าง — ใช้เลขจริงตอน go-live)
+  try{
+    new QRCode(document.getElementById('qr'), {
+      text:'PROMPTPAY-DEMO|0XXXXXXXXX|'+total, width:150, height:150,
+      colorDark:'#152238', colorLight:'#ffffff'
+    });
+  }catch(e){ document.getElementById('qr').innerHTML='<span style="font-size:44px;">📱</span>'; }
+}
+
+function submitOrder(){
+  const name=document.getElementById('f-name').value.trim();
+  const phone=document.getElementById('f-phone').value.trim();
+  const addr=document.getElementById('f-addr').value.trim();
+  if(!name||!phone||!addr){ alert('กรุณากรอกชื่อ เบอร์โทร และที่อยู่จัดส่ง'); return; }
+  // ตัวอย่าง: แค่โชว์หน้า success (จริงจะ POST เข้า Google Apps Script → Google Sheet)
+  const oid = 'OFM'+Date.now().toString().slice(-6);
+  document.getElementById('checkout-content').innerHTML = `
+    <div class="done">
+      <div class="ic">✓</div>
+      <h3>รับออเดอร์แล้ว!</h3>
+      <p>เลขที่ออเดอร์ <b>#${oid}</b><br>ยอดชำระ <b>${fmt(cartTotal())}</b><br><br>
+      ทีมงานจะตรวจสอบการโอนและติดต่อกลับเพื่อยืนยันการจัดส่ง</p>
+      <button class="btn btn-red" style="margin-top:20px;justify-content:center;" onclick="resetAll()">เลือกซื้อต่อ</button>
+    </div>`;
+  cart={}; saveCart();
+}
+function resetAll(){ closeCheckout(); }
+
+/* init */
+renderProducts();
+updateCartUI();
+</script>
+</body>
+</html>
