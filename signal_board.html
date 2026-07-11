@@ -198,6 +198,41 @@ tbody tr td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:midd
 .modal-periods{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
 .badge-prev{background:#f1f5f9;color:#64748b;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
 .badge-cur{background:#e0f2fe;color:#0369a1;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+
+/* ── Action Board: โฟกัสวันนี้ ── */
+.focus-section{padding:16px 20px;margin:4px 0;background:#f8fafc;border-top:2px solid #e2e8f0;border-bottom:2px solid #e2e8f0;}
+.focus-hd{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+.focus-hd h2{font-size:15px;font-weight:800;color:#0f172a;}
+.focus-hint{font-size:11px;color:#94a3b8;}
+.fg{background:#fff;border:1.5px solid #e5e9f0;border-radius:12px;margin-bottom:10px;overflow:hidden;}
+.fg-hd{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;user-select:none;}
+.fg-hd:hover{background:#fafbfc;}
+.fg-hd .em{font-size:20px;}
+.fg-hd .ti{font-weight:700;font-size:14px;color:#1e293b;}
+.fg-hd .ct{font-size:12px;font-weight:700;padding:2px 10px;border-radius:20px;}
+.fg-hd .own{margin-left:auto;font-size:11px;color:#94a3b8;}
+.fg-hd .arw{font-size:12px;color:#cbd5e1;transition:.2s;}
+.fg.open .arw{transform:rotate(90deg);}
+.fg-body{display:none;padding:0 12px 12px;}
+.fg.open .fg-body{display:block;}
+.fg-desc{font-size:11.5px;color:#64748b;padding:2px 4px 10px;}
+.ftab{width:100%;border-collapse:collapse;font-size:12.5px;}
+.ftab th{text-align:left;color:#94a3b8;font-weight:600;font-size:11px;padding:5px 8px;border-bottom:1px solid #f1f5f9;}
+.ftab td{padding:7px 8px;border-bottom:1px solid #f6f8fb;vertical-align:middle;}
+.ftab tr:last-child td{border-bottom:none;}
+.ftab .nm{font-weight:600;color:#1e293b;}
+.ftab .val{font-weight:700;color:#7c3aed;white-space:nowrap;}
+.gap-chip{display:inline-block;background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;margin:1px;}
+.have-chip{display:inline-block;background:#f1f5f9;color:#64748b;padding:2px 7px;border-radius:20px;font-size:10.5px;margin:1px;}
+.trend{font-size:11px;color:#64748b;white-space:nowrap;}
+.dn{color:#dc2626;font-weight:700;}
+.big-flag{background:#fef2f2;color:#dc2626;font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;}
+.st-btns{display:flex;gap:3px;}
+.st-btns button{border:1.5px solid #e5e9f0;background:#fff;border-radius:7px;width:28px;height:26px;cursor:pointer;font-size:13px;padding:0;line-height:1;}
+.st-btns button.on{border-color:transparent;}
+.st-btns button.on.call{background:#dbeafe;} .st-btns button.on.ok{background:#dcfce7;} .st-btns button.on.no{background:#fee2e2;}
+.fg-color-cross{border-left:5px solid #2563eb;} .fg-color-new{border-left:5px solid #16a34a;}
+.fg-color-decl{border-left:5px solid #dc2626;} .fg-color-big{border-left:5px solid #d97706;}
 </style>
 </head>
 <body>
@@ -245,6 +280,15 @@ tbody tr td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:midd
 <!-- ── Auto-shift notice ── -->
 <div class="shift-notice" id="shift-notice">
   ⚠️ <b id="sn-no-month"></b> ยังไม่มีข้อมูล — แสดง <b id="sn-cur-month"></b> เทียบกับ <b id="sn-prev-range"></b> แทน
+</div>
+
+<!-- ── Action Board: โฟกัสวันนี้ ── -->
+<div class="focus-section" id="focus-section" style="display:none;">
+  <div class="focus-hd">
+    <h2>📞 โฟกัสวันนี้ — ลิสต์โทรตามกลยุทธ์</h2>
+    <span class="focus-hint">คลิกหัวข้อเพื่อเปิด/ปิด · กดปุ่มสถานะเมื่อโทรแล้ว</span>
+  </div>
+  <div id="focus-groups"></div>
 </div>
 
 <!-- ── Table ── -->
@@ -716,6 +760,114 @@ function renderRecovery(res, bad, todayStr) {
     </div>`;
 }
 
+// ══════════════════════════════════════════════════════════════════
+//  ACTION BOARD — โฟกัสวันนี้ (4 กลุ่มตามกลยุทธ์ + สถานะการโทร)
+// ══════════════════════════════════════════════════════════════════
+const FOCUS_STATUS_KEY = 'ofm_focus_status';
+let FOCUS_STATUS = {};
+try { FOCUS_STATUS = JSON.parse(localStorage.getItem(FOCUS_STATUS_KEY)||'{}'); } catch(_) {}
+
+// หมวดที่ลูกค้าเคยซื้อ (cur หรือ baseline > 0)
+function boughtCats(c){ return CATS.filter(cat => c.cats[cat.key] && ((c.cats[cat.key].cur||0)>0 || (c.cats[cat.key].rec||0)>0)); }
+function gapCats(c){ const b=new Set(boughtCats(c).map(x=>x.key)); return CATS.filter(cat=>!b.has(cat.key)); }
+
+function computeFocus(){
+  const cross=[], newc=[], decl=[], big=[];
+  const totalCurAll = DATA.reduce((s,c)=>s+(c.totalCur||0),0) || 1;
+  DATA.forEach(c=>{
+    const r = RFM_MAP[c.name]; if(!r) return;
+    const bought = boughtCats(c), gaps = gapCats(c);
+    // ① cross-sell: ประจำ/โปรมิสซิ่ง, avg 2-10k, ยังมีหมวดว่าง
+    if(['regular','promising'].includes(r.seg) && r.avgM>=2000 && r.avgM<=10000 && gaps.length && bought.length)
+      cross.push({name:c.name, avgM:r.avgM, bought, gaps});
+    // ② ลูกค้าใหม่ → ประจำ
+    if(r.seg==='new') newc.push({name:c.name, avgM:r.avgM, cur:c.totalCur||0, bought});
+    // ③ ขาลง
+    if(r.seg==='declining') decl.push({name:c.name, avgM:r.avgM, growth:r.growth, cur:c.totalCur||0, prev:c.totalPrev||0});
+    // ④ เจ้าใหญ่ (คิดจากยอดเดือนนี้)
+    big.push({name:c.name, cur:c.totalCur||0, share:(c.totalCur||0)/totalCurAll, avgM:r.avgM});
+  });
+  cross.sort((a,b)=>b.avgM-a.avgM);
+  newc.sort((a,b)=>b.cur-a.cur || b.avgM-a.avgM);
+  decl.sort((a,b)=>b.avgM-a.avgM);
+  big.sort((a,b)=>b.cur-a.cur);
+  return {cross, new:newc, decl, big:big.slice(0,12)};
+}
+
+function stBtn(name){
+  const s = FOCUS_STATUS[name]||'';
+  const b=(v,ic,cls)=>`<button class="${cls} ${s===v?'on '+v:''}" onclick="setFocusStatus('${escJs(name)}','${v}')" title="${cls}">${ic}</button>`;
+  return `<div class="st-btns">${b('call','📞','call')}${b('ok','✅','ok')}${b('no','❌','no')}</div>`;
+}
+const escJs = s => (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+function setFocusStatus(name,v){
+  FOCUS_STATUS[name] = (FOCUS_STATUS[name]===v)?'':v;
+  try{ localStorage.setItem(FOCUS_STATUS_KEY, JSON.stringify(FOCUS_STATUS)); }catch(_){}
+  renderFocus();
+}
+function toggleGroup(id){ document.getElementById(id).classList.toggle('open'); }
+
+function renderFocus(){
+  const F = computeFocus();
+  const sec = document.getElementById('focus-section');
+  if(!sec) return;
+  sec.style.display='block';
+
+  const grp=(id,cls,em,ti,ct,ctColor,own,desc,head,rowsHtml,openDefault)=>`
+    <div class="fg ${cls} ${openDefault?'open':''}" id="${id}">
+      <div class="fg-hd" onclick="toggleGroup('${id}')">
+        <span class="em">${em}</span><span class="ti">${ti}</span>
+        <span class="ct" style="background:${ctColor}20;color:${ctColor};">${ct} ราย</span>
+        <span class="own">👤 ${own}</span><span class="arw">▶</span>
+      </div>
+      <div class="fg-body">
+        <div class="fg-desc">${desc}</div>
+        <table class="ftab"><thead><tr>${head}</tr></thead><tbody>${rowsHtml||'<tr><td colspan="9" style="color:#94a3b8;padding:10px;">— ไม่มีในรอบนี้ —</td></tr>'}</tbody></table>
+      </div>
+    </div>`;
+
+  // ① cross-sell
+  const crossRows = F.cross.slice(0,20).map(c=>`
+    <tr><td class="nm">${escHTML(c.name)}</td>
+      <td class="val">฿${fmt(c.avgM).replace('฿','')}/ด.</td>
+      <td>${c.gaps.slice(0,3).map(g=>`<span class="gap-chip">${g.label}</span>`).join('')}</td>
+      <td>${c.bought.slice(0,3).map(g=>`<span class="have-chip">${g.label}</span>`).join('')}</td>
+      <td>${stBtn(c.name)}</td></tr>`).join('');
+  // ② new
+  const newRows = F.new.slice(0,20).map(c=>`
+    <tr><td class="nm">${escHTML(c.name)}</td>
+      <td class="val">฿${fmt(c.avgM).replace('฿','')}/ด.</td>
+      <td>${c.cur>0?`<span style="color:#16a34a;font-weight:700;">🟢 ซื้อแล้ว ฿${fmt(c.cur).replace('฿','')}</span>`:'<span style="color:#dc2626;">🔴 ยังไม่ซื้อรอบนี้</span>'}</td>
+      <td>${stBtn(c.name)}</td></tr>`).join('');
+  // ③ declining
+  const declRows = F.decl.slice(0,20).map(c=>{
+    const g = c.growth!=null?Math.round(c.growth*100):null;
+    return `<tr><td class="nm">${escHTML(c.name)}</td>
+      <td class="val">฿${fmt(c.avgM).replace('฿','')}/ด.</td>
+      <td class="trend">เดือนนี้ ฿${fmt(c.cur).replace('฿','')} ${g!=null?`<span class="dn">(${g}%)</span>`:''}</td>
+      <td>${stBtn(c.name)}</td></tr>`;}).join('');
+  // ④ big
+  const bigRows = F.big.map(c=>`
+    <tr><td class="nm">${escHTML(c.name)}</td>
+      <td class="val">฿${fmt(c.cur).replace('฿','')}</td>
+      <td>${c.share>=0.15?`<span class="big-flag">${Math.round(c.share*100)}% ของยอด ⚠️</span>`:`<span class="trend">${Math.round(c.share*100)}%</span>`}</td>
+      <td>${stBtn(c.name)}</td></tr>`).join('');
+
+  document.getElementById('focus-groups').innerHTML =
+    grp('fg-cross','fg-color-cross','🔵','Cross-sell — ฐานกลาง',F.cross.length,'#2563eb','แจง/telesale',
+        'ลูกค้าประจำ ฿2–10K/ด. → เสนอหมวดที่ยังไม่ซื้อ (เกราะกันเจ้าใหญ่หาย)',
+        '<th>ลูกค้า</th><th>avg</th><th>💡 เสนอเพิ่ม</th><th>ซื้ออยู่</th><th>สถานะ</th>', crossRows, true)
+    + grp('fg-new','fg-color-new','✨','ลูกค้าใหม่ → ดันเป็นประจำ',F.new.length,'#16a34a','telesale',
+        'เพิ่งเริ่มซื้อ ≤60 วัน → โทรให้กลับมาซื้อรอบ 2',
+        '<th>ลูกค้า</th><th>avg</th><th>กลับมาซื้อรอบนี้?</th><th>สถานะ</th>', newRows, false)
+    + grp('fg-decl','fg-color-decl','📉','ขาลง (ยังมีชีพจร)',F.decl.length,'#dc2626','telesale',
+        'ยอดกำลังดิ่ง แต่ยังซื้ออยู่ → รีบดึงกลับก่อนหลุด',
+        '<th>ลูกค้า</th><th>avg</th><th>แนวโน้ม</th><th>สถานะ</th>', declRows, false)
+    + grp('fg-big','fg-color-big','🏆','มัดเจ้าใหญ่',F.big.length,'#d97706','แจง',
+        'Top 12 เดือนนี้ → นัดออเดอร์รอบหน้า อย่าให้หลุด (แดง = เกิน 15% ของยอด เสี่ยงกระจุก)',
+        '<th>ลูกค้า</th><th>ยอดเดือนนี้</th><th>สัดส่วน</th><th>สถานะ</th>', bigRows, false);
+}
+
 // ── Load + process signals ────────────────────────────────────────────────────
 async function loadSignals() {
   document.getElementById('tbl-body').innerHTML =
@@ -723,6 +875,7 @@ async function loadSignals() {
   document.getElementById('period-lbl').textContent = 'กำลังโหลด…';
   document.getElementById('leak-section').style.display = 'none';
   document.getElementById('lost-section').style.display = 'none';
+  document.getElementById('focus-section').style.display = 'none';
   document.getElementById('recovery-section').style.display = 'none';
   document.getElementById('shift-notice').style.display = 'none';
 
@@ -861,6 +1014,8 @@ async function loadSignals() {
       } catch(_) {}
       // Recovery tracking (week-over-week, localStorage)
       try { runRecovery(); } catch(_) {}
+      // Action Board — โฟกัสวันนี้
+      try { renderFocus(); } catch(_) {}
       const segOrd = {rescue:0,premium:1,promising:2,declining:3,regular:4,sleeping:5,new:6};
       DATA.sort((a,b)=>
         b.stopCount!==a.stopCount ? b.stopCount-a.stopCount :
