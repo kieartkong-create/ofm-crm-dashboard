@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ประชุมทีม OFM — 11 ก.ค. 69</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Itim&family=Mali:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --coral:#ff8b7b; --coral-d:#f96e5b; --blue:#7bb0e8; --blue-d:#5a94d6;
+  --mint:#7ed9b8; --lav:#b49ae0; --peach:#ffc9a3; --gold:#ffd166;
+  --cream:#fff7f0; --ink:#5a4a52; --ink-d:#3f333a; --muted:#a89aa0;
+  --card:#ffffff; --soft:0 12px 30px rgba(214,150,150,.18);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Mali',sans-serif;background:#f2e9e4;color:var(--ink-d);overflow:hidden;}
+.stage{width:100vw;height:100vh;display:grid;place-items:center;padding:24px;}
+.slide{width:100%;max-width:1000px;aspect-ratio:16/9;max-height:calc(100vh - 48px);
+  background:linear-gradient(160deg,var(--cream),#fff);border-radius:34px;box-shadow:var(--soft);
+  padding:46px 54px;position:relative;overflow:hidden;display:none;flex-direction:column;}
+.slide.on{display:flex;animation:pop .4s cubic-bezier(.2,.9,.3,1.2);}
+@keyframes pop{from{opacity:0;transform:scale(.96) translateY(10px);}to{opacity:1;transform:none;}}
+.slide::before{content:"";position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,201,163,.5),transparent 70%);}
+.slide::after{content:"";position:absolute;bottom:-70px;left:-50px;width:180px;height:180px;border-radius:50%;
+  background:radial-gradient(circle,rgba(123,176,232,.35),transparent 70%);}
+h1,h2,.font-c{font-family:'Itim',cursive;}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:'Itim';font-size:18px;color:var(--coral-d);
+  background:#fff0eb;padding:5px 16px;border-radius:30px;align-self:flex-start;position:relative;z-index:1;}
+h2{font-size:38px;color:var(--ink-d);margin:10px 0 6px;position:relative;z-index:1;line-height:1.15;}
+.sub{font-size:16px;color:var(--muted);position:relative;z-index:1;}
+.body{flex:1;display:flex;flex-direction:column;justify-content:center;gap:14px;position:relative;z-index:1;margin-top:8px;}
+
+/* cards / rows */
+.row{display:flex;gap:14px;align-items:flex-start;background:var(--card);border-radius:20px;padding:16px 20px;
+  box-shadow:0 6px 16px rgba(214,150,150,.1);border:2px solid #fdeee6;}
+.row .ic{font-size:28px;flex-shrink:0;line-height:1.2;}
+.row .tx{font-size:18px;line-height:1.45;}
+.row .tx b{font-family:'Itim';color:var(--coral-d);font-weight:400;font-size:20px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.chip{display:inline-block;background:#eaf4ff;color:var(--blue-d);padding:3px 12px;border-radius:20px;font-size:14px;margin:2px;}
+
+/* big stat */
+.stat{background:linear-gradient(150deg,#fff,#fff3ec);border-radius:22px;padding:20px;text-align:center;
+  border:2px solid #ffe3d3;box-shadow:0 6px 16px rgba(214,150,150,.12);}
+.stat .n{font-family:'Itim';font-size:40px;color:var(--coral-d);line-height:1;}
+.stat .l{font-size:14px;color:var(--muted);margin-top:6px;}
+
+/* pill list */
+.plist{display:flex;flex-direction:column;gap:11px;}
+.pill{display:flex;align-items:center;gap:12px;background:#fff;border-radius:18px;padding:13px 18px;
+  border-left:6px solid var(--blue);box-shadow:0 5px 14px rgba(214,150,150,.09);font-size:17px;}
+.pill.c{border-color:var(--coral);} .pill.m{border-color:var(--mint);} .pill.g{border-color:var(--gold);}
+.pill.v{border-color:var(--lav);}
+.pill .num{font-family:'Itim';font-size:24px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;
+  color:#fff;flex-shrink:0;background:var(--blue);}
+.pill.c .num{background:var(--coral);} .pill.m .num{background:var(--mint);}
+.pill.g .num{background:var(--gold);color:#8a6d1f;} .pill.v .num{background:var(--lav);}
+.pill b{font-family:'Itim';font-weight:400;color:var(--coral-d);}
+
+/* KPI table */
+.ktab{width:100%;border-collapse:separate;border-spacing:0 8px;font-size:16px;}
+.ktab td{background:#fff;padding:11px 16px;}
+.ktab tr td:first-child{border-radius:14px 0 0 14px;}
+.ktab tr td:last-child{border-radius:0 14px 14px 0;font-family:'Itim';color:var(--blue-d);text-align:right;}
+.ktab .who{color:var(--coral-d);font-family:'Itim';}
+
+.time{position:absolute;top:26px;right:32px;font-family:'Itim';font-size:16px;color:#fff;
+  background:var(--coral);padding:4px 15px;border-radius:20px;z-index:2;box-shadow:0 4px 10px rgba(249,110,91,.35);}
+.owner{position:absolute;bottom:24px;right:32px;font-size:14px;color:var(--muted);z-index:2;}
+
+/* title slide */
+.title{align-items:center;justify-content:center;text-align:center;
+  background:linear-gradient(155deg,#ffe8dd,#e8f1fc);}
+.title .logo{width:96px;height:96px;border-radius:50%;background:var(--blue);display:grid;place-items:center;
+  color:#fff;font-family:'Itim';font-size:26px;box-shadow:0 10px 24px rgba(90,148,214,.4);margin-bottom:20px;}
+.title h1{font-size:52px;color:var(--ink-d);position:relative;z-index:1;}
+.title .date{font-family:'Itim';font-size:24px;color:var(--coral-d);margin-top:8px;position:relative;z-index:1;}
+.title .tag{font-size:17px;color:var(--muted);margin-top:16px;max-width:560px;position:relative;z-index:1;}
+.hearts{font-size:22px;margin-top:18px;letter-spacing:6px;}
+
+/* close slide */
+.close{align-items:center;justify-content:center;text-align:center;background:linear-gradient(155deg,#e8f6ef,#fff3ec);}
+.close h2{font-size:46px;}
+.close .big{font-family:'Itim';font-size:30px;color:var(--coral-d);margin-top:10px;}
+
+/* nav */
+.nav{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:14px;z-index:50;}
+.nav button{font-family:'Itim';font-size:20px;background:#fff;border:none;width:46px;height:46px;border-radius:50%;
+  cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.12);color:var(--coral-d);}
+.nav button:active{transform:scale(.9);}
+.dots{display:flex;gap:6px;background:#fff;padding:8px 12px;border-radius:20px;box-shadow:0 6px 16px rgba(0,0,0,.1);}
+.dot{width:9px;height:9px;border-radius:50%;background:#f0d5cb;cursor:pointer;transition:.2s;}
+.dot.on{background:var(--coral);width:22px;border-radius:6px;}
+.count{position:fixed;top:18px;left:24px;font-family:'Itim';font-size:16px;color:var(--muted);z-index:50;
+  background:#fff;padding:4px 14px;border-radius:20px;box-shadow:0 4px 10px rgba(0,0,0,.08);}
+.hint{position:fixed;bottom:20px;right:24px;font-size:13px;color:var(--muted);z-index:50;}
+@media print{.nav,.count,.hint{display:none;}}
+</style>
+</head>
+<body>
+
+<div class="count" id="count">1 / 13</div>
+<div class="stage">
+
+<!-- 0 TITLE -->
+<div class="slide title on">
+  <div class="logo">OM+</div>
+  <h1>ประชุมทีม OfficeMate Plus+</h1>
+  <div class="date">🗓️ วันศุกร์ที่ 11 กรกฎาคม 2569 · 13.00 น.</div>
+  <div class="tag">เป้าหมาย: ปิดยอด ฿850,000 เดือนนี้แบบยั่งยืน 💪<br>ทำให้เดือนหน้าไม่ตก — ไม่พึ่งลูกค้าเจ้าใหญ่เจ้าเดียว</div>
+  <div class="hearts">🌸 ✨ 💗 ✨ 🌸</div>
+</div>
+
+<!-- 1 -->
+<div class="slide">
+  <div class="time">⏱️ 5 นาที</div>
+  <span class="eyebrow">📊 วาระ 1</span>
+  <h2>ภาพรวมตัวเลข — เรามาถึงไหนแล้ว</h2>
+  <div class="body">
+    <div class="grid3">
+      <div class="stat"><div class="n">฿1.02M</div><div class="l">มิ.ย. — ทะลุเป้าครั้งแรก 🎉</div></div>
+      <div class="stat"><div class="n">~฿1.19M</div><div class="l">ก.ค. กำลังวิ่ง (เร็วกว่าเดิม)</div></div>
+      <div class="stat"><div class="n">54%</div><div class="l">ยอดมาจาก Top 10 ราย</div></div>
+    </div>
+    <div class="row" style="border-color:#ffe0d3;">
+      <div class="ic">💡</div>
+      <div class="tx">การโตมาจาก <b>โรงเรียน + ลูกค้าประจำ</b> ไม่ใช่จากแอด · เจ้าใหญ่สุดเจ้าเดียว = 19% ของยอด<br>
+      <b>โจทย์วันนี้:</b> ทำให้เดือนหน้าไม่ตก ไม่พึ่งเจ้าใหญ่</div>
+    </div>
+  </div>
+  <div class="owner">นำโดย: เฮีย</div>
+</div>
+
+<!-- 2 -->
+<div class="slide">
+  <div class="time">⏱️ 8 นาที</div>
+  <span class="eyebrow">✅ วาระ 2</span>
+  <h2>ทบทวนงานค้างสัปดาห์ก่อน</h2>
+  <div class="body">
+    <div class="plist">
+      <div class="pill c"><span class="num">จ</span><div><b>แจง</b> — ปั๊มรีวิว / อัปเซลล์ / ตามเว็บกับเฮีย ถึงไหนแล้ว</div></div>
+      <div class="pill v"><span class="num">ก</span><div><b>กระแต</b> — คลิปโพสต์กี่ตัว · อัปเดต Sheet กู้ด่วนแล้วยัง</div></div>
+      <div class="pill m"><span class="num">ว</span><div><b>วัน</b> — ตอบแชต Facebook เป็นยังไงบ้าง</div></div>
+    </div>
+    <div class="row" style="border-color:#e0eeff;">
+      <div class="ic">💬</div><div class="tx">รายงานสั้นๆ นะคะ: <b>เสร็จ / ติดตรงไหน / เสร็จเมื่อไหร่</b> — ส่งสถานะทาง LINE ก่อน 12.00 จะได้ไม่กินเวลา</div>
+    </div>
+  </div>
+  <div class="owner">แต่ละคนรายงาน</div>
+</div>
+
+<!-- 3 -->
+<div class="slide">
+  <div class="time">⏱️ 7 นาที</div>
+  <span class="eyebrow">🔄 วาระ 3</span>
+  <h2>ผลการตามลูกค้า กู้ด่วน + ขาลง</h2>
+  <div class="body">
+    <div class="grid2">
+      <div class="row" style="border-color:#ffdad0;"><div class="ic">🆘</div><div class="tx"><b>กู้ด่วน 4 ราย</b><br>โทร 1 อาทิตย์ → กลับมา <b>0 ราย</b> 😢<br>(หายนานเกิน เปลี่ยนเจ้าแล้ว)</div></div>
+      <div class="row" style="border-color:#cdeede;"><div class="ic">📉</div><div class="tx"><b>ขาลง</b><br>กลับมาเองหลายราย! 🎉<br>โรงสีกิจประเสริฐ ฿0→฿11K, ทีดี, สระบุรีเวชกิจ</div></div>
+    </div>
+    <div class="row" style="border-color:#e0eeff;">
+      <div class="ic">✅</div><div class="tx">ตัด <b>เอสพีที / ชินเซ็น / เอสเค</b> ถูกต้อง — ข้อมูลยืนยันว่าทรงตัว ไม่ได้ขาลง</div>
+    </div>
+    <div class="row" style="background:#fff5f2;border-color:#ffcbbb;">
+      <div class="ic">➡️</div><div class="tx"><b>ตัดสินใจ:</b> ลดแรงกู้ด่วน (เก็บแค่ วงศ์ โพลีแซค ฿19K) → เอาเวลาไปทุ่ม "ขาลง" แทน</div>
+    </div>
+  </div>
+  <div class="owner">นำโดย: เฮีย</div>
+</div>
+
+<!-- 4 -->
+<div class="slide">
+  <div class="time">⏱️ 12 นาที</div>
+  <span class="eyebrow">🎯 วาระ 4 · สำคัญสุด</span>
+  <h2>3 กลยุทธ์ปิดเป้าแบบยั่งยืน</h2>
+  <div class="body">
+    <div class="plist">
+      <div class="pill c"><span class="num">1</span><div><b>Cross-sell ฐานกลาง 39 ราย</b> → เสนอหมวดที่ยังไม่ซื้อ = <b>+฿45K ถาวร</b> 🛡️ เกราะกันเจ้าใหญ่หาย</div></div>
+      <div class="pill g"><span class="num">2</span><div><b>มัดเจ้าใหญ่</b> ให้เป็นประจำ (นัดออเดอร์รอบหน้า) + หาโรงเรียน/ราชการเพิ่ม → ลดกระจุก</div></div>
+      <div class="pill m"><span class="num">3</span><div><b>ลูกค้าใหม่ มิ.ย. → ประจำ</b> โทรตาม 5 รายใหญ่ (ข้าวสีสด ฿63K!)</div></div>
+    </div>
+    <div class="row" style="background:#fffaf0;border-color:#ffe6a8;">
+      <div class="ic">➡️</div><div class="tx"><b>ตัดสินใจ:</b> ใครรับ play ไหน + ตั้งเป้าตัวเลขแต่ละ play</div>
+    </div>
+  </div>
+  <div class="owner">เฮีย + แจง</div>
+</div>
+
+<!-- 5 -->
+<div class="slide">
+  <div class="time">⏱️ 6 นาที</div>
+  <span class="eyebrow">📞 วาระ 5</span>
+  <h2>Telesale — ลิสต์โทรวันนี้</h2>
+  <div class="body">
+    <div class="row" style="border-color:#cdeede;"><div class="ic">✨</div><div class="tx"><b>ลูกค้าใหม่ >฿5K:</b> ①ข้าวสีสด ฿63K (ด่วน!) ②สหพงศ์ ③กรีนดอท ④วิไลรัตน์ ⑤อภิญญา</div></div>
+    <div class="row" style="border-color:#ffdad0;"><div class="ic">📉</div><div class="tx"><b>ขาลง:</b> สยามสตีล (ก.ค. ฿0) + รายที่ยังเงียบ</div></div>
+    <div class="row" style="border-color:#e0d3ff;"><div class="ic">📝</div><div class="tx"><b>กติกา:</b> จดผลทุกสายลง Google Sheet → วันที่ / ชื่อ / ผล / นัดต่อ</div></div>
+    <div class="row" style="background:#fff5f2;border-color:#ffcbbb;"><div class="ic">➡️</div><div class="tx"><b>ตัดสินใจ:</b> กี่สาย/วัน/คน</div></div>
+  </div>
+  <div class="owner">telesale + แจง</div>
+</div>
+
+<!-- 6 -->
+<div class="slide">
+  <div class="time">⏱️ 7 นาที</div>
+  <span class="eyebrow">📱 วาระ 6</span>
+  <h2>Ads Facebook รอบใหม่</h2>
+  <div class="body">
+    <div class="grid2">
+      <div class="row" style="border-color:#ffe0d3;"><div class="ic">🔍</div><div class="tx"><b>ความจริง:</b> ก.ค. ยังไม่ได้ยิงเลย · แอดเก่า ฿10K เป็นแค่ยอดไลก์ วัดยอดขายไม่ได้</div></div>
+      <div class="row" style="border-color:#cdeede;"><div class="ic">🔧</div><div class="tx"><b>เปลี่ยนเป็น:</b> ยิงแบบ "ทักแชต" + ข้อความ B2B "เปิดบิลองค์กร ราคาส่ง มีเครดิต"</div></div>
+    </div>
+    <div class="row" style="border-color:#e0eeff;"><div class="ic">🏷️</div><div class="tx">ใส่โค้ด <b>"FB ลด 5%"</b> → วัดได้ว่าแอดทำยอดจริงกี่บาท · ปิดตัวแพง เก็บสูตรถูก</div></div>
+    <div class="row" style="background:#fff5f2;border-color:#ffcbbb;"><div class="ic">➡️</div><div class="tx"><b>ตัดสินใจ:</b> อนุมัติงบ + ใครตั้งแอด + เริ่มเมื่อไหร่</div></div>
+  </div>
+  <div class="owner">เฮีย + วัน/กระแต</div>
+</div>
+
+<!-- 7 -->
+<div class="slide">
+  <div class="time">⏱️ 4 นาที</div>
+  <span class="eyebrow">🌐 วาระ 7</span>
+  <h2>เว็บไซต์ร้าน</h2>
+  <div class="body">
+    <div class="plist">
+      <div class="pill"><span class="num">✓</span><div>ตัวอย่างเว็บ (ตะกร้า + QR โอนเงิน) ทำได้แล้ว → ไปทำต่อให้สวยที่ Antigravity</div></div>
+      <div class="pill c"><span class="num">📸</div><div>ต่อยอด: ใส่ <b>รูปสินค้าจริง 1:1</b> + ทำ SEO + Google Business</div></div>
+    </div>
+    <div class="row" style="background:#fff5f2;border-color:#ffcbbb;"><div class="ic">➡️</div><div class="tx"><b>ตัดสินใจ:</b> timeline เว็บ + ใครถ่ายรูปสินค้า</div></div>
+  </div>
+  <div class="owner">นำโดย: เฮีย</div>
+</div>
+
+<!-- 8 -->
+<div class="slide">
+  <div class="time">⏱️ 6 นาที</div>
+  <span class="eyebrow">🎥 วาระ 8</span>
+  <h2>คอนเทนต์ + โซเชียล + รีวิว</h2>
+  <div class="body">
+    <div class="row" style="border-color:#e0d3ff;"><div class="ic">🎬</div><div class="tx"><b>กระแต:</b> ทำคลิป/โพสต์ต่อ — แต่วัดแยก (ยอดไลก์/ทัก) อย่าปนกับยอดขาย</div></div>
+    <div class="row" style="border-color:#ffe6a8;"><div class="ic">⭐</div><div class="tx"><b>ปั๊มรีวิว</b> → ต่อ Google Business (รีวิวเยอะ = ขึ้น Google ง่าย + ช่วยเว็บติดอันดับ)</div></div>
+    <div class="row" style="border-color:#cdeede;"><div class="ic">💬</div><div class="tx"><b>วัน:</b> ตอบแชต FB ให้ไว (พอยิงแอดใหม่จะมีคนทักเพิ่ม)</div></div>
+    <div class="row" style="background:#fff5f2;border-color:#ffcbbb;"><div class="ic">➡️</div><div class="tx"><b>ตัดสินใจ:</b> เป้ารีวิว/สัปดาห์ + ธีมคลิป</div></div>
+  </div>
+  <div class="owner">กระแต + วัน</div>
+</div>
+
+<!-- 9 -->
+<div class="slide">
+  <div class="time">⏱️ 3 นาที</div>
+  <span class="eyebrow">🛠️ วาระ 9</span>
+  <h2>เครื่องมือใหม่กำลังมา</h2>
+  <div class="body">
+    <div class="row" style="border-color:#cdeede;font-size:19px;">
+      <div class="ic">📞</div><div class="tx">กำลังทำแท็บ <b>"โฟกัสวันนี้"</b> ในแดชบอร์ด<br>เปิดมาเห็นเลยว่าต้องโทรใคร — cross-sell / ลูกค้าใหม่ / ขาลง / เจ้าใหญ่ 💗</div>
+    </div>
+    <div class="row" style="border-color:#e0eeff;"><div class="ic">📌</div><div class="tx">ระหว่างนี้ใช้ลิสต์จากประชุมไปก่อนนะคะ</div></div>
+  </div>
+  <div class="owner">แจ้งให้ทราบ</div>
+</div>
+
+<!-- 10 -->
+<div class="slide">
+  <div class="time">⏱️ 5 นาที</div>
+  <span class="eyebrow">🎯 วาระ 10</span>
+  <h2>เป้าวัดผล — เจอกันสัปดาห์หน้า</h2>
+  <div class="body">
+    <table class="ktab">
+      <tr><td>💰 ยอดสะสม ก.ค.</td><td class="who">ทีม</td><td>≥ ฿600K</td></tr>
+      <tr><td>🔵 Cross-sell ฐานกลาง</td><td class="who">แจง</td><td>โทร 10 + จดผล</td></tr>
+      <tr><td>✨ ลูกค้าใหม่ซื้อซ้ำ</td><td class="who">telesale</td><td>≥ 2 ราย</td></tr>
+      <tr><td>🏆 มัดเจ้าใหญ่ นัดออเดอร์</td><td class="who">แจง</td><td>≥ 2 ราย</td></tr>
+      <tr><td>📱 Ads ยิง + โค้ดวัดผล</td><td class="who">วัน</td><td>เริ่ม + มีตัวเลข</td></tr>
+      <tr><td>⭐ รีวิวใหม่</td><td class="who">กระแต</td><td>+ ตามเป้า</td></tr>
+    </table>
+  </div>
+  <div class="owner">นำโดย: เฮีย</div>
+</div>
+
+<!-- 11 -->
+<div class="slide">
+  <div class="time">⏱️ 4 นาที</div>
+  <span class="eyebrow">🏁 วาระ 11</span>
+  <h2>สรุป 3 ข้อ ก่อนแยกย้าย</h2>
+  <div class="body">
+    <div class="plist">
+      <div class="pill c"><span class="num">1</span><div>เดือนนี้ดี<b>เพราะฤดูกาล</b> — งานเราคือทำให้เดือนหน้าไม่ตก</div></div>
+      <div class="pill g"><span class="num">2</span><div>เกราะกันเจ้าใหญ่หาย = <b>ดันฐานกลาง + มัดเจ้าใหญ่</b> ไม่ใช่รอโชค</div></div>
+      <div class="pill v"><span class="num">3</span><div><b>จดผลทุกสาย</b> ไม่งั้นสัปดาห์หน้าวัดไม่ได้</div></div>
+    </div>
+    <div class="row" style="background:#eaf4ff;border-color:#c9e0f7;"><div class="ic">📅</div><div class="tx">ประชุมหน้า: <b>ศุกร์ 18 ก.ค. 13.00</b> เปิดด้วย 6 ตัวเลขในตาราง KPI</div></div>
+  </div>
+  <div class="owner">นำโดย: เฮีย</div>
+</div>
+
+<!-- 12 CLOSE -->
+<div class="slide close">
+  <h2>ขอบคุณทุกคนค่ะ 💗</h2>
+  <div class="big">ลุยกัน ปิดเป้าเดือนนี้ให้ได้! 💪✨</div>
+  <div class="hearts">🌸 💐 🎀 💐 🌸</div>
+</div>
+
+</div>
+
+<div class="nav">
+  <button onclick="go(-1)">‹</button>
+  <div class="dots" id="dots"></div>
+  <button onclick="go(1)">›</button>
+</div>
+<div class="hint">← → เปลี่ยนสไลด์ · กด F เต็มจอ</div>
+
+<script>
+const slides=[...document.querySelectorAll('.slide')];
+let i=0;
+const dots=document.getElementById('dots');
+slides.forEach((_,n)=>{const d=document.createElement('div');d.className='dot'+(n===0?' on':'');d.onclick=()=>set(n);dots.appendChild(d);});
+function set(n){
+  i=Math.max(0,Math.min(slides.length-1,n));
+  slides.forEach((s,k)=>s.classList.toggle('on',k===i));
+  [...dots.children].forEach((d,k)=>d.classList.toggle('on',k===i));
+  document.getElementById('count').textContent=`${i+1} / ${slides.length}`;
+}
+function go(d){set(i+d);}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' ')go(1);
+  else if(e.key==='ArrowLeft')go(-1);
+  else if(e.key.toLowerCase()==='f'){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}
+});
+</script>
+</body>
+</html>
