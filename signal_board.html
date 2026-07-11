@@ -231,6 +231,9 @@ tbody tr td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:midd
 .st-btns button{border:1.5px solid #e5e9f0;background:#fff;border-radius:7px;width:28px;height:26px;cursor:pointer;font-size:13px;padding:0;line-height:1;}
 .st-btns button.on{border-color:transparent;}
 .st-btns button.on.call{background:#dbeafe;} .st-btns button.on.ok{background:#dcfce7;} .st-btns button.on.no{background:#fee2e2;}
+.who-pick{margin-left:auto;font-size:12px;color:#64748b;}
+.who-btn{border:1.5px solid #e5e9f0;background:#fff;border-radius:16px;padding:3px 11px;font-size:12px;cursor:pointer;margin-left:4px;color:#475569;}
+.who-btn.on{background:#2563eb;color:#fff;border-color:#2563eb;font-weight:700;}
 .fg-color-cross{border-left:5px solid #2563eb;} .fg-color-new{border-left:5px solid #16a34a;}
 .fg-color-decl{border-left:5px solid #dc2626;} .fg-color-big{border-left:5px solid #d97706;}
 </style>
@@ -287,6 +290,7 @@ tbody tr td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:midd
   <div class="focus-hd">
     <h2>📞 โฟกัสวันนี้ — ลิสต์โทรตามกลยุทธ์</h2>
     <span class="focus-hint">คลิกหัวข้อเพื่อเปิด/ปิด · กดปุ่มสถานะเมื่อโทรแล้ว</span>
+    <span class="who-pick" id="who-pick"></span>
   </div>
   <div id="focus-groups"></div>
 </div>
@@ -763,9 +767,41 @@ function renderRecovery(res, bad, todayStr) {
 // ══════════════════════════════════════════════════════════════════
 //  ACTION BOARD — โฟกัสวันนี้ (4 กลุ่มตามกลยุทธ์ + สถานะการโทร)
 // ══════════════════════════════════════════════════════════════════
+// 🔗 วาง URL ของ Google Apps Script Web App ตรงนี้ (ได้จากขั้นตอน deploy)
+const SYNC_URL = '';   // ← ว่าง = ใช้ localStorage อย่างเดียว (ยังไม่ sync)
+
 const FOCUS_STATUS_KEY = 'ofm_focus_status';
+const FOCUS_WHO_KEY = 'ofm_focus_who';
 let FOCUS_STATUS = {};
 try { FOCUS_STATUS = JSON.parse(localStorage.getItem(FOCUS_STATUS_KEY)||'{}'); } catch(_) {}
+let FOCUS_WHO = localStorage.getItem(FOCUS_WHO_KEY) || '';
+
+function setWho(v){ FOCUS_WHO=v; localStorage.setItem(FOCUS_WHO_KEY,v); renderFocus(); }
+
+// ── ดึงสถานะล่าสุดจาก Google Sheet (JSONP กันปัญหา CORS) ──
+function syncFocusFromSheet(){
+  if(!SYNC_URL) return;
+  const cb='ofmCB_'+Date.now();
+  window[cb]=(data)=>{
+    try{
+      Object.entries(data||{}).forEach(([name,v])=>{ FOCUS_STATUS[name]=v.status||''; });
+      localStorage.setItem(FOCUS_STATUS_KEY, JSON.stringify(FOCUS_STATUS));
+      renderFocus();
+    }catch(_){}
+    delete window[cb]; s.remove();
+  };
+  const s=document.createElement('script');
+  s.src=SYNC_URL+'?callback='+cb+'&t='+Date.now();
+  s.onerror=()=>{ delete window[cb]; s.remove(); };
+  document.body.appendChild(s);
+}
+
+// ── ส่งสถานะเข้า Google Sheet (fire-and-forget) ──
+function pushStatusToSheet(name,status){
+  if(!SYNC_URL) return;
+  fetch(SYNC_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({name,status,who:FOCUS_WHO||'ไม่ระบุ'})}).catch(()=>{});
+}
 
 // หมวดที่ลูกค้าเคยซื้อ (cur หรือ baseline > 0)
 function boughtCats(c){ return CATS.filter(cat => c.cats[cat.key] && ((c.cats[cat.key].cur||0)>0 || (c.cats[cat.key].rec||0)>0)); }
@@ -801,8 +837,11 @@ function stBtn(name){
 }
 const escJs = s => (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
 function setFocusStatus(name,v){
-  FOCUS_STATUS[name] = (FOCUS_STATUS[name]===v)?'':v;
+  if(SYNC_URL && !FOCUS_WHO){ alert('กรุณาเลือกก่อนว่า "ฉันคือใคร" (มุมขวาบนของโฟกัสวันนี้)'); return; }
+  const nv = (FOCUS_STATUS[name]===v)?'':v;
+  FOCUS_STATUS[name] = nv;
   try{ localStorage.setItem(FOCUS_STATUS_KEY, JSON.stringify(FOCUS_STATUS)); }catch(_){}
+  pushStatusToSheet(name, nv);   // ส่งเข้า Sheet ให้ทุกคนเห็น
   renderFocus();
 }
 function toggleGroup(id){ document.getElementById(id).classList.toggle('open'); }
@@ -812,6 +851,15 @@ function renderFocus(){
   const sec = document.getElementById('focus-section');
   if(!sec) return;
   sec.style.display='block';
+
+  // "ฉันคือใคร" picker (แสดงเฉพาะเมื่อเปิด sync)
+  const wp = document.getElementById('who-pick');
+  if(wp){
+    if(SYNC_URL){
+      const opts=['แจง','กระแต','วัน','telesale','เฮีย'];
+      wp.innerHTML = '👤 ฉันคือ: '+opts.map(o=>`<button class="who-btn ${FOCUS_WHO===o?'on':''}" onclick="setWho('${o}')">${o}</button>`).join('');
+    } else wp.innerHTML='';
+  }
 
   const grp=(id,cls,em,ti,ct,ctColor,own,desc,head,rowsHtml,openDefault)=>`
     <div class="fg ${cls} ${openDefault?'open':''}" id="${id}">
@@ -1015,7 +1063,7 @@ async function loadSignals() {
       // Recovery tracking (week-over-week, localStorage)
       try { runRecovery(); } catch(_) {}
       // Action Board — โฟกัสวันนี้
-      try { renderFocus(); } catch(_) {}
+      try { renderFocus(); syncFocusFromSheet(); } catch(_) {}
       const segOrd = {rescue:0,premium:1,promising:2,declining:3,regular:4,sleeping:5,new:6};
       DATA.sort((a,b)=>
         b.stopCount!==a.stopCount ? b.stopCount-a.stopCount :
