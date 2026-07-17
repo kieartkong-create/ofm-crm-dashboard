@@ -216,7 +216,9 @@ tbody tr td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:midd
 .fg-body{display:none;padding:0 12px 12px;}
 .fg.open .fg-body{display:block;}
 .fg-desc{font-size:11.5px;color:#64748b;padding:2px 4px 10px;}
-.fg-more{font-size:11px;color:#94a3b8;padding:8px 4px 2px;font-style:italic;}
+.fg-more-btn{display:block;margin:10px auto 2px;background:#f1f5f9;border:1.5px solid #e5e9f0;color:#475569;
+  font-size:12px;font-weight:600;padding:8px 18px;border-radius:20px;cursor:pointer;}
+.fg-more-btn:hover{background:#e5e9f0;border-color:#cbd5e1;}
 .ftab{width:100%;border-collapse:collapse;font-size:12.5px;}
 .ftab th{text-align:left;color:#94a3b8;font-weight:600;font-size:11px;padding:5px 8px;border-bottom:1px solid #f1f5f9;}
 .ftab td{padding:7px 8px;border-bottom:1px solid #f6f8fb;vertical-align:middle;}
@@ -847,6 +849,10 @@ function setFocusStatus(name,v){
 }
 function toggleGroup(id){ document.getElementById(id).classList.toggle('open'); }
 
+// จำนวนแถวที่ "แสดงอยู่" ต่อกลุ่ม — กดปุ่ม "แสดงเพิ่ม" แล้วเพิ่มทีละ 50
+const FOCUS_SHOWN = {cross:50, new:50, decl:50};
+function showMoreFocus(key){ FOCUS_SHOWN[key]+=50; renderFocus(); }
+
 function renderFocus(){
   const F = computeFocus();
   const sec = document.getElementById('focus-section');
@@ -862,11 +868,10 @@ function renderFocus(){
     } else wp.innerHTML='';
   }
 
-  const SHOW_CAP = 50;
-  const capNote = total => total>SHOW_CAP
-    ? `<div class="fg-more">แสดง ${SHOW_CAP} จาก ${total} ราย (เรียงตามมูลค่าสูงสุดก่อน — รายที่สำคัญสุดอยู่บนแล้ว)</div>` : '';
+  const moreBtn = (key,shown,total) => total>shown
+    ? `<button class="fg-more-btn" onclick="showMoreFocus('${key}')">⬇️ แสดงเพิ่ม (เหลืออีก ${total-shown} ราย)</button>` : '';
 
-  const grp=(id,cls,em,ti,ct,ctColor,own,desc,head,rowsHtml,openDefault,total)=>`
+  const grp=(id,cls,em,ti,ct,ctColor,own,desc,head,rowsHtml,openDefault,key,total)=>`
     <div class="fg ${cls} ${openDefault?'open':''}" id="${id}">
       <div class="fg-hd" onclick="toggleGroup('${id}')">
         <span class="em">${em}</span><span class="ti">${ti}</span>
@@ -876,25 +881,25 @@ function renderFocus(){
       <div class="fg-body">
         <div class="fg-desc">${desc}</div>
         <table class="ftab"><thead><tr>${head}</tr></thead><tbody>${rowsHtml||'<tr><td colspan="9" style="color:#94a3b8;padding:10px;">— ไม่มีในรอบนี้ —</td></tr>'}</tbody></table>
-        ${capNote(total)}
+        ${moreBtn(key,FOCUS_SHOWN[key],total)}
       </div>
     </div>`;
 
   // ① cross-sell
-  const crossRows = F.cross.slice(0,SHOW_CAP).map(c=>`
+  const crossRows = F.cross.slice(0,FOCUS_SHOWN.cross).map(c=>`
     <tr><td class="nm">${escHTML(c.name)}</td>
       <td class="val">฿${fmt(c.avgM).replace('฿','')}/ด.</td>
       <td>${c.gaps.slice(0,3).map(g=>`<span class="gap-chip">${g.label}</span>`).join('')}</td>
       <td>${c.bought.slice(0,3).map(g=>`<span class="have-chip">${g.label}</span>`).join('')}</td>
       <td>${stBtn(c.name)}</td></tr>`).join('');
   // ② new
-  const newRows = F.new.slice(0,SHOW_CAP).map(c=>`
+  const newRows = F.new.slice(0,FOCUS_SHOWN.new).map(c=>`
     <tr><td class="nm">${escHTML(c.name)}</td>
       <td class="val">฿${fmt(c.avgM).replace('฿','')}/ด.</td>
       <td>${c.cur>0?`<span style="color:#16a34a;font-weight:700;">🟢 ซื้อแล้ว ฿${fmt(c.cur).replace('฿','')}</span>`:'<span style="color:#dc2626;">🔴 ยังไม่ซื้อรอบนี้</span>'}</td>
       <td>${stBtn(c.name)}</td></tr>`).join('');
   // ③ declining
-  const declRows = F.decl.slice(0,SHOW_CAP).map(c=>{
+  const declRows = F.decl.slice(0,FOCUS_SHOWN.decl).map(c=>{
     const g = c.growth!=null?Math.round(c.growth*100):null;
     return `<tr><td class="nm">${escHTML(c.name)}</td>
       <td class="val">฿${fmt(c.avgM).replace('฿','')}/ด.</td>
@@ -910,13 +915,13 @@ function renderFocus(){
   document.getElementById('focus-groups').innerHTML =
     grp('fg-cross','fg-color-cross','🔵','Cross-sell — ฐานกลาง',F.cross.length,'#2563eb','แจง/telesale',
         'ลูกค้าประจำ ฿2–10K/ด. → เสนอหมวดที่ยังไม่ซื้อ (เกราะกันเจ้าใหญ่หาย)',
-        '<th>ลูกค้า</th><th>avg</th><th>💡 เสนอเพิ่ม</th><th>ซื้ออยู่</th><th>สถานะ</th>', crossRows, true, F.cross.length)
+        '<th>ลูกค้า</th><th>avg</th><th>💡 เสนอเพิ่ม</th><th>ซื้ออยู่</th><th>สถานะ</th>', crossRows, true, 'cross', F.cross.length)
     + grp('fg-new','fg-color-new','✨','ลูกค้าใหม่ → ดันเป็นประจำ',F.new.length,'#16a34a','telesale',
         'เพิ่งเริ่มซื้อ ≤60 วัน → โทรให้กลับมาซื้อรอบ 2',
-        '<th>ลูกค้า</th><th>avg</th><th>กลับมาซื้อรอบนี้?</th><th>สถานะ</th>', newRows, false, F.new.length)
+        '<th>ลูกค้า</th><th>avg</th><th>กลับมาซื้อรอบนี้?</th><th>สถานะ</th>', newRows, false, 'new', F.new.length)
     + grp('fg-decl','fg-color-decl','📉','ขาลง (ยังมีชีพจร)',F.decl.length,'#dc2626','telesale',
         'ยอดกำลังดิ่ง แต่ยังซื้ออยู่ → รีบดึงกลับก่อนหลุด',
-        '<th>ลูกค้า</th><th>avg</th><th>แนวโน้ม</th><th>สถานะ</th>', declRows, false, F.decl.length)
+        '<th>ลูกค้า</th><th>avg</th><th>แนวโน้ม</th><th>สถานะ</th>', declRows, false, 'decl', F.decl.length)
     + grp('fg-big','fg-color-big','🏆','มัดเจ้าใหญ่',F.big.length,'#d97706','แจง',
         'Top 12 เดือนนี้ → นัดออเดอร์รอบหน้า อย่าให้หลุด (แดง = เกิน 15% ของยอด เสี่ยงกระจุก)',
         '<th>ลูกค้า</th><th>ยอดเดือนนี้</th><th>สัดส่วน</th><th>สถานะ</th>', bigRows, false);
