@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ใบเตรียมตัวก่อนโทร — OFM สระบุรี</title>
+<style>
+:root{
+  --navy:#152238; --blue:#2563eb; --blue-d:#1d4ed8; --ink:#1e293b; --muted:#64748b;
+  --line:#dbe2ee; --bg:#f4f6fb; --card:#fff; --red:#dc2626; --red-bg:#fef2f2;
+  --green:#16a34a; --amber:#d97706;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:'Sarabun',-apple-system,'Noto Sans Thai',sans-serif;background:var(--bg);color:var(--ink);}
+.wrap{max-width:900px;margin:0 auto;padding:24px 20px 60px;}
+.no-print{display:flex;gap:10px;justify-content:flex-end;margin-bottom:14px;}
+.no-print button{background:var(--blue);color:#fff;border:none;padding:9px 18px;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;}
+.no-print button.sec{background:#fff;color:var(--blue);border:1.5px solid var(--blue);}
+.sheet{background:var(--card);border-radius:14px;box-shadow:0 2px 16px rgba(21,34,56,.08);padding:28px 30px;}
+.hd{text-align:center;border-bottom:3px solid var(--navy);padding-bottom:14px;margin-bottom:18px;}
+.hd h1{font-size:21px;margin:0 0 3px;color:var(--navy);}
+.hd .sub{font-size:12.5px;color:var(--muted);}
+.meta-row{display:flex;gap:20px;justify-content:center;margin-top:10px;font-size:13px;}
+.meta-row span{border-bottom:1px solid var(--ink);padding:2px 24px 2px 4px;}
+.day-badge{display:inline-block;background:var(--blue);color:#fff;font-size:12px;font-weight:700;padding:4px 14px;border-radius:20px;margin-top:8px;}
+
+.sec{margin-top:20px;}
+.sec-hd{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:800;color:var(--navy);
+  border-bottom:1.5px solid var(--line);padding-bottom:6px;margin-bottom:10px;}
+.sec-hd .time{margin-left:auto;font-size:11px;font-weight:600;color:var(--muted);background:var(--bg);padding:2px 10px;border-radius:20px;}
+
+.row-fill{display:flex;align-items:baseline;gap:8px;font-size:13.5px;margin:8px 0;flex-wrap:wrap;}
+.row-fill .line{flex:1;min-width:60px;border-bottom:1px solid var(--ink);display:inline-block;height:18px;}
+
+.namelist{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px;}
+.namelist th{background:var(--navy);color:#fff;text-align:left;padding:7px 9px;font-size:11px;font-weight:700;}
+.namelist td{padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top;}
+.namelist tr:nth-child(even) td{background:#fafbfd;}
+.namelist .idx{color:var(--muted);width:22px;}
+.namelist .nm{font-weight:700;width:34%;}
+.namelist .val{color:var(--blue-d);font-weight:700;white-space:nowrap;}
+.namelist .phone{color:var(--muted);font-style:italic;font-size:11.5px;}
+.namelist .chk{width:90px;white-space:nowrap;font-size:11px;}
+.namelist .chk span{display:inline-block;width:13px;height:13px;border:1.3px solid var(--muted);border-radius:3px;margin-right:2px;}
+
+.pill{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;}
+.pill.atrisk{background:var(--red-bg);color:var(--red);}
+.pill.cross{background:#eff6ff;color:var(--blue-d);}
+.pill.new{background:#f0fdf4;color:var(--green);}
+
+.script-box{background:var(--bg);border-radius:10px;padding:12px 14px;font-size:12.5px;margin-top:6px;}
+.script-box .q{font-weight:700;color:var(--navy);}
+.script-box .a{color:var(--muted);margin-top:2px;}
+
+.checkbox-row{display:flex;align-items:center;gap:8px;font-size:13px;margin:6px 0;}
+.checkbox-row .box{width:15px;height:15px;border:1.5px solid var(--ink);border-radius:3px;flex-shrink:0;}
+
+.foot{display:flex;justify-content:space-between;align-items:flex-end;margin-top:24px;padding-top:16px;border-top:2px solid var(--navy);}
+.sig{text-align:center;font-size:12px;}
+.sig .line2{border-bottom:1px solid var(--ink);width:170px;height:36px;margin-bottom:4px;}
+
+.loading{text-align:center;padding:60px;color:var(--muted);}
+
+@media print{
+  body{background:#fff;}
+  .no-print{display:none;}
+  .sheet{box-shadow:none;padding:0;}
+  .wrap{padding:0;max-width:100%;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="no-print">
+    <button class="sec" onclick="location.reload()">🔄 รีเฟรชข้อมูล</button>
+    <button onclick="window.print()">🖨️ พิมพ์</button>
+  </div>
+
+  <div class="sheet" id="sheet">
+    <div class="loading">⏳ กำลังดึงรายชื่อลูกค้าจาก Google Sheets…</div>
+  </div>
+</div>
+
+<script>
+const SHEET_ID = '1KDtB1FjvwoD-yzlswzWxhc5-3eOvktQzDfEUABsRZLE';
+const THAI_DOW = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+const THAI_MO = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+
+function gvizFetch(tq){
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&tq=${encodeURIComponent(tq)}`;
+  return fetch(url).then(r=>r.text()).then(t=>{
+    const json = JSON.parse(t.slice(t.indexOf('{'), t.lastIndexOf('}')+1));
+    return json.table.rows||[];
+  });
+}
+const fmt = n => '฿'+Math.round(n).toLocaleString();
+const escHTML = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+async function build(){
+  const now = new Date();
+  const curY=now.getFullYear(), curM=now.getMonth()+1;
+  let p1Y=curY, p1M=curM-1; if(p1M<=0){p1M+=12;p1Y--;}
+  let p2Y=p1Y, p2M=p1M-1; if(p2M<=0){p2M+=12;p2Y--;}
+
+  const CF = "G is not null and G!='' and G!='ไม่มีชื่อ'";
+  const curRows = await gvizFetch(`select G, sum(AN) where O=${curY} and M=${curM} and AN>0 and ${CF} group by G`);
+  const prevRows = await gvizFetch(`select G, sum(AN) where ((O=${p1Y} and M=${p1M}) or (O=${p2Y} and M=${p2M})) and AN>0 and ${CF} group by G`);
+  // หมวดสินค้า (Y) ล่าสุด 2 เดือน เพื่อหา cross-sell gap
+  const catRows = await gvizFetch(`select G, Y where ((O=${p1Y} and M=${p1M}) or (O=${curY} and M=${curM})) and AN>0 and ${CF} group by G, Y`);
+  // วันแรกที่เคยซื้อ (หาลูกค้าใหม่ ≤60 วัน)
+  const firstRows = await gvizFetch(`select G, min(K) where AN>0 and ${CF} group by G`);
+  // ลูกค้าที่ซื้อเดือนนี้แล้ว (เพื่อเช็คว่าลูกค้าใหม่กลับมาซื้อรอบ 2 หรือยัง)
+  const curSet = new Set(curRows.map(r=>r.c[0]?.v));
+
+  const cur = {}; curRows.forEach(r=>{ if(r.c[0]) cur[r.c[0].v]=r.c[1]?.v||0; });
+  const prev = {}; const prevCount = {};
+  prevRows.forEach(r=>{ if(r.c[0]){ prev[r.c[0].v]=(prev[r.c[0].v]||0)+(r.c[1]?.v||0); prevCount[r.c[0].v]=(prevCount[r.c[0].v]||0)+1; } });
+
+  const CATMAP = {PAPER:'กระดาษ',IT:'IT','OFFICE SUPPLIES':'ออฟฟิศ','BUSINESS MACHINE':'เครื่องใช้','WRITING INSTRUMENTS':'เครื่องเขียน',STATIONERY:'เครื่องเขียน',FURNITURE:'เฟอร์นิเจอร์'};
+  function catLabel(raw){
+    raw=(raw||'').trim().toUpperCase();
+    if(raw.startsWith('HYGIENE')) return 'สุขอนามัย';
+    if(raw.includes('COMPUTER')||raw.startsWith('OA/')) return 'คอมพิวเตอร์';
+    return CATMAP[raw]||null;
+  }
+  const ALLCATS = ['กระดาษ','IT','ออฟฟิศ','เครื่องใช้','สุขอนามัย','เครื่องเขียน','เฟอร์นิเจอร์','คอมพิวเตอร์'];
+  const boughtCats = {};
+  catRows.forEach(r=>{
+    const n=r.c[0]?.v, lbl=catLabel(r.c[1]?.v);
+    if(n && lbl){ (boughtCats[n]=boughtCats[n]||new Set()).add(lbl); }
+  });
+
+  // เสาที่ 1 — เสี่ยงหลุด: avg baseline >=3000 แต่เดือนนี้ยังไม่ซื้อเลย
+  const atrisk = Object.keys(prev)
+    .filter(n=>{ const avg=prev[n]/Math.max(prevCount[n],1); return avg>=3000 && !cur[n]; })
+    .map(n=>({name:n, avg:prev[n]/Math.max(prevCount[n],1)}))
+    .sort((a,b)=>b.avg-a.avg);
+
+  // เสาที่ 2 — cross-sell: ลูกค้าประจำ avg 2-10k มีหมวดว่าง
+  const cross = Object.keys(prev)
+    .filter(n=>{ const avg=prev[n]/Math.max(prevCount[n],1); return avg>=2000 && avg<=10000; })
+    .map(n=>{
+      const have = boughtCats[n] ? [...boughtCats[n]] : [];
+      const gaps = ALLCATS.filter(c=>!have.includes(c));
+      return {name:n, avg:prev[n]/Math.max(prevCount[n],1), gaps, have};
+    })
+    .filter(x=>x.gaps.length && x.have.length)
+    .sort((a,b)=>b.avg-a.avg);
+
+  // เสาที่ 3 — ลูกค้าใหม่ ≤60 วัน ยังไม่ซื้อรอบนี้
+  const today = now;
+  const newCust = firstRows.map(r=>{
+    const n=r.c[0]?.v, dstr=r.c[1]?.v;
+    if(!n||!dstr) return null;
+    const d = (dstr instanceof Date) ? dstr : new Date(dstr);
+    const days = Math.floor((today-d)/86400000);
+    return {name:n, days, bought:curSet.has(n)};
+  }).filter(x=>x && x.days>=0 && x.days<=60 && !x.bought)
+    .map(x=>({...x, avg: prev[x.name] || cur[x.name] || 0}))
+    .sort((a,b)=>b.avg-a.avg);
+
+  render(now, {atrisk, cross, newCust});
+}
+
+function render(now, groups){
+  const dow = now.getDay(); // 0=อาทิตย์
+  const dateStr = `${now.getDate()} ${['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][now.getMonth()]} ${now.getFullYear()+543}`;
+
+  // โหมดตามวัน: อังคาร(2)=cross-sell full, พุธ(3)=เสี่ยงหลุด full, ศุกร์(5)=ลูกค้าใหม่ full, วันอื่น=สั้น
+  const isFull = [2,3,5].includes(dow);
+  let mainGroup, mainLabel, mainClass, mainDesc;
+  if(dow===3){ mainGroup=groups.atrisk; mainLabel='🚨 เสาที่ 1 — เสี่ยงหลุด'; mainClass='atrisk'; mainDesc='ซื้อประจำแต่รอบนี้ยังไม่ซื้อเลย โทรก่อนเสียลูกค้าถาวร'; }
+  else if(dow===2){ mainGroup=groups.cross; mainLabel='🔵 เสาที่ 2 — Cross-sell'; mainClass='cross'; mainDesc='ลูกค้าประจำ เสนอหมวดที่ยังไม่เคยซื้อ'; }
+  else if(dow===5){ mainGroup=groups.newCust; mainLabel='✨ เสาที่ 3 — ปลุกลูกค้าใหม่'; mainClass='new'; mainDesc='เพิ่งซื้อครั้งแรก ≤60 วัน ยังไม่ซื้อรอบ 2'; }
+  else { mainGroup=groups.atrisk; mainLabel='🚨 เสาที่ 1 — เสี่ยงหลุด (ดูไว้เผื่อมีเวลา)'; mainClass='atrisk'; mainDesc='วันนี้ไม่ใช่วันโทรหลัก แต่เตรียมชื่อไว้ล่วงหน้า'; }
+
+  const N = isFull ? 10 : 5;
+  const rows = mainGroup.slice(0,N).map((c,i)=>{
+    const gapTxt = c.gaps ? `<br><span class="pill cross">💡 ${c.gaps.slice(0,2).join(', ')}</span>` : '';
+    const valTxt = fmt(c.avg);
+    return `<tr>
+      <td class="idx">${i+1}</td>
+      <td class="nm">${escHTML(c.name)}${gapTxt}</td>
+      <td class="val">${valTxt}/ด.</td>
+      <td class="phone">เบอร์: _______________</td>
+      <td class="chk">☐ปิด ☐นัด ☐ไม่รับ</td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:14px;">— ไม่มีรายชื่อในกลุ่มนี้ตอนนี้ —</td></tr>`;
+
+  const scripts = [
+    {q:'ลูกค้าบอก "ขอเทียบราคาก่อน"', a:'ได้เลยค่ะ เดี๋ยวส่งใบเสนอราคาให้ภายในวันนี้ ถ้ารวมค่าส่งแล้วเราถูกกว่านะคะ ส่งฟรีในสระบุรีด้วยค่ะ'},
+    {q:'ลูกค้าบอก "ของยังเหลืออยู่"', a:'เข้าใจค่ะ งั้นขอจดไว้ก่อนนะคะ ประมาณกี่วันจะหมดคะ จะได้โทรมาตอนพอดี ไม่ต้องรอของ'},
+    {q:'ลูกค้าบอก "ต้องรอหัวหน้าอนุมัติ"', a:'ได้ค่ะ เดี๋ยวส่งใบเสนอราคาให้เอาไปเสนอเลย ต้องใช้ภายในวันไหนคะ จะได้เตรียมของให้ทัน'},
+    {q:'ลูกค้าบอก "เดี๋ยวสั่งทีหลัง"', a:'งั้นขอนัดวันเลยนะคะ สะดวกให้โทรกลับวันไหนดีคะ'},
+  ];
+
+  document.getElementById('sheet').innerHTML = `
+    <div class="hd">
+      <h1>ใบเตรียมตัวก่อนโทร</h1>
+      <div class="sub">OfficeMate Plus+ เมืองสระบุรี — Telesale Prep Sheet</div>
+      <div class="meta-row"><span>ชื่อ: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span>วันที่: ${dateStr}</span></div>
+      <div class="day-badge">📅 วัน${THAI_DOW[dow]} ${isFull?'— วันโทรหลัก (เต็ม)':'— วันสั้น'}</div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-hd">⓪ เมื่อวานเป็นยังไง <span class="time">30 วิ</span></div>
+      <div class="row-fill">โทร <span class="line" style="max-width:50px;"></span> สาย &nbsp; ปิดได้ <span class="line" style="max-width:50px;"></span> ราย &nbsp; ยอดเมื่อวาน <span class="line"></span> บาท</div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-hd">① ${mainLabel} <span class="time">${isFull?'4 นาที':'2 นาที'}</span></div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">${mainDesc} — ${mainGroup.length} รายในระบบ (แสดง ${Math.min(N,mainGroup.length)})</div>
+      <table class="namelist">
+        <thead><tr><th>#</th><th>ลูกค้า</th><th>avg/เดือน</th><th>เบอร์โทร</th><th>ผล</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+
+    <div class="sec">
+      <div class="sec-hd">② ตัวเลขของฉันวันนี้ <span class="time">1 นาที</span></div>
+      <div class="row-fill">เดือนนี้ทำได้แล้ว <span class="line" style="max-width:50px;"></span> % &nbsp; เหลืออีก <span class="line" style="max-width:40px;"></span> วันทำงาน</div>
+      <div class="row-fill">วันนี้ต้องได้อย่างน้อย <span class="line"></span> บาท</div>
+    </div>
+
+    ${isFull ? `
+    <div class="sec">
+      <div class="sec-hd">③ ซ้อมรับมือก่อนโทร (อ่านในใจ 1 รอบ) <span class="time">2 นาที</span></div>
+      ${scripts.map(s=>`<div class="script-box"><div class="q">☐ ${s.q}</div><div class="a">➜ "${s.a}"</div></div>`).join('')}
+    </div>` : ''}
+
+    <div class="sec">
+      <div class="sec-hd">④ เช็คก่อนยกหู <span class="time">30 วิ</span></div>
+      <div class="checkbox-row"><span class="box"></span> เปิดหน้าราคาล่าสุดไว้แล้ว</div>
+      <div class="checkbox-row"><span class="box"></span> รู้ของขาด / ของเข้าวันนี้</div>
+      <div class="checkbox-row"><span class="box"></span> รู้โปรวันนี้ + โค้ดวัดผล (ถ้ามี)</div>
+      <div class="checkbox-row"><span class="box"></span> เปิด Signal Board ไว้สำหรับกดบันทึกผล</div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-hd">⑤ ปิดท้ายวัน (กรอกก่อนกลับ) <span class="time">5 นาที</span></div>
+      <div class="row-fill">โทรไปทั้งหมด <span class="line" style="max-width:50px;"></span> สาย &nbsp; ติดต่อได้ <span class="line" style="max-width:50px;"></span> สาย &nbsp; ปิดได้ <span class="line" style="max-width:50px;"></span> ราย</div>
+      <div class="row-fill">ยอดที่ได้วันนี้ <span class="line"></span> บาท</div>
+      <div class="row-fill">รายที่ต้องโทรซ้ำพรุ่งนี้: <span class="line"></span></div>
+      <div class="checkbox-row"><span class="box"></span> บันทึกผลลง Signal Board ครบทุกรายแล้ว</div>
+    </div>
+
+    <div class="foot">
+      <div class="sig">พร้อมลุย ✍<div class="line2"></div>เวลาเริ่มโทร _____ น.</div>
+      <div class="sig">หัวหน้าสายรับทราบ ✍<div class="line2"></div></div>
+    </div>
+  `;
+}
+
+build().catch(err=>{
+  document.getElementById('sheet').innerHTML = `<div class="loading" style="color:var(--red);">❌ โหลดข้อมูลไม่สำเร็จ: ${err.message}<br><button onclick="location.reload()" style="margin-top:10px;">ลองใหม่</button></div>`;
+});
+</script>
+</body>
+</html>

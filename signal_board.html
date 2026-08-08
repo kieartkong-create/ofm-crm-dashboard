@@ -239,6 +239,7 @@ tbody tr td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:midd
 .who-btn.on{background:#2563eb;color:#fff;border-color:#2563eb;font-weight:700;}
 .fg-color-cross{border-left:5px solid #2563eb;} .fg-color-new{border-left:5px solid #16a34a;}
 .fg-color-decl{border-left:5px solid #dc2626;} .fg-color-big{border-left:5px solid #d97706;}
+.fg-color-atrisk{border-left:5px solid #b91c1c;background:#fef2f2;}
 </style>
 </head>
 <body>
@@ -811,7 +812,7 @@ function boughtCats(c){ return CATS.filter(cat => c.cats[cat.key] && ((c.cats[ca
 function gapCats(c){ const b=new Set(boughtCats(c).map(x=>x.key)); return CATS.filter(cat=>!b.has(cat.key)); }
 
 function computeFocus(){
-  const cross=[], newc=[], decl=[], big=[];
+  const cross=[], newc=[], decl=[], big=[], atrisk=[];
   const totalCurAll = DATA.reduce((s,c)=>s+(c.totalCur||0),0) || 1;
   DATA.forEach(c=>{
     const r = RFM_MAP[c.name]; if(!r) return;
@@ -825,12 +826,16 @@ function computeFocus(){
     if(r.seg==='declining') decl.push({name:c.name, avgM:r.avgM, growth:r.growth, cur:c.totalCur||0, prev:c.totalPrev||0});
     // ④ เจ้าใหญ่ (คิดจากยอดเดือนนี้)
     big.push({name:c.name, cur:c.totalCur||0, share:(c.totalCur||0)/totalCurAll, avgM:r.avgM});
+    // ⑤ เสาที่ 1 — เสี่ยงหลุด: ซื้อประจำเดือนก่อน (avg baseline) แต่เดือนนี้ยังไม่ซื้อเลย
+    if((c.totalPrev||0)>=3000 && (c.totalCur||0)===0)
+      atrisk.push({name:c.name, prev:c.totalPrev||0});
   });
   cross.sort((a,b)=>b.avgM-a.avgM);
   newc.sort((a,b)=>b.cur-a.cur || b.avgM-a.avgM);
   decl.sort((a,b)=>b.avgM-a.avgM);
   big.sort((a,b)=>b.cur-a.cur);
-  return {cross, new:newc, decl, big:big.slice(0,12)};
+  atrisk.sort((a,b)=>b.prev-a.prev);
+  return {cross, new:newc, decl, big:big.slice(0,12), atrisk};
 }
 
 function stBtn(name){
@@ -850,7 +855,7 @@ function setFocusStatus(name,v){
 function toggleGroup(id){ document.getElementById(id).classList.toggle('open'); }
 
 // จำนวนแถวที่ "แสดงอยู่" ต่อกลุ่ม — กดปุ่ม "แสดงเพิ่ม" แล้วเพิ่มทีละ 50
-const FOCUS_SHOWN = {cross:50, new:50, decl:50};
+const FOCUS_SHOWN = {cross:50, new:50, decl:50, atrisk:50};
 function showMoreFocus(key){ FOCUS_SHOWN[key]+=50; renderFocus(); }
 
 function renderFocus(){
@@ -911,12 +916,21 @@ function renderFocus(){
       <td class="val">฿${fmt(c.cur).replace('฿','')}</td>
       <td>${c.share>=0.15?`<span class="big-flag">${Math.round(c.share*100)}% ของยอด ⚠️</span>`:`<span class="trend">${Math.round(c.share*100)}%</span>`}</td>
       <td>${stBtn(c.name)}</td></tr>`).join('');
+  // ⓪ เสาที่ 1: เสี่ยงหลุด
+  const atriskRows = F.atrisk.slice(0,FOCUS_SHOWN.atrisk).map(c=>`
+    <tr><td class="nm">${escHTML(c.name)}</td>
+      <td class="val">฿${fmt(c.prev).replace('฿','')}/ด.</td>
+      <td><span class="dn">ยังไม่ซื้อรอบนี้เลย</span></td>
+      <td>${stBtn(c.name)}</td></tr>`).join('');
 
   document.getElementById('focus-groups').innerHTML =
-    grp('fg-cross','fg-color-cross','🔵','Cross-sell — ฐานกลาง',F.cross.length,'#2563eb','แจง/telesale',
+    grp('fg-atrisk','fg-color-atrisk','🚨','เสาที่ 1 — เสี่ยงหลุด',F.atrisk.length,'#b91c1c','แจง+วัน+กระแต',
+        'ซื้อประจำ ≥฿3K/ด. แต่รอบนี้ยังไม่ซื้อเลย → โทรก่อนเสียลูกค้าถาวร',
+        '<th>ลูกค้า</th><th>avg เดือนก่อน</th><th>สถานะ</th><th>บันทึก</th>', atriskRows, true, 'atrisk', F.atrisk.length)
+    + grp('fg-cross','fg-color-cross','🔵','เสาที่ 2 — Cross-sell ฐานกลาง',F.cross.length,'#2563eb','แจง/telesale',
         'ลูกค้าประจำ ฿2–10K/ด. → เสนอหมวดที่ยังไม่ซื้อ (เกราะกันเจ้าใหญ่หาย)',
-        '<th>ลูกค้า</th><th>avg</th><th>💡 เสนอเพิ่ม</th><th>ซื้ออยู่</th><th>สถานะ</th>', crossRows, true, 'cross', F.cross.length)
-    + grp('fg-new','fg-color-new','✨','ลูกค้าใหม่ → ดันเป็นประจำ',F.new.length,'#16a34a','telesale',
+        '<th>ลูกค้า</th><th>avg</th><th>💡 เสนอเพิ่ม</th><th>ซื้ออยู่</th><th>สถานะ</th>', crossRows, false, 'cross', F.cross.length)
+    + grp('fg-new','fg-color-new','✨','เสาที่ 3 — ปลุกลูกค้าใหม่',F.new.length,'#16a34a','กระแต',
         'เพิ่งเริ่มซื้อ ≤60 วัน → โทรให้กลับมาซื้อรอบ 2',
         '<th>ลูกค้า</th><th>avg</th><th>กลับมาซื้อรอบนี้?</th><th>สถานะ</th>', newRows, false, 'new', F.new.length)
     + grp('fg-decl','fg-color-decl','📉','ขาลง (ยังมีชีพจร)',F.decl.length,'#dc2626','telesale',
@@ -924,7 +938,7 @@ function renderFocus(){
         '<th>ลูกค้า</th><th>avg</th><th>แนวโน้ม</th><th>สถานะ</th>', declRows, false, 'decl', F.decl.length)
     + grp('fg-big','fg-color-big','🏆','มัดเจ้าใหญ่',F.big.length,'#d97706','แจง',
         'Top 12 เดือนนี้ → นัดออเดอร์รอบหน้า อย่าให้หลุด (แดง = เกิน 15% ของยอด เสี่ยงกระจุก)',
-        '<th>ลูกค้า</th><th>ยอดเดือนนี้</th><th>สัดส่วน</th><th>สถานะ</th>', bigRows, false);
+        '<th>ลูกค้า</th><th>ยอดเดือนนี้</th><th>สัดส่วน</th><th>สถานะ</th>', bigRows, false, 'big', F.big.length);
 }
 
 // ── Load + process signals ────────────────────────────────────────────────────
