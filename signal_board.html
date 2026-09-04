@@ -508,8 +508,10 @@ function computeRFM(tbl) {
   for (const r of (tbl.rows||[])) {
     const name=r.c[0]?.v, y=r.c[1]?.v, mo=r.c[2]?.v, d=r.c[3]?.v, rev=r.c[4]?.v||0;
     if (!name||!y||!mo||!d||rev<=0) continue;
-    if (!cmap[name]) cmap[name]={firstNum:0,lastNum:0,months:new Set(),moRevs:{},rev:0};
+    if (!cmap[name]) cmap[name]={firstNum:0,lastNum:0,months:new Set(),moRevs:{},rev:0,dayByMo:{}};
     const dn = y*10000+mo*100+d;
+    { const _mk=`${y}-${mo}`, _p=cmap[name].dayByMo[_mk];
+      if(_p===undefined || d<_p) cmap[name].dayByMo[_mk]=d; }
     if (dn>cmap[name].lastNum) cmap[name].lastNum=dn;
     if (cmap[name].firstNum===0 || dn<cmap[name].firstNum) cmap[name].firstNum=dn;
     const mk=`${y}-${mo}`;
@@ -558,7 +560,13 @@ function computeRFM(tbl) {
     else if (growth!==null && growth<-0.2)   seg='declining';   // ดิ่งปานกลาง
     else                                     seg='regular';
 
-    map[name]={r,m,avgM:Math.round(avgM),monthsCount,growth,seg};
+    // วันที่ลูกค้าคนนี้ "ปกติ" ซื้อบิลแรกของเดือน (มัธยฐานจากประวัติ)
+    const _ds = Object.values(c.dayByMo||{}).sort((a,b)=>a-b);
+    const usualDay = _ds.length ? _ds[Math.floor(_ds.length/2)] : 15;
+    // เลยวันที่เขาปกติซื้อมากี่วันแล้ว (เฉพาะเดือนปัจจุบันที่ยังไม่จบ)
+    const overdue = isCurPartial ? Math.max(0, _now.getDate() - usualDay) : 0;
+
+    map[name]={r,m,avgM:Math.round(avgM),monthsCount,growth,seg,usualDay,overdue,isCurPartial};
   });
   return map;
 }
@@ -822,19 +830,27 @@ function computeFocus(){
       cross.push({name:c.name, avgM:r.avgM, bought, gaps});
     // ② ลูกค้าใหม่ → ประจำ
     if(r.seg==='new') newc.push({name:c.name, avgM:r.avgM, cur:c.totalCur||0, bought});
-    // ③ ขาลง
-    if(r.seg==='declining') decl.push({name:c.name, avgM:r.avgM, growth:r.growth, cur:c.totalCur||0, prev:c.totalPrev||0});
+    // ③ ขาลง — ต้นเดือนยังตัดสินไม่ได้ ต้องเลยวันที่เขาปกติซื้อไปแล้ว
+    if(r.seg==='declining' && (!r.isCurPartial || r.usualDay<=new Date().getDate()))
+      decl.push({name:c.name, avgM:r.avgM, growth:r.growth, cur:c.totalCur||0, prev:c.totalPrev||0, usualDay:r.usualDay, overdue:r.overdue});
     // ④ เจ้าใหญ่ (คิดจากยอดเดือนนี้)
     big.push({name:c.name, cur:c.totalCur||0, share:(c.totalCur||0)/totalCurAll, avgM:r.avgM});
     // ⑤ เสาที่ 1 — เสี่ยงหลุด: ซื้อประจำเดือนก่อน (avg baseline) แต่เดือนนี้ยังไม่ซื้อเลย
-    if((c.totalPrev||0)>=3000 && (c.totalCur||0)===0)
-      atrisk.push({name:c.name, prev:c.totalPrev||0});
+    // ⑤ เสาที่ 1 — เสี่ยงหลุด / ถึงคิวโทร
+    //    เลยวันที่เขาปกติซื้อแล้ว = ด่วน · ครบคิวใน 7 วัน = โทรดักไว้ก่อน
+    if((c.totalPrev||0)>=3000 && (c.totalCur||0)===0){
+      const _td = new Date().getDate();
+      const daysToDue = r.isCurPartial ? (r.usualDay - _td) : -1;
+      if(daysToDue<=7)
+        atrisk.push({name:c.name, prev:c.totalPrev||0, usualDay:r.usualDay,
+                     overdue:Math.max(0,-daysToDue), daysToDue});
+    }
   });
   cross.sort((a,b)=>b.avgM-a.avgM);
   newc.sort((a,b)=>b.cur-a.cur || b.avgM-a.avgM);
   decl.sort((a,b)=>b.avgM-a.avgM);
   big.sort((a,b)=>b.cur-a.cur);
-  atrisk.sort((a,b)=>b.prev-a.prev);
+  atrisk.sort((a,b)=> (b.overdue>0)-(a.overdue>0) || (b.overdue*b.prev)-(a.overdue*a.prev) || a.daysToDue-b.daysToDue || b.prev-a.prev);
   return {cross, new:newc, decl, big:big.slice(0,12), atrisk};
 }
 
@@ -920,12 +936,15 @@ function renderFocus(){
   const atriskRows = F.atrisk.slice(0,FOCUS_SHOWN.atrisk).map(c=>`
     <tr><td class="nm">${escHTML(c.name)}</td>
       <td class="val">฿${fmt(c.prev).replace('฿','')}/ด.</td>
-      <td><span class="dn">ยังไม่ซื้อรอบนี้เลย</span></td>
+      <td>${c.overdue>0
+            ? `<span class="dn">🔴 เลยรอบมา ${c.overdue} วัน</span>`
+            : `<span style="color:#b45309;font-weight:700;font-size:11px;">🟡 ถึงคิวในอีก ${c.daysToDue} วัน</span>`}
+          <div style="font-size:10px;color:#94a3b8;margin-top:2px;">ปกติซื้อ ~วันที่ ${c.usualDay}</div></td>
       <td>${stBtn(c.name)}</td></tr>`).join('');
 
   document.getElementById('focus-groups').innerHTML =
-    grp('fg-atrisk','fg-color-atrisk','🚨','เสาที่ 1 — เสี่ยงหลุด',F.atrisk.length,'#b91c1c','แจง+วัน+กระแต',
-        'ซื้อประจำ ≥฿3K/ด. แต่รอบนี้ยังไม่ซื้อเลย → โทรก่อนเสียลูกค้าถาวร',
+    grp('fg-atrisk','fg-color-atrisk','🚨','เสาที่ 1 — เสี่ยงหลุด / ถึงคิวโทร',F.atrisk.length,'#b91c1c','แจง+วัน+กระแต',
+        'ซื้อประจำ ≥฿3K/ด. · 🔴 = เลยวันที่เขาปกติซื้อแล้วยังเงียบ (โทรด่วน) · 🟡 = ใกล้ถึงคิวใน 7 วัน (โทรดักไว้)',
         '<th>ลูกค้า</th><th>avg เดือนก่อน</th><th>สถานะ</th><th>บันทึก</th>', atriskRows, true, 'atrisk', F.atrisk.length)
     + grp('fg-cross','fg-color-cross','🔵','เสาที่ 2 — Cross-sell ฐานกลาง',F.cross.length,'#2563eb','แจง/telesale',
         'ลูกค้าประจำ ฿2–10K/ด. → เสนอหมวดที่ยังไม่ซื้อ (เกราะกันเจ้าใหญ่หาย)',
