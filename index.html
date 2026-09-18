@@ -180,7 +180,7 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
   </div>
 
   <!-- B2B Tracked Monthly Table -->
-  <h2>📋 B2B Tracked Customers — ยอดรายเดือน <span style="font-size:11px;font-weight:400;color:#94a3b8;">15 บริษัทหลัก (จากไฟล์ ภายนอก)</span></h2>
+  <h2>📋 B2B Tracked Customers — ยอดรายเดือน <span style="font-size:11px;font-weight:400;color:#94a3b8;">15 บริษัทหลัก · *ก.ย. = ข้อมูลถึง 16 ก.ย. 2569 (บิลเข้าช้า 2–3 วัน)</span></h2>
   <div class="pro-note">📅 ก.พ. – ส.ค. 2569 &nbsp;|&nbsp; ✅ Active &nbsp; ⚠️ Pending &nbsp; 🔴 Inactive / ติดต่อไม่ได้ &nbsp;|&nbsp; คลิกแถวเพื่อดูรายละเอียด</div>
   <div class="card" style="overflow-x:auto;padding:0;margin-bottom:24px;">
     <table>
@@ -194,7 +194,8 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
           <th style="background:#1e3a5f;text-align:right;padding:10px;">พ.ค.</th>
           <th style="background:#1e3a5f;text-align:right;padding:10px;">มิ.ย.</th>
           <th style="background:#1e3a5f;text-align:right;padding:10px;">ก.ค.</th>
-          <th style="background:#3b1f6e;text-align:right;padding:10px;">ส.ค.</th>
+          <th style="background:#1e3a5f;text-align:right;padding:10px;">ส.ค.</th>
+          <th style="background:#3b1f6e;text-align:right;padding:10px;">ก.ย.*</th>
           <th style="background:#0f172a;text-align:right;padding:10px;font-weight:700;">รวม</th>
           <th style="background:#0f172a;text-align:center;padding:10px;">สถานะ</th>
         </tr>
@@ -204,7 +205,7 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
   </div>
 
   <!-- New Customer Sources -->
-  <h2>🆕 ลูกค้าใหม่ เม.ย. 2569 — แหล่งที่มา <span style="font-size:11px;font-weight:400;color:#94a3b8;">13 ราย · ฿22,878 รวม</span></h2>
+  <h2>🆕 ลูกค้าใหม่ ก.ย. 2569 — แหล่งที่มา <span style="font-size:11px;font-weight:400;color:#94a3b8;">13 ราย · ฿28,264 รวม · ข้อมูลถึง 16 ก.ย. 2569</span></h2>
   <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px;">
     <div class="card" style="flex:1;min-width:300px;overflow-x:auto;padding:0;">
       <table>
@@ -379,7 +380,7 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
   <!-- Row 3: Source donut + Top10 -->
   <div style="display:flex;gap:16px;flex-wrap:wrap;">
     <div class="card" style="flex:1;min-width:280px;">
-      <h2>🆕 แหล่งที่มาลูกค้าใหม่ เม.ย. 2569</h2>
+      <h2>🆕 แหล่งที่มาลูกค้าใหม่ ก.ย. 2569</h2>
       <div style="position:relative;height:260px;"><canvas id="chart-src"></canvas></div>
     </div>
     <div class="card" style="flex:2;min-width:320px;">
@@ -423,21 +424,21 @@ const DOW_DATA = [
 
 // ── B2B TRACKED DATA ─────────────────────────────────────────────────────────
 const B2B = [
-  {n:"โรงเรียนเทพศิรินทร์พุแค สระบุรี",g:"A+",s:"declining",feb:133961,mar:28547,apr:0,may:863,jun:189562,jul:279041,aug:32517,status:"Active",freq:6},
-  {n:"บ.วัชรธุรกิจเซ็นเตอร์",g:"A",s:"premium",feb:23306,mar:41835,apr:38884,may:0,jun:67163,jul:32560,aug:43320,status:"Active",freq:6},
-  {n:"เทศบาลตำบลหนองโดน",g:"A",s:"declining",feb:24085,mar:82094,apr:22145,may:18270,jun:37248,jul:53807,aug:5794,status:"Active",freq:7},
-  {n:"บ.วาณีฟู๊ด โปรดักส์",g:"A",s:"promising",feb:20909,mar:91052,apr:4026,may:27754,jun:39100,jul:1495,aug:41161,status:"Active",freq:7},
-  {n:"อบต.หนองโรง",g:"A",s:"promising",feb:94073,mar:11121,apr:0,may:19267,jun:23027,jul:0,aug:53219,status:"Active",freq:5},
-  {n:"บ.ธนสรร ไรซ์",g:"A",s:"declining",feb:16284,mar:67717,apr:5070,may:4199,jun:6885,jul:49300,aug:4892,status:"Active",freq:7},
-  {n:"บ.ซันเคียว คาเนฮิโร (ประเทศไทย)",g:"A-",s:"regular",feb:13870,mar:17693,apr:20872,may:22352,jun:23254,jul:22666,aug:18812,status:"Active",freq:7},
-  {n:"บ.อาภานนท์ ดีซี",g:"A-",s:"regular",feb:0,mar:0,apr:19581,may:21364,jun:23224,jul:21560,aug:30052,status:"Active",freq:5},
-  {n:"บ.วิรัชทุ่งสงค้าข้าว",g:"A-",s:"promising",feb:18856,mar:10509,apr:16630,may:12570,jun:10632,jul:1859,aug:30625,status:"Active",freq:7},
-  {n:"คุณวรลักษณ์ ฉัตรไชยศิริ",g:"B+",s:"sleeping",feb:0,mar:87814,apr:0,may:8177,jun:0,jul:0,aug:0,status:"Inactive",freq:2},
-  {n:"บ.สยามสตีลทาวเวอร์",g:"B+",s:"rescue",feb:0,mar:15593,apr:13984,may:23446,jun:6962,jul:32172,aug:0,status:"Pending",freq:5},
-  {n:"บ.สานิตแอนด์ซันส์",g:"B+",s:"regular",feb:4732,mar:24905,apr:11343,may:25199,jun:13691,jul:5824,aug:5857,status:"Active",freq:7},
-  {n:"บ.เอสพีที เทรดดิ้ง 2015",g:"B+",s:"promising",feb:8420,mar:16504,apr:0,may:25293,jun:13707,jul:5861,aug:16608,status:"Active",freq:6},
-  {n:"บ.ชิบาคาวะ (ประเทศไทย)",g:"B+",s:"regular",feb:3766,mar:6324,apr:2994,may:6679,jun:48782,jul:2899,aug:3199,status:"Active",freq:7},
-  {n:"บ.ข้าวอร่อย",g:"B+",s:"promising",feb:12739,mar:7662,apr:0,may:11731,jun:8642,jul:9472,aug:19373,status:"Active",freq:6},
+  {n:"โรงเรียนเทพศิรินทร์พุแค สระบุรี",g:"A+",s:"declining",feb:133961,mar:28547,apr:0,may:863,jun:189562,jul:279041,aug:32517,sep:991,status:"Active",freq:6},
+  {n:"บ.วัชรธุรกิจเซ็นเตอร์",g:"A",s:"premium",feb:23306,mar:41835,apr:38884,may:0,jun:67163,jul:32560,aug:43320,sep:6794,status:"Active",freq:6},
+  {n:"เทศบาลตำบลหนองโดน",g:"A",s:"declining",feb:24085,mar:82094,apr:22145,may:18270,jun:37248,jul:53807,aug:5794,sep:28171,status:"Active",freq:7},
+  {n:"บ.วาณีฟู๊ด โปรดักส์",g:"A",s:"promising",feb:20909,mar:91052,apr:4026,may:27754,jun:39100,jul:1495,aug:41161,sep:0,status:"Active",freq:7},
+  {n:"อบต.หนองโรง",g:"A",s:"promising",feb:94073,mar:11121,apr:0,may:19267,jun:23027,jul:0,aug:53219,sep:16598,status:"Active",freq:5},
+  {n:"บ.ธนสรร ไรซ์",g:"A",s:"declining",feb:16284,mar:67717,apr:5070,may:4199,jun:6885,jul:49300,aug:4892,sep:0,status:"Active",freq:7},
+  {n:"บ.ซันเคียว คาเนฮิโร (ประเทศไทย)",g:"A-",s:"regular",feb:13870,mar:17693,apr:20872,may:22352,jun:23254,jul:22666,aug:18812,sep:21335,status:"Active",freq:7},
+  {n:"บ.อาภานนท์ ดีซี",g:"A-",s:"regular",feb:0,mar:0,apr:19581,may:21364,jun:23224,jul:21560,aug:30052,sep:20006,status:"Active",freq:5},
+  {n:"บ.วิรัชทุ่งสงค้าข้าว",g:"A-",s:"promising",feb:18856,mar:10509,apr:16630,may:12570,jun:10632,jul:1859,aug:30625,sep:0,status:"Active",freq:7},
+  {n:"คุณวรลักษณ์ ฉัตรไชยศิริ",g:"B+",s:"sleeping",feb:0,mar:87814,apr:0,may:8177,jun:0,jul:0,aug:0,sep:9159,status:"Inactive",freq:2},
+  {n:"บ.สยามสตีลทาวเวอร์",g:"B+",s:"rescue",feb:0,mar:15593,apr:13984,may:23446,jun:6962,jul:32172,aug:0,sep:0,status:"Pending",freq:5},
+  {n:"บ.สานิตแอนด์ซันส์",g:"B+",s:"regular",feb:4732,mar:24905,apr:11343,may:25199,jun:13691,jul:5824,aug:5857,sep:4377,status:"Active",freq:7},
+  {n:"บ.เอสพีที เทรดดิ้ง 2015",g:"B+",s:"promising",feb:8420,mar:16504,apr:0,may:25293,jun:13707,jul:5861,aug:16608,sep:0,status:"Active",freq:6},
+  {n:"บ.ชิบาคาวะ (ประเทศไทย)",g:"B+",s:"regular",feb:3766,mar:6324,apr:2994,may:6679,jun:48782,jul:2899,aug:3199,sep:4027,status:"Active",freq:7},
+  {n:"บ.ข้าวอร่อย",g:"B+",s:"promising",feb:12739,mar:7662,apr:0,may:11731,jun:8642,jul:9472,aug:19373,sep:0,status:"Active",freq:6},
 ];
 
 const CUSTOMERS = [
@@ -586,27 +587,19 @@ function renderSegCards(){
 }
 
 const NEW_CUSTS = [
-  {date:"1 ส.ค.",name:"บ.สแปน เอ็นจิเนียริ่ง แอนด์ คอนตรั",src:"ไม่ระบุ",amount:2298},
-  {date:"1 ส.ค.",name:"หจก.ศูนย์ทันตกรรมสระบุรี",src:"ไม่ระบุ",amount:284},
-  {date:"3 ส.ค.",name:"สำนักงานการกีฬาแห่งประเทศไทยจังหวั",src:"ไม่ระบุ",amount:221},
-  {date:"3 ส.ค.",name:"บ.รุ่งเรืองพลาสแพค",src:"ไม่ระบุ",amount:140},
-  {date:"6 ส.ค.",name:"บ.เอส.พี.เค.คอนส์ แมชีนเนอรี่",src:"ไม่ระบุ",amount:2029},
-  {date:"7 ส.ค.",name:"หจก.เอ.พี.คาร์เพ้นท์",src:"ไม่ระบุ",amount:1844},
-  {date:"10 ส.ค.",name:"คุณจิราพรรณ (น้ำ)",src:"โทร",amount:2420},
-  {date:"10 ส.ค.",name:"บ.เอบี เพอร์เฟค สกิน",src:"ไม่ระบุ",amount:2180},
-  {date:"10 ส.ค.",name:"บ.แพลนเต้ ดริ้งส์",src:"ไม่ระบุ",amount:159},
-  {date:"11 ส.ค.",name:"บ.ยูนิคแก๊ส แอนด์ ปิโตรเคมิคัลส์",src:"ไม่ระบุ",amount:1448},
-  {date:"19 ส.ค.",name:"บ.สิทธิโชติแอร์",src:"ไม่ระบุ",amount:12518},
-  {date:"20 ส.ค.",name:"บ.เอสพี ลูมิน",src:"ไม่ระบุ",amount:16439},
-  {date:"20 ส.ค.",name:"บ.เติมเต็ม พาวเวอร์ 4",src:"ไม่ระบุ",amount:683},
-  {date:"21 ส.ค.",name:"บ.มาริน่า เซนเทอร์",src:"ไม่ระบุ",amount:1261},
-  {date:"24 ส.ค.",name:"บ.เอส จี เอาท์ ซอร์ส เซอร์วิส",src:"ไม่ระบุ",amount:827},
-  {date:"24 ส.ค.",name:"บ.ประภาศิริ ออยส์",src:"ไม่ระบุ",amount:151},
-  {date:"25 ส.ค.",name:"อบต.ดาวเรือง",src:"ราชการ",amount:28624},
-  {date:"25 ส.ค.",name:"บ.เอทีพี 30",src:"ไม่ระบุ",amount:495},
-  {date:"26 ส.ค.",name:"บ.โชตินวัฒน์เจริญทรัพย์",src:"ไม่ระบุ",amount:30046},
-  {date:"29 ส.ค.",name:"ร้านมายมีเดีย",src:"ไม่ระบุ",amount:157},
-  {date:"31 ส.ค.",name:"บ.ธาราเวช สาขา",src:"ไม่ระบุ",amount:14392},
+  {date:"1 ก.ย.",name:"คุณธนกร โชติกวาณิชย์",src:"ไม่ระบุ",amount:1393},
+  {date:"1 ก.ย.",name:"ร้านวอเตอร์เวย์ เซอร์วิส",src:"ไม่ระบุ",amount:760},
+  {date:"1 ก.ย.",name:"ร้าน HAIRLEM (แฮร์เล็ม) สระบุรี",src:"ไม่ระบุ",amount:738},
+  {date:"2 ก.ย.",name:"บ.วี มิวสิค",src:"ไม่ระบุ",amount:1861},
+  {date:"2 ก.ย.",name:"ธ.ก.ส. สาขาสระบุรี",src:"ไม่ระบุ",amount:1475},
+  {date:"2 ก.ย.",name:"บ.เพิ่มทรัพย์ ค้าวัสดุก่อสร้าง (2538)",src:"ไม่ระบุ",amount:248},
+  {date:"7 ก.ย.",name:"บ.บางปะอินเสาเข็มคอนกรีต",src:"ไม่ระบุ",amount:3783},
+  {date:"8 ก.ย.",name:"บ.เอกก้าวหน้า",src:"ไม่ระบุ",amount:4492},
+  {date:"9 ก.ย.",name:"การประปาส่วนภูมิภาค เขต 2",src:"ไม่ระบุ",amount:6710},
+  {date:"10 ก.ย.",name:"บ.ยู.อาร์.เคมีคอล",src:"ไม่ระบุ",amount:3495},
+  {date:"10 ก.ย.",name:"หจก.ธาราใส",src:"ไม่ระบุ",amount:1117},
+  {date:"10 ก.ย.",name:"บ.ทีซีซี เดคคอร์",src:"ไม่ระบุ",amount:533},
+  {date:"15 ก.ย.",name:"บ.โปรมิกซ์ เคมิคอล แอนด์ ซัพพลาย",src:"ไม่ระบุ",amount:1661},
 ];
 
 // ── HELPERS ─────────────────────────────────────────────────────────────────
@@ -848,16 +841,16 @@ function switchTab(t){
 function renderB2B(){
   const tb = document.getElementById('b2b-table');
   tb.innerHTML = B2B.map(r => {
-    const total = [r.feb,r.mar,r.apr,r.may,r.jun,r.jul,r.aug].reduce((a,b)=>a+b,0);
-    const maxM = Math.max(...B2B.map(x=>[x.feb,x.mar,x.apr,x.may,x.jun,x.jul,x.aug].reduce((a,b)=>a+b,0)));
+    const total = [r.feb,r.mar,r.apr,r.may,r.jun,r.jul,r.aug,r.sep].reduce((a,b)=>a+b,0);
+    const maxM = Math.max(...B2B.map(x=>[x.feb,x.mar,x.apr,x.may,x.jun,x.jul,x.aug,x.sep].reduce((a,b)=>a+b,0)));
     const cell = v => v ? `<td style="text-align:right;font-size:12px;">฿${v.toLocaleString()}</td>` : `<td style="text-align:right;color:#cbd5e1;font-size:12px;">—</td>`;
-    const augCell = r.aug
-      ? `<td style="text-align:right;font-size:12px;background:#f0fdf4;">฿${r.aug.toLocaleString()}</td>`
-      : `<td style="text-align:right;color:#cbd5e1;font-size:12px;background:#fffbeb;">—</td>`;
+    const sepCell = r.sep
+      ? `<td style="text-align:right;font-size:12px;background:#f0fdf4;">฿${r.sep.toLocaleString()}</td>`
+      : `<td style="text-align:right;color:#dc2626;font-weight:700;font-size:12px;background:#fffbeb;">ยังไม่ซื้อ</td>`;
     return `<tr style="cursor:pointer;">
       <td style="font-weight:600;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.n}</td>
       <td style="text-align:center;"><span class="${segCls(r.s)}">${segIcon(r.s)} ${r.s}</span></td>
-      ${cell(r.feb)}${cell(r.mar)}${cell(r.apr)}${cell(r.may)}${cell(r.jun)}${cell(r.jul)}${augCell}
+      ${cell(r.feb)}${cell(r.mar)}${cell(r.apr)}${cell(r.may)}${cell(r.jun)}${cell(r.jul)}${cell(r.aug)}${sepCell}
       <td style="text-align:right;font-weight:700;color:#0f172a;">฿${total.toLocaleString()}</td>
       <td style="text-align:center;">${statusBadge(r.status)}</td>
     </tr>`;

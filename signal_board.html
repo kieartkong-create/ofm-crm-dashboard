@@ -792,8 +792,19 @@ const SYNC_URL = 'https://script.google.com/macros/s/AKfycbw2b55Kf722t-QanQlV8Sj
 
 const FOCUS_STATUS_KEY = 'ofm_focus_status';
 const FOCUS_WHO_KEY = 'ofm_focus_who';
-let FOCUS_STATUS = {};
-try { FOCUS_STATUS = JSON.parse(localStorage.getItem(FOCUS_STATUS_KEY)||'{}'); } catch(_) {}
+const FOCUS_MONTH_KEY = 'ofm_focus_month';
+// ── ปุ่มสถานะต้อง "รีเซ็ตทุกต้นเดือน" ── ไม่งั้นติ๊กของเดือนที่แล้วค้าง ทำให้ทีมคิดว่าโทรแล้ว
+const MONTH_TAG = (()=>{ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); })();
+const MONTH_START = MONTH_TAG + '-01';
+let FOCUS_STATUS = {};      // สถานะ "ของเดือนนี้" เท่านั้น
+let FOCUS_META   = {};      // ประวัติล่าสุดจาก Sheet: {who, t, status} — ใช้โชว์ว่าใครโทรครั้งก่อนเมื่อไหร่
+try {
+  if (localStorage.getItem(FOCUS_MONTH_KEY) !== MONTH_TAG) {   // ขึ้นเดือนใหม่ = ล้างกระดาน
+    localStorage.removeItem(FOCUS_STATUS_KEY);
+    localStorage.setItem(FOCUS_MONTH_KEY, MONTH_TAG);
+  }
+  FOCUS_STATUS = JSON.parse(localStorage.getItem(FOCUS_STATUS_KEY)||'{}');
+} catch(_) {}
 let FOCUS_WHO = localStorage.getItem(FOCUS_WHO_KEY) || '';
 
 function setWho(v){ FOCUS_WHO=v; localStorage.setItem(FOCUS_WHO_KEY,v); renderFocus(); }
@@ -804,7 +815,11 @@ function syncFocusFromSheet(){
   const cb='ofmCB_'+Date.now();
   window[cb]=(data)=>{
     try{
-      Object.entries(data||{}).forEach(([name,v])=>{ FOCUS_STATUS[name]=v.status||''; });
+      Object.entries(data||{}).forEach(([name,v])=>{
+        FOCUS_META[name] = v;                                  // เก็บประวัติไว้โชว์
+        const thisMonth = (v.t||'') >= MONTH_START;             // ISO string เทียบกันตรง ๆ ได้
+        FOCUS_STATUS[name] = thisMonth ? (v.status||'') : '';   // ของเดือนก่อน = ไม่ถือว่าโทรแล้ว
+      });
       localStorage.setItem(FOCUS_STATUS_KEY, JSON.stringify(FOCUS_STATUS));
       renderFocus();
     }catch(_){}
@@ -866,17 +881,32 @@ function computeFocus(){
   return {cross, new:newc, decl, big:big.slice(0,12), atrisk};
 }
 
+const _THMO=['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+function _dLabel(t){ const d=new Date(t); return isNaN(d)?'' : d.getDate()+' '+_THMO[d.getMonth()+1]; }
+function lastCallNote(name){
+  const m = FOCUS_META[name];
+  if(!m || !m.t) return '';
+  const thisMonth = (m.t||'') >= MONTH_START;
+  const icon = m.status==='ok'?'✅':m.status==='no'?'❌':'📞';
+  if(thisMonth)
+    return `<div style="font-size:10px;color:#16a34a;margin-top:3px;">${icon} ${escHTML(m.who||'')} · ${_dLabel(m.t)}</div>`;
+  return `<div style="font-size:10px;color:#94a3b8;margin-top:3px;">ครั้งก่อน ${escHTML(m.who||'')} · ${_dLabel(m.t)} (เดือนนี้ยังไม่โทร)</div>`;
+}
 function stBtn(name){
   const s = FOCUS_STATUS[name]||'';
   const b=(v,ic,cls)=>`<button class="${cls} ${s===v?'on '+v:''}" onclick="setFocusStatus('${escJs(name)}','${v}')" title="${cls}">${ic}</button>`;
-  return `<div class="st-btns">${b('call','📞','call')}${b('ok','✅','ok')}${b('no','❌','no')}</div>`;
+  return `<div class="st-btns">${b('call','📞','call')}${b('ok','✅','ok')}${b('no','❌','no')}</div>${lastCallNote(name)}`;
 }
 const escJs = s => (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
 function setFocusStatus(name,v){
   if(SYNC_URL && !FOCUS_WHO){ alert('กรุณาเลือกก่อนว่า "ฉันคือใคร" (มุมขวาบนของโฟกัสวันนี้)'); return; }
   const nv = (FOCUS_STATUS[name]===v)?'':v;
   FOCUS_STATUS[name] = nv;
-  try{ localStorage.setItem(FOCUS_STATUS_KEY, JSON.stringify(FOCUS_STATUS)); }catch(_){}
+  FOCUS_META[name] = nv ? {status:nv, who:FOCUS_WHO||'ไม่ระบุ', t:new Date().toISOString()} : null;
+  try{
+    localStorage.setItem(FOCUS_STATUS_KEY, JSON.stringify(FOCUS_STATUS));
+    localStorage.setItem(FOCUS_MONTH_KEY, MONTH_TAG);
+  }catch(_){}
   pushStatusToSheet(name, nv);   // ส่งเข้า Sheet ให้ทุกคนเห็น
   renderFocus();
 }
