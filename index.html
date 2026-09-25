@@ -50,6 +50,28 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
 .rfm-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px;}
 .delta-up{color:#059669;font-weight:700;}
 .delta-dn{color:#dc2626;font-weight:700;}
+
+/* ── ใบโทรพร้อมพิมพ์ ───────────────────────────────────────────── */
+#callsheet table{width:100%;border-collapse:collapse;}
+#callsheet th{background:#4c1d95;color:#fff;font-size:12px;padding:8px 6px;text-align:left;}
+#callsheet td{border-bottom:1px solid #e2e8f0;padding:8px 6px;font-size:12px;vertical-align:top;}
+#callsheet .cs-name{font-weight:700;color:#0f172a;}
+#callsheet .cs-sub{font-size:10px;color:#64748b;font-weight:400;}
+#callsheet .cs-box{display:inline-block;width:13px;height:13px;border:1.5px solid #94a3b8;border-radius:3px;margin-right:5px;vertical-align:-2px;}
+#callsheet .cs-line{display:block;border-bottom:1px dotted #cbd5e1;height:15px;}
+.cs-hot{background:#fee2e2;color:#b91c1c;font-weight:700;padding:1px 6px;border-radius:9px;font-size:10px;}
+.cs-warm{background:#fef3c7;color:#b45309;font-weight:700;padding:1px 6px;border-radius:9px;font-size:10px;}
+#cs-printhead{display:none;}
+@media print{
+  body *{visibility:hidden;}
+  #callsheet,#callsheet *{visibility:visible;}
+  #callsheet{position:absolute;left:0;top:0;width:100%;margin:0;padding:0;box-shadow:none;border:none;}
+  #cs-printhead{display:block;margin-bottom:8px;}
+  .no-print{display:none !important;}
+  #callsheet th{background:#4c1d95 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  #callsheet tr{page-break-inside:avoid;}
+  @page{size:A4 portrait;margin:12mm;}
+}
 </style>
 </head>
 <body>
@@ -177,6 +199,44 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
   <div class="card" style="margin-bottom:22px;padding:14px;">
     <div style="position:relative;height:220px;"><canvas id="chart-daily"></canvas></div>
     <div id="daily-no-data" style="display:none;text-align:center;padding:40px;color:#94a3b8;font-size:13px;">ไม่มีข้อมูลรายวันสำหรับเดือนนี้</div>
+  </div>
+
+
+  <!-- ── ใบโทรพร้อมพิมพ์ ─────────────────────────────────────────── -->
+  <h2 class="no-print">📞 ใบโทรวันนี้ — ลูกค้าประจำที่เดือนนี้ยังไม่ซื้อ
+    <span style="font-size:11px;font-weight:400;color:#94a3b8;">คัดจากประวัติ 5 เดือนเต็ม · อัปเดตสดจาก Google Sheets</span>
+  </h2>
+  <div class="pro-note no-print">
+    🔴 เงียบเดือนเดียว = โทรก่อน (เขาแค่ยังไม่ถึงคิว) &nbsp;|&nbsp; 🟡 เงียบ 2 เดือน = โอกาสต่ำกว่า
+    &nbsp;|&nbsp; ยอดเฉลี่ยหาร 5 เดือนเท่ากันทุกราย &nbsp;|&nbsp; เช็คก่อนโทรทุกครั้ง บิลเข้าช้า 2–3 วัน
+  </div>
+  <div class="card" id="callsheet" style="padding:14px;margin-bottom:24px;">
+    <div id="cs-printhead">
+      <div style="font-size:16px;font-weight:700;color:#0f172a;">📞 ใบโทร — ลูกค้าประจำที่เดือนนี้ยังไม่ซื้อ</div>
+      <div style="font-size:11px;color:#475569;" id="cs-printsub">OfficeMate Plus+ สาขาสระบุรี</div>
+    </div>
+    <div class="no-print" style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
+      <button onclick="window.print()" style="background:#4c1d95;color:#fff;border:none;border-radius:8px;
+        padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">🖨️ พิมพ์ใบโทร</button>
+      <button onclick="loadCallSheet()" style="background:#fff;color:#4c1d95;border:1.5px solid #ddd6fe;border-radius:8px;
+        padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">🔄 โหลดใหม่</button>
+      <span id="callsheet-count" style="font-size:12px;color:#64748b;">กำลังโหลด…</span>
+    </div>
+    <table>
+      <thead><tr>
+        <th style="width:26%;">ลูกค้า</th>
+        <th style="width:11%;">เฉลี่ย/เดือน</th>
+        <th style="width:9%;">ซื้อกี่เดือน</th>
+        <th style="width:20%;">เคยซื้อหมวด</th>
+        <th style="width:13%;">ผลการโทร</th>
+        <th style="width:21%;">จดบันทึก</th>
+      </tr></thead>
+      <tbody id="cs-body"><tr><td colspan="6" style="padding:18px;color:#64748b;">กำลังโหลด…</td></tr></tbody>
+    </table>
+    <div style="margin-top:10px;font-size:10.5px;color:#64748b;">
+      สคริปต์: “พี่คะ ปกติเดือนนี้พี่สั่งของแล้ว รอบนี้ยังไม่เห็นออเดอร์เลย ของยังพอใช้อยู่ไหมคะ เดี๋ยวจัดไว้ให้ก่อนสิ้นเดือน”
+      &nbsp;·&nbsp; ปิดท้ายทุกสาย: “เดือนหน้าต้องใช้ของเพิ่มไหมคะ จองไว้ก่อนได้เลย”
+    </div>
   </div>
 
   <!-- B2B Tracked Monthly Table -->
@@ -1343,6 +1403,88 @@ async function loadRFM() {
   }
 }
 
+
+// ── ใบโทร: ลูกค้าประจำที่เดือนนี้ยังไม่ซื้อ (คัดจาก 5 เดือนเต็ม) ─────────────
+async function loadCallSheet(){
+  const body = document.getElementById('cs-body');
+  const cnt  = document.getElementById('callsheet-count');
+  if(!body) return;
+  body.innerHTML = '<tr><td colspan="6" style="padding:18px;color:#64748b;">กำลังโหลด…</td></tr>';
+  try{
+    const now = new Date();
+    const curY = now.getFullYear(), curM = now.getMonth()+1;
+    const months = [];                       // เดือนปัจจุบัน + ย้อนหลัง 5 เดือน
+    for(let i=0;i<=5;i++){
+      let y=curY, m=curM-i; while(m<=0){ m+=12; y--; }
+      months.push([y,m]);
+    }
+    const filt = '(' + months.map(([y,m])=>`(O=${y} and M=${m})`).join(' or ') + ')';
+    const [tbl, ctbl] = await Promise.all([
+      gvizFetch(`select G, O, M, sum(AN) where AN>0 and ${filt} and G is not null and G != '' and G != 'ไม่มีชื่อ' group by G, O, M`),
+      gvizFetch(`select G, Y, sum(AN) where AN>0 and ${filt} and G is not null and G != '' and G != 'ไม่มีชื่อ' group by G, Y`)
+    ]);
+    const rev = {};
+    (tbl.rows||[]).forEach(r=>{
+      const g=r.c[0]?.v, y=r.c[1]?.v, m=r.c[2]?.v, v=r.c[3]?.v||0;
+      if(!g) return; (rev[g] = rev[g] || {})[`${y}-${m}`] = (rev[g][`${y}-${m}`]||0) + v;
+    });
+    const cats = {};
+    (ctbl.rows||[]).forEach(r=>{
+      const g=r.c[0]?.v, y=r.c[1]?.v, v=r.c[2]?.v||0;
+      if(!g||!y) return; (cats[g] = cats[g] || []).push([y,v]);
+    });
+    const CAT_TH = {'PAPER':'กระดาษ','IT':'IT','OFFICE SUPPLIES':'ออฟฟิศ','WRITING INSTRUMENTS':'เครื่องเขียน',
+      'FURNITURE':'เฟอร์นิเจอร์','MARKETPLACE':'มาร์เก็ต','BUSINESS MACHINE':'เครื่องใช้สนง.',
+      'COMPUTER & COMPUTER DEVICE':'คอมพิวเตอร์','HOUSEHOLD SUPPLY & ELECTRIC':'ของใช้/ไฟฟ้า',
+      'HYGIENE&WELLNESS & FMCG&IMPULSE':'สุขอนามัย','FACTORY':'โรงงาน'};
+    const cur = `${months[0][0]}-${months[0][1]}`;
+    const list = [];
+    Object.keys(rev).forEach(g=>{
+      if((rev[g][cur]||0) > 0) return;                       // เดือนนี้ซื้อแล้ว = ข้าม
+      let bought=0, sum=0, lastLabel='';
+      for(let i=1;i<=5;i++){
+        const k = `${months[i][0]}-${months[i][1]}`, v = rev[g][k]||0;
+        sum += v;
+        if(v>0){ bought++; if(!lastLabel) lastLabel = THAI_MO[months[i][1]-1] + ' ' + (months[i][0]+543); }
+      }
+      if(bought < 4) return;
+      const avg5 = sum/5;
+      if(avg5 < 1000) return;
+      const prevK = `${months[1][0]}-${months[1][1]}`;
+      const top3 = (cats[g]||[]).sort((a,b)=>b[1]-a[1]).slice(0,3)
+                    .map(x=>CAT_TH[x[0]]||x[0]).join(' · ');
+      list.push({ name:g, avg5, bought, lastLabel, silent2:(rev[g][prevK]||0)===0, top3 });
+    });
+    list.sort((a,b)=> a.silent2-b.silent2 || b.avg5-a.avg5);
+
+    const money = v => '฿' + Math.round(v).toLocaleString();
+    body.innerHTML = list.length ? list.map(c=>`
+      <tr>
+        <td><div class="cs-name">${c.name}</div>
+            <div class="cs-sub">${c.silent2
+              ? `<span class="cs-warm">🟡 เงียบ 2 เดือน</span> ล่าสุด ${c.lastLabel}`
+              : `<span class="cs-hot">🔴 เงียบเดือนเดียว</span> โทรก่อน`}</div></td>
+        <td style="font-weight:700;">${money(c.avg5)}</td>
+        <td style="text-align:center;font-weight:700;color:${c.bought===5?'#15803d':'#334155'};">${c.bought}/5</td>
+        <td style="font-size:11px;color:#475569;">${c.top3||'—'}</td>
+        <td style="font-size:11px;">
+          <span class="cs-box"></span>สั่งของ<br>
+          <span class="cs-box"></span>ยังไม่ต้อง<br>
+          <span class="cs-box"></span>ติดต่อไม่ได้</td>
+        <td><span class="cs-line"></span><span class="cs-line"></span><span class="cs-line"></span></td>
+      </tr>`).join('')
+      : '<tr><td colspan="6" style="padding:18px;color:#64748b;">— ไม่มีลูกค้าประจำที่ค้างอยู่ในรอบนี้ —</td></tr>';
+
+    const hot = list.filter(c=>!c.silent2).length;
+    const sum = list.reduce((a,c)=>a+c.avg5,0);
+    if(cnt) cnt.textContent = `${list.length} ราย (🔴 ${hot} · 🟡 ${list.length-hot}) · มูลค่ารวม ${money(sum)}/เดือน`;
+    const sub = document.getElementById('cs-printsub');
+    if(sub) sub.textContent = `OfficeMate Plus+ สาขาสระบุรี · ${list.length} ราย · มูลค่ารวม ${money(sum)}/เดือน · พิมพ์วันที่ ${now.getDate()} ${THAI_MO[curM-1]} ${curY+543}`;
+  }catch(e){
+    body.innerHTML = `<tr><td colspan="6" style="padding:14px;color:#dc2626;font-size:13px;">❌ โหลดใบโทรไม่ได้: ${e.message}</td></tr>`;
+  }
+}
+
 // ── INIT ─────────────────────────────────────────────────────────────────────
 renderB2B();
 renderNewCust();
@@ -1351,6 +1493,7 @@ renderRFMTable();
 renderCustTable();
 loadData();   // ← POS monthly/daily data
 loadRFM();    // ← Live RFM from Google Sheets (concurrent)
+loadCallSheet();  // ← ใบโทรพร้อมพิมพ์ (ลูกค้าประจำที่เดือนนี้ยังไม่ซื้อ)
 </script>
 </body>
 </html>
