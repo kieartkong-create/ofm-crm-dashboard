@@ -241,6 +241,7 @@ tbody tr td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:midd
 .fg-color-cross{border-left:5px solid #2563eb;} .fg-color-new{border-left:5px solid #16a34a;}
 .fg-color-decl{border-left:5px solid #dc2626;} .fg-color-big{border-left:5px solid #d97706;}
 .fg-color-atrisk{border-left:5px solid #b91c1c;background:#fef2f2;}
+.fg-color-loyal{border-left:5px solid #7c3aed;background:#faf7ff;}
 </style>
 </head>
 <body>
@@ -575,7 +576,21 @@ function computeRFM(tbl) {
     // ยอดจริงรายเดือน — ใช้แทนค่าเฉลี่ย 2 เดือนซึ่งดึงเลขเก่าที่สูงมาปน
     const p1Rev = c.moRevs[`${P1_Y}-${P1_M}`]||0, p2Rev = c.moRevs[`${P2_Y}-${P2_M}`]||0;
 
-    map[name]={r,m,avgM:Math.round(avgM),monthsCount,growth,seg,usualDay,overdue,isCurPartial,p1Rev,p2Rev};
+    // ── ความ "ประจำ" ของลูกค้า : ดู 5 เดือนเต็มก่อนเดือนปัจจุบัน ──
+    // ใช้หาลูกค้าที่ซื้อแทบทุกเดือน แล้วเดือนนี้เงียบ = โทรแล้วมีโอกาสปิดสูงสุด
+    let monthsBought5 = 0, sum5 = 0, lastBuyLabel = '', prevMoRev = 0;
+    for (let i = 1; i <= 5; i++) {
+      let yy = CUR_Y, mm = CUR_M - i;
+      while (mm <= 0) { mm += 12; yy--; }
+      const v = c.moRevs[`${yy}-${mm}`] || 0;
+      sum5 += v;
+      if (v > 0) { monthsBought5++; if (!lastBuyLabel) lastBuyLabel = moLabel(yy, mm); }
+      if (i === 1) prevMoRev = v;
+    }
+    const avg5 = sum5 / 5;
+
+    map[name]={r,m,avgM:Math.round(avgM),monthsCount,growth,seg,usualDay,overdue,isCurPartial,p1Rev,p2Rev,
+               monthsBought5,avg5:Math.round(avg5),lastBuyLabel,prevMoRev,curRev:rawCur};
   });
   return map;
 }
@@ -872,6 +887,17 @@ function computeFocus(){
                      overdue, daysToDue, pending: overdue===0 && daysToDue<=0});
     }
   });
+  // ⑥ ลูกค้าประจำที่เดือนนี้ยังไม่ซื้อ — คัดจากประวัติ 5 เดือนเต็ม (แม่นกว่าดูเดือนเดียว)
+  const loyal = [];
+  Object.entries(RFM_MAP).forEach(([name,r])=>{
+    if(!r || r.curRev>0) return;                 // เดือนนี้ซื้อแล้ว = ข้าม
+    if(r.monthsBought5 < 4) return;              // ต้องซื้ออย่างน้อย 4 ใน 5 เดือน
+    if(r.avg5 < 1000) return;                    // ตัดรายจิ๋วออก
+    loyal.push({name, monthsBought5:r.monthsBought5, avg5:r.avg5,
+                lastBuyLabel:r.lastBuyLabel, silent2:(r.prevMoRev===0)});
+  });
+  loyal.sort((a,b)=> a.silent2-b.silent2 || b.avg5-a.avg5);
+
   cross.sort((a,b)=>b.avgM-a.avgM);
   newc.sort((a,b)=>b.cur-a.cur || b.avgM-a.avgM);
   decl.sort((a,b)=>b.avgM-a.avgM);
@@ -879,7 +905,7 @@ function computeFocus(){
   // น้ำหนัก = ยอดเดือนล่าสุดที่มีการซื้อ (ถ้า ส.ค. ไม่ซื้อ ใช้ ก.ค.) — ไม่ใช้ค่าเฉลี่ยที่ดึงเลขเก่ามาปน
   const _w = c => c.p1>0 ? c.p1 : c.p2;
   atrisk.sort((a,b)=> (b.overdue>0)-(a.overdue>0) || (b.overdue*_w(b))-(a.overdue*_w(a)) || a.daysToDue-b.daysToDue || _w(b)-_w(a));
-  return {cross, new:newc, decl, big:big.slice(0,12), atrisk};
+  return {cross, new:newc, decl, big:big.slice(0,12), atrisk, loyal};
 }
 
 const _THMO=['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
@@ -928,7 +954,7 @@ function setFocusStatus(name,v){
 function toggleGroup(id){ document.getElementById(id).classList.toggle('open'); }
 
 // จำนวนแถวที่ "แสดงอยู่" ต่อกลุ่ม — กดปุ่ม "แสดงเพิ่ม" แล้วเพิ่มทีละ 50
-const FOCUS_SHOWN = {cross:50, new:50, decl:50, atrisk:50};
+const FOCUS_SHOWN = {cross:50, new:50, decl:50, atrisk:50, loyal:50};
 function showMoreFocus(key){ FOCUS_SHOWN[key]+=50; renderFocus(); }
 
 function renderFocus(){
@@ -989,6 +1015,15 @@ function renderFocus(){
       <td class="val">฿${fmt(c.cur).replace('฿','')}</td>
       <td>${c.share>=0.15?`<span class="big-flag">${Math.round(c.share*100)}% ของยอด ⚠️</span>`:`<span class="trend">${Math.round(c.share*100)}%</span>`}</td>
       <td>${stBtn(c.name)}</td></tr>`).join('');
+  // ⑥ ลูกค้าประจำที่ยังไม่ซื้อเดือนนี้
+  const loyalRows = F.loyal.slice(0,FOCUS_SHOWN.loyal).map(c=>`
+    <tr><td class="nm">${escHTML(c.name)}</td>
+      <td class="val">฿${fmt(c.avg5).replace('฿','')}/ด.</td>
+      <td style="text-align:center;font-weight:700;color:${c.monthsBought5===5?'#15803d':'#334155'};">${c.monthsBought5}/5 เดือน</td>
+      <td>${c.silent2
+            ? `<span style="color:#b45309;font-weight:700;font-size:11px;">🟡 เงียบ 2 เดือน (ล่าสุด ${escHTML(c.lastBuyLabel||'-')})</span>`
+            : `<span style="color:#dc2626;font-weight:700;font-size:11px;">🔴 เงียบเดือนเดียว — โทรก่อน</span>`}</td>
+      <td>${stBtn(c.name)}</td></tr>`).join('');
   // ⓪ เสาที่ 1: เสี่ยงหลุด
   const atriskRows = F.atrisk.slice(0,FOCUS_SHOWN.atrisk).map(c=>`
     <tr><td class="nm">${escHTML(c.name)}</td>
@@ -1006,6 +1041,9 @@ function renderFocus(){
     grp('fg-atrisk','fg-color-atrisk','🚨','เสาที่ 1 — เสี่ยงหลุด / ถึงคิวโทร',F.atrisk.length,'#b91c1c','แจง+วัน+กระแต',
         `ซื้อประจำ ≥฿3K/ด. · 🔴 = เลยวันที่เขาปกติซื้อแล้วยังเงียบ (โทรด่วน) · ⏳ = ถึงรอบแล้ว แต่บิลช่วงนั้นยังไม่เข้าระบบ (อาจซื้อแล้ว — เช็คก่อนโทร) · 🟡 = ใกล้ถึงคิวใน 7 วัน (โทรดักไว้)${LAST_DATA_DAY?` · <b>ข้อมูลบิลถึงวันที่ ${LAST_DATA_DAY} ${moLabel(CUR_Y,CUR_M)}</b>`:''}`,
         `<th>ลูกค้า</th><th>ยอด ${moLabel(P1_Y,P1_M)}</th><th>สถานะ</th><th>บันทึก</th>`, atriskRows, true, 'atrisk', F.atrisk.length)
+    + grp('fg-loyal','fg-color-loyal','🎯','ลูกค้าประจำที่เดือนนี้ยังไม่ซื้อ — โทรแล้วปิดง่ายสุด',F.loyal.length,'#7c3aed','แจง+วัน+กระแต',
+        'คัดจากประวัติ 5 เดือนเต็ม : ซื้อ 4–5 เดือนจาก 5 แต่เดือนนี้ยังเงียบ · 🔴 เงียบเดือนเดียว = โทรก่อน (เขาแค่ยังไม่ถึงคิว/ลืม) · 🟡 เงียบ 2 เดือน = โอกาสต่ำกว่า · ยอดเฉลี่ยหาร 5 เดือนเท่ากันทุกราย',
+        '<th>ลูกค้า</th><th>เฉลี่ย/เดือน</th><th>ซื้อกี่เดือน</th><th>สถานะ</th><th>บันทึก</th>', loyalRows, true, 'loyal', F.loyal.length)
     + grp('fg-cross','fg-color-cross','🔵','เสาที่ 2 — Cross-sell ฐานกลาง',F.cross.length,'#2563eb','แจง/telesale',
         'ลูกค้าประจำ ฿2–10K/ด. → เสนอหมวดที่ยังไม่ซื้อ (เกราะกันเจ้าใหญ่หาย)',
         '<th>ลูกค้า</th><th>avg</th><th>💡 เสนอเพิ่ม</th><th>ซื้ออยู่</th><th>สถานะ</th>', crossRows, false, 'cross', F.cross.length)
