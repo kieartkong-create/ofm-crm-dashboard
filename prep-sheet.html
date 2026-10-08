@@ -103,8 +103,8 @@ async function build(){
   let p2Y=p1Y, p2M=p1M-1; if(p2M<=0){p2M+=12;p2Y--;}
 
   const CF = "G is not null and G!='' and G!='ไม่มีชื่อ'";
-  const curRows = await gvizFetch(`select G, sum(AN) where O=${curY} and M=${curM} and AN>0 and ${CF} group by G`);
-  const prevRows = await gvizFetch(`select G, sum(AN) where ((O=${p1Y} and M=${p1M}) or (O=${p2Y} and M=${p2M})) and AN>0 and ${CF} group by G`);
+  const curRows = await gvizFetch(`select G, sum(AN) where O=${curY} and M=${curM} and (AN > 0 or AN < 0) and ${CF} group by G`);
+  const prevRows = await gvizFetch(`select G, sum(AN) where ((O=${p1Y} and M=${p1M}) or (O=${p2Y} and M=${p2M})) and (AN > 0 or AN < 0) and ${CF} group by G`);
   // หมวดสินค้า (Y) ล่าสุด 2 เดือน เพื่อหา cross-sell gap
   const catRows = await gvizFetch(`select G, Y where ((O=${p1Y} and M=${p1M}) or (O=${curY} and M=${curM})) and AN>0 and ${CF} group by G, Y`);
   // วันแรกที่เคยซื้อ (หาลูกค้าใหม่ ≤60 วัน)

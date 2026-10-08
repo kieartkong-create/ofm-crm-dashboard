@@ -208,6 +208,7 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
   </h2>
   <div class="pro-note no-print">
     🔴 เงียบเดือนเดียว = โทรก่อน (เขาแค่ยังไม่ถึงคิว) &nbsp;|&nbsp; 🟡 เงียบ 2 เดือน = โอกาสต่ำกว่า
+    &nbsp;|&nbsp; แสดงเฉพาะคนที่ถึงรอบซื้อปกติแล้วหรือจะถึงใน 7 วัน &nbsp;|&nbsp; พักโรงเรียนช่วงปิดเทอม (เม.ย./ต.ค.)
     &nbsp;|&nbsp; ยอดเฉลี่ยหาร 5 เดือนเท่ากันทุกราย &nbsp;|&nbsp; เช็คก่อนโทรทุกครั้ง บิลเข้าช้า 2–3 วัน
   </div>
   <div class="card" id="callsheet" style="padding:14px;margin-bottom:24px;">
@@ -240,8 +241,8 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
   </div>
 
   <!-- B2B Tracked Monthly Table -->
-  <h2>📋 B2B Tracked Customers — ยอดรายเดือน <span style="font-size:11px;font-weight:400;color:#94a3b8;">15 บริษัทหลัก · *ก.ย. = ข้อมูลถึง 16 ก.ย. 2569 (บิลเข้าช้า 2–3 วัน)</span></h2>
-  <div class="pro-note">📅 ก.พ. – ส.ค. 2569 &nbsp;|&nbsp; ✅ Active &nbsp; ⚠️ Pending &nbsp; 🔴 Inactive / ติดต่อไม่ได้ &nbsp;|&nbsp; คลิกแถวเพื่อดูรายละเอียด</div>
+  <h2>📋 B2B Tracked Customers — ยอดรายเดือน <span style="font-size:11px;font-weight:400;color:#94a3b8;">15 บริษัทหลัก · ยอดสุทธิหักคืนของแล้ว · ก.ย. ครบทั้งเดือน</span></h2>
+  <div class="pro-note">📅 ก.พ. – ก.ย. 2569 · ยอดสุทธิ &nbsp;|&nbsp; ✅ Active &nbsp; ⚠️ Pending &nbsp; 🔴 Inactive / ติดต่อไม่ได้ &nbsp;|&nbsp; คลิกแถวเพื่อดูรายละเอียด</div>
   <div class="card" style="overflow-x:auto;padding:0;margin-bottom:24px;">
     <table>
       <thead>
@@ -255,7 +256,7 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
           <th style="background:#1e3a5f;text-align:right;padding:10px;">มิ.ย.</th>
           <th style="background:#1e3a5f;text-align:right;padding:10px;">ก.ค.</th>
           <th style="background:#1e3a5f;text-align:right;padding:10px;">ส.ค.</th>
-          <th style="background:#3b1f6e;text-align:right;padding:10px;">ก.ย.*</th>
+          <th style="background:#3b1f6e;text-align:right;padding:10px;">ก.ย.</th>
           <th style="background:#0f172a;text-align:right;padding:10px;font-weight:700;">รวม</th>
           <th style="background:#0f172a;text-align:center;padding:10px;">สถานะ</th>
         </tr>
@@ -265,7 +266,7 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
   </div>
 
   <!-- New Customer Sources -->
-  <h2>🆕 ลูกค้าใหม่ ก.ย. 2569 — แหล่งที่มา <span style="font-size:11px;font-weight:400;color:#94a3b8;">13 ราย · ฿28,264 รวม · ข้อมูลถึง 16 ก.ย. 2569</span></h2>
+  <h2>🆕 ลูกค้าใหม่ ก.ย. 2569 — แหล่งที่มา <span style="font-size:11px;font-weight:400;color:#94a3b8;">23 ราย · ฿46,949 รวม · ทั้งเดือน (หักคืนของแล้ว)</span></h2>
   <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px;">
     <div class="card" style="flex:1;min-width:300px;overflow-x:auto;padding:0;">
       <table>
@@ -484,21 +485,21 @@ const DOW_DATA = [
 
 // ── B2B TRACKED DATA ─────────────────────────────────────────────────────────
 const B2B = [
-  {n:"โรงเรียนเทพศิรินทร์พุแค สระบุรี",g:"A+",s:"declining",feb:133961,mar:28547,apr:0,may:863,jun:189562,jul:279041,aug:32517,sep:991,status:"Active",freq:6},
-  {n:"บ.วัชรธุรกิจเซ็นเตอร์",g:"A",s:"premium",feb:23306,mar:41835,apr:38884,may:0,jun:67163,jul:32560,aug:43320,sep:6794,status:"Active",freq:6},
-  {n:"เทศบาลตำบลหนองโดน",g:"A",s:"declining",feb:24085,mar:82094,apr:22145,may:18270,jun:37248,jul:53807,aug:5794,sep:28171,status:"Active",freq:7},
-  {n:"บ.วาณีฟู๊ด โปรดักส์",g:"A",s:"promising",feb:20909,mar:91052,apr:4026,may:27754,jun:39100,jul:1495,aug:41161,sep:0,status:"Active",freq:7},
-  {n:"อบต.หนองโรง",g:"A",s:"promising",feb:94073,mar:11121,apr:0,may:19267,jun:23027,jul:0,aug:53219,sep:16598,status:"Active",freq:5},
-  {n:"บ.ธนสรร ไรซ์",g:"A",s:"declining",feb:16284,mar:67717,apr:5070,may:4199,jun:6885,jul:49300,aug:4892,sep:0,status:"Active",freq:7},
-  {n:"บ.ซันเคียว คาเนฮิโร (ประเทศไทย)",g:"A-",s:"regular",feb:13870,mar:17693,apr:20872,may:22352,jun:23254,jul:22666,aug:18812,sep:21335,status:"Active",freq:7},
-  {n:"บ.อาภานนท์ ดีซี",g:"A-",s:"regular",feb:0,mar:0,apr:19581,may:21364,jun:23224,jul:21560,aug:30052,sep:20006,status:"Active",freq:5},
-  {n:"บ.วิรัชทุ่งสงค้าข้าว",g:"A-",s:"promising",feb:18856,mar:10509,apr:16630,may:12570,jun:10632,jul:1859,aug:30625,sep:0,status:"Active",freq:7},
-  {n:"คุณวรลักษณ์ ฉัตรไชยศิริ",g:"B+",s:"sleeping",feb:0,mar:87814,apr:0,may:8177,jun:0,jul:0,aug:0,sep:9159,status:"Inactive",freq:2},
-  {n:"บ.สยามสตีลทาวเวอร์",g:"B+",s:"rescue",feb:0,mar:15593,apr:13984,may:23446,jun:6962,jul:32172,aug:0,sep:0,status:"Pending",freq:5},
-  {n:"บ.สานิตแอนด์ซันส์",g:"B+",s:"regular",feb:4732,mar:24905,apr:11343,may:25199,jun:13691,jul:5824,aug:5857,sep:4377,status:"Active",freq:7},
-  {n:"บ.เอสพีที เทรดดิ้ง 2015",g:"B+",s:"promising",feb:8420,mar:16504,apr:0,may:25293,jun:13707,jul:5861,aug:16608,sep:0,status:"Active",freq:6},
-  {n:"บ.ชิบาคาวะ (ประเทศไทย)",g:"B+",s:"regular",feb:3766,mar:6324,apr:2994,may:6679,jun:48782,jul:2899,aug:3199,sep:4027,status:"Active",freq:7},
-  {n:"บ.ข้าวอร่อย",g:"B+",s:"promising",feb:12739,mar:7662,apr:0,may:11731,jun:8642,jul:9472,aug:19373,sep:0,status:"Active",freq:6},
+  {n:"โรงเรียนเทพศิรินทร์พุแค สระบุรี",g:"A+",s:"declining",feb:133961,mar:28250,apr:0,may:864,jun:188748,jul:275098,aug:32518,sep:6035,status:"Active",freq:6},
+  {n:"บ.วัชรธุรกิจเซ็นเตอร์",g:"A",s:"premium",feb:23307,mar:41835,apr:38885,may:0,jun:67163,jul:32561,aug:43320,sep:51758,status:"Active",freq:6},
+  {n:"เทศบาลตำบลหนองโดน",g:"A",s:"declining",feb:24085,mar:74057,apr:22145,may:14366,jun:37248,jul:34221,aug:5794,sep:29553,status:"Active",freq:7},
+  {n:"บ.วาณีฟู๊ด โปรดักส์",g:"A",s:"promising",feb:20335,mar:91052,apr:4026,may:27754,jun:39100,jul:1495,aug:21277,sep:20594,status:"Active",freq:7},
+  {n:"อบต.หนองโรง",g:"A",s:"promising",feb:94074,mar:11121,apr:0,may:19267,jun:23028,jul:0,aug:53220,sep:63935,status:"Active",freq:5},
+  {n:"บ.ธนสรร ไรซ์",g:"A",s:"declining",feb:11854,mar:67717,apr:5070,may:4200,jun:6885,jul:49301,aug:4893,sep:5892,status:"Active",freq:7},
+  {n:"บ.ซันเคียว คาเนฮิโร (ประเทศไทย)",g:"A-",s:"regular",feb:13870,mar:15275,apr:20872,may:20960,jun:21572,jul:19143,aug:17037,sep:25539,status:"Active",freq:7},
+  {n:"บ.อาภานนท์ ดีซี",g:"A-",s:"regular",feb:0,mar:0,apr:19581,may:21364,jun:23224,jul:21561,aug:30052,sep:35198,status:"Active",freq:5},
+  {n:"บ.วิรัชทุ่งสงค้าข้าว",g:"A-",s:"promising",feb:18857,mar:10509,apr:10638,may:12570,jun:10633,jul:1860,aug:30625,sep:0,status:"Active",freq:7},
+  {n:"คุณวรลักษณ์ ฉัตรไชยศิริ",g:"B+",s:"sleeping",feb:0,mar:1166,apr:2439,may:0,jun:2474,jul:2342,aug:7467,sep:18242,status:"Inactive",freq:2},
+  {n:"บ.สยามสตีลทาวเวอร์",g:"B+",s:"rescue",feb:0,mar:12285,apr:13984,may:12278,jun:6963,jul:30603,aug:0,sep:0,status:"Pending",freq:5},
+  {n:"บ.สานิตแอนด์ซันส์",g:"B+",s:"regular",feb:4733,mar:24905,apr:11344,may:16733,jun:11561,jul:5824,aug:5857,sep:4377,status:"Active",freq:7},
+  {n:"บ.เอสพีที เทรดดิ้ง 2015",g:"B+",s:"promising",feb:8420,mar:14570,apr:0,may:25294,jun:8096,jul:5862,aug:16608,sep:0,status:"Active",freq:6},
+  {n:"บ.ชิบาคาวะ (ประเทศไทย)",g:"B+",s:"regular",feb:3766,mar:6914,apr:2994,may:6679,jun:26268,jul:2900,aug:3200,sep:4924,status:"Active",freq:7},
+  {n:"บ.ข้าวอร่อย",g:"B+",s:"promising",feb:6587,mar:7662,apr:0,may:11732,jun:8643,jul:9473,aug:19374,sep:0,status:"Active",freq:6},
 ];
 
 const CUSTOMERS = [
@@ -648,18 +649,28 @@ function renderSegCards(){
 
 const NEW_CUSTS = [
   {date:"1 ก.ย.",name:"คุณธนกร โชติกวาณิชย์",src:"ไม่ระบุ",amount:1393},
-  {date:"1 ก.ย.",name:"ร้านวอเตอร์เวย์ เซอร์วิส",src:"ไม่ระบุ",amount:760},
   {date:"1 ก.ย.",name:"ร้าน HAIRLEM (แฮร์เล็ม) สระบุรี",src:"ไม่ระบุ",amount:738},
+  {date:"1 ก.ย.",name:"ร้านวอเตอร์เวย์ เซอร์วิส",src:"ไม่ระบุ",amount:760},
+  {date:"2 ก.ย.",name:"ธ.ก.ส.สาขาสระบุรี",src:"ไม่ระบุ",amount:1475},
   {date:"2 ก.ย.",name:"บ.วี มิวสิค",src:"ไม่ระบุ",amount:1861},
-  {date:"2 ก.ย.",name:"ธ.ก.ส. สาขาสระบุรี",src:"ไม่ระบุ",amount:1475},
   {date:"2 ก.ย.",name:"บ.เพิ่มทรัพย์ ค้าวัสดุก่อสร้าง (2538)",src:"ไม่ระบุ",amount:248},
   {date:"7 ก.ย.",name:"บ.บางปะอินเสาเข็มคอนกรีต",src:"ไม่ระบุ",amount:3783},
   {date:"8 ก.ย.",name:"บ.เอกก้าวหน้า",src:"ไม่ระบุ",amount:4492},
   {date:"9 ก.ย.",name:"การประปาส่วนภูมิภาค เขต 2",src:"ไม่ระบุ",amount:6710},
+  {date:"10 ก.ย.",name:"บ.ทีซีซี เดคคอร์",src:"ไม่ระบุ",amount:266},
   {date:"10 ก.ย.",name:"บ.ยู.อาร์.เคมีคอล",src:"ไม่ระบุ",amount:3495},
   {date:"10 ก.ย.",name:"หจก.ธาราใส",src:"ไม่ระบุ",amount:1117},
-  {date:"10 ก.ย.",name:"บ.ทีซีซี เดคคอร์",src:"ไม่ระบุ",amount:533},
   {date:"15 ก.ย.",name:"บ.โปรมิกซ์ เคมิคอล แอนด์ ซัพพลาย",src:"ไม่ระบุ",amount:1661},
+  {date:"18 ก.ย.",name:"บ.ทินท์ ดีไซน์",src:"ไม่ระบุ",amount:8598},
+  {date:"18 ก.ย.",name:"บ.พี เอส ที คอนกรีต",src:"ไม่ระบุ",amount:327},
+  {date:"18 ก.ย.",name:"บ.พีซีเอ เอ็นิเนียริ่ง",src:"ไม่ระบุ",amount:421},
+  {date:"19 ก.ย.",name:"บ.เค-แม็ค ไวเบรชั่น อะนาลิซิส",src:"ไม่ระบุ",amount:785},
+  {date:"22 ก.ย.",name:"บ.ซีเค โฟกัส",src:"ไม่ระบุ",amount:730},
+  {date:"24 ก.ย.",name:"บ.ชูชัยไพศาล",src:"ไม่ระบุ",amount:1618},
+  {date:"25 ก.ย.",name:"นางสาว มัทนา ทองยะ",src:"ไม่ระบุ",amount:3904},
+  {date:"28 ก.ย.",name:"บ.ทรัพย์สมุชัย โปรดักส์ชั่น เอ็นจิเนียริ่ง",src:"ไม่ระบุ",amount:1285},
+  {date:"28 ก.ย.",name:"ห้างหุ้นส่วนจำกัด อรุณรักษ์ คอนสตรัคชั่น",src:"ไม่ระบุ",amount:511},
+  {date:"30 ก.ย.",name:"บ.สระบุรีโสภาแก๊ส",src:"ไม่ระบุ",amount:771},
 ];
 
 // ── HELPERS ─────────────────────────────────────────────────────────────────
@@ -1419,14 +1430,19 @@ async function loadCallSheet(){
       months.push([y,m]);
     }
     const filt = '(' + months.map(([y,m])=>`(O=${y} and M=${m})`).join(' or ') + ')';
+    // ใช้สูตรเดียวกับ Signal Board เป๊ะ: ดึงรายวันทั้งประวัติ ยอดสุทธิ แล้วนับเฉพาะวันที่ยอดสุทธิ > 0
     const [tbl, ctbl] = await Promise.all([
-      gvizFetch(`select G, O, M, sum(AN) where AN>0 and ${filt} and G is not null and G != '' and G != 'ไม่มีชื่อ' group by G, O, M`),
+      gvizFetch(`select G, O, M, K, sum(AN) where (AN > 0 or AN < 0) and G is not null and G != '' and G != 'ไม่มีชื่อ' group by G, O, M, K`),
       gvizFetch(`select G, Y, sum(AN) where AN>0 and ${filt} and G is not null and G != '' and G != 'ไม่มีชื่อ' group by G, Y`)
     ]);
-    const rev = {};
+    const rev = {}, firstDay = {};
     (tbl.rows||[]).forEach(r=>{
-      const g=r.c[0]?.v, y=r.c[1]?.v, m=r.c[2]?.v, v=r.c[3]?.v||0;
-      if(!g) return; (rev[g] = rev[g] || {})[`${y}-${m}`] = (rev[g][`${y}-${m}`]||0) + v;
+      const g=r.c[0]?.v, y=r.c[1]?.v, m=r.c[2]?.v, k=r.c[3]?.v, v=r.c[4]?.v||0;
+      if(!g||!y||!m||!k||v<=0) return;
+      const key=`${y}-${m}`;
+      (rev[g] = rev[g] || {})[key] = (rev[g][key]||0) + v;
+      const fd = (firstDay[g] = firstDay[g] || {});
+      if(fd[key]===undefined || k<fd[key]) fd[key]=k;
     });
     const cats = {};
     (ctbl.rows||[]).forEach(r=>{
@@ -1450,10 +1466,17 @@ async function loadCallSheet(){
       if(bought < 4) return;
       const avg5 = sum/5;
       if(avg5 < 1000) return;
+      // โรงเรียนปิดเทอม เม.ย./ต.ค. — ซื้อเกือบ ฿0 ทุกแห่ง
+      if((curM===4 || curM===10) && g.includes('โรงเรียน')) return;
+      // รอบซื้อปกติ = มัธยฐานวันที่ซื้อบิลแรกของแต่ละเดือน → ต้นเดือนแสดงเฉพาะคนที่ถึงรอบภายใน 7 วัน
+      const days = Object.values(firstDay[g]||{}).sort((a,b)=>a-b);
+      const usualDay = days.length ? days[Math.floor(days.length/2)] : 15;
+      const due = usualDay - now.getDate();
+      if(due > 7) return;
       const prevK = `${months[1][0]}-${months[1][1]}`;
       const top3 = (cats[g]||[]).sort((a,b)=>b[1]-a[1]).slice(0,3)
                     .map(x=>CAT_TH[x[0]]||x[0]).join(' · ');
-      list.push({ name:g, avg5, bought, lastLabel, silent2:(rev[g][prevK]||0)===0, top3 });
+      list.push({ name:g, avg5, bought, lastLabel, silent2:(rev[g][prevK]||0)===0, top3, usualDay, due });
     });
     list.sort((a,b)=> a.silent2-b.silent2 || b.avg5-a.avg5);
 
@@ -1463,7 +1486,8 @@ async function loadCallSheet(){
         <td><div class="cs-name">${c.name}</div>
             <div class="cs-sub">${c.silent2
               ? `<span class="cs-warm">🟡 เงียบ 2 เดือน</span> ล่าสุด ${c.lastLabel}`
-              : `<span class="cs-hot">🔴 เงียบเดือนเดียว</span> โทรก่อน`}</div></td>
+              : `<span class="cs-hot">🔴 เงียบเดือนเดียว</span> โทรก่อน`}
+              · ปกติซื้อ ~วันที่ ${c.usualDay}${c.due>0?` (อีก ${c.due} วัน)`:''}</div></td>
         <td style="font-weight:700;">${money(c.avg5)}</td>
         <td style="text-align:center;font-weight:700;color:${c.bought===5?'#15803d':'#334155'};">${c.bought}/5</td>
         <td style="font-size:11px;color:#475569;">${c.top3||'—'}</td>

@@ -893,7 +893,12 @@ function computeFocus(){
     if(!r || r.curRev>0) return;                 // เดือนนี้ซื้อแล้ว = ข้าม
     if(r.monthsBought5 < 4) return;              // ต้องซื้ออย่างน้อย 4 ใน 5 เดือน
     if(r.avg5 < 1000) return;                    // ตัดรายจิ๋วออก
-    loyal.push({name, monthsBought5:r.monthsBought5, avg5:r.avg5,
+    // โรงเรียนปิดเทอม เม.ย./ต.ค. — ข้อมูล 2 ปียืนยันว่าซื้อเกือบ ฿0 ทุกแห่ง โทรไปก็เสียเวลา
+    if((CUR_M===4 || CUR_M===10) && name.includes('โรงเรียน')) return;
+    // ต้นเดือนทุกคนยัง "ไม่ซื้อ" หมด → แสดงเฉพาะคนที่ถึงรอบซื้อปกติแล้ว หรือจะถึงใน 7 วัน
+    const _due = r.usualDay - new Date().getDate();
+    if(r.isCurPartial && _due > 7) return;
+    loyal.push({name, monthsBought5:r.monthsBought5, avg5:r.avg5, usualDay:r.usualDay, due:_due,
                 lastBuyLabel:r.lastBuyLabel, silent2:(r.prevMoRev===0)});
   });
   loyal.sort((a,b)=> a.silent2-b.silent2 || b.avg5-a.avg5);
@@ -1022,7 +1027,8 @@ function renderFocus(){
       <td style="text-align:center;font-weight:700;color:${c.monthsBought5===5?'#15803d':'#334155'};">${c.monthsBought5}/5 เดือน</td>
       <td>${c.silent2
             ? `<span style="color:#b45309;font-weight:700;font-size:11px;">🟡 เงียบ 2 เดือน (ล่าสุด ${escHTML(c.lastBuyLabel||'-')})</span>`
-            : `<span style="color:#dc2626;font-weight:700;font-size:11px;">🔴 เงียบเดือนเดียว — โทรก่อน</span>`}</td>
+            : `<span style="color:#dc2626;font-weight:700;font-size:11px;">🔴 เงียบเดือนเดียว — โทรก่อน</span>`}
+          <div style="font-size:10px;color:#94a3b8;margin-top:2px;">ปกติซื้อ ~วันที่ ${c.usualDay}${c.due>0?` · ถึงรอบในอีก ${c.due} วัน`:''}</div></td>
       <td>${stBtn(c.name)}</td></tr>`).join('');
   // ⓪ เสาที่ 1: เสี่ยงหลุด
   const atriskRows = F.atrisk.slice(0,FOCUS_SHOWN.atrisk).map(c=>`
@@ -1042,7 +1048,7 @@ function renderFocus(){
         `ซื้อประจำ ≥฿3K/ด. · 🔴 = เลยวันที่เขาปกติซื้อแล้วยังเงียบ (โทรด่วน) · ⏳ = ถึงรอบแล้ว แต่บิลช่วงนั้นยังไม่เข้าระบบ (อาจซื้อแล้ว — เช็คก่อนโทร) · 🟡 = ใกล้ถึงคิวใน 7 วัน (โทรดักไว้)${LAST_DATA_DAY?` · <b>ข้อมูลบิลถึงวันที่ ${LAST_DATA_DAY} ${moLabel(CUR_Y,CUR_M)}</b>`:''}`,
         `<th>ลูกค้า</th><th>ยอด ${moLabel(P1_Y,P1_M)}</th><th>สถานะ</th><th>บันทึก</th>`, atriskRows, true, 'atrisk', F.atrisk.length)
     + grp('fg-loyal','fg-color-loyal','🎯','ลูกค้าประจำที่เดือนนี้ยังไม่ซื้อ — โทรแล้วปิดง่ายสุด',F.loyal.length,'#7c3aed','แจง+วัน+กระแต',
-        'คัดจากประวัติ 5 เดือนเต็ม : ซื้อ 4–5 เดือนจาก 5 แต่เดือนนี้ยังเงียบ · 🔴 เงียบเดือนเดียว = โทรก่อน (เขาแค่ยังไม่ถึงคิว/ลืม) · 🟡 เงียบ 2 เดือน = โอกาสต่ำกว่า · ยอดเฉลี่ยหาร 5 เดือนเท่ากันทุกราย',
+        'คัดจากประวัติ 5 เดือนเต็ม : ซื้อ 4–5 เดือนจาก 5 แต่เดือนนี้ยังเงียบ · แสดงเฉพาะคนที่ถึงรอบซื้อปกติแล้วหรือจะถึงใน 7 วัน · พักโรงเรียนช่วงปิดเทอม (เม.ย./ต.ค.) · 🔴 เงียบเดือนเดียว = โทรก่อน (เขาแค่ยังไม่ถึงคิว/ลืม) · 🟡 เงียบ 2 เดือน = โอกาสต่ำกว่า · ยอดเฉลี่ยหาร 5 เดือนเท่ากันทุกราย',
         '<th>ลูกค้า</th><th>เฉลี่ย/เดือน</th><th>ซื้อกี่เดือน</th><th>สถานะ</th><th>บันทึก</th>', loyalRows, true, 'loyal', F.loyal.length)
     + grp('fg-cross','fg-color-cross','🔵','เสาที่ 2 — Cross-sell ฐานกลาง',F.cross.length,'#2563eb','แจง/telesale',
         'ลูกค้าประจำ ฿2–10K/ด. → เสนอหมวดที่ยังไม่ซื้อ (เกราะกันเจ้าใหญ่หาย)',
@@ -1082,12 +1088,12 @@ async function loadSignals() {
 
     // ── Fetch RFM data concurrently (all-time) ──
     const rfmPromise = gvizFetch(
-      `select G, O, M, K, sum(AN) where AN>0 and ${CF} group by G, O, M, K`
+      `select G, O, M, K, sum(AN) where (AN > 0 or AN < 0) and ${CF} group by G, O, M, K`
     );
 
     // ── Fetch current month ──
     let curTbl = await gvizFetch(
-      `select G, Y, sum(AN) where ${dateFilter(curY,curM)} and AN>0 and ${CF} group by G, Y`
+      `select G, Y, sum(AN) where ${dateFilter(curY,curM)} and (AN > 0 or AN < 0) and ${CF} group by G, Y`
     );
 
     // ── Auto-shift if no current month data ──
@@ -1101,13 +1107,13 @@ async function loadSignals() {
       p1Y  = p2Y; p1M  = p2M;
       p2Y  = p3Y; p2M  = p3M;
       curTbl = await gvizFetch(
-        `select G, Y, sum(AN) where ${dateFilter(curY,curM)} and AN>0 and ${CF} group by G, Y`
+        `select G, Y, sum(AN) where ${dateFilter(curY,curM)} and (AN > 0 or AN < 0) and ${CF} group by G, Y`
       );
     }
 
     // ── Fetch baseline (prev 2 months avg) ──
     const prevTbl = await gvizFetch(
-      `select G, Y, sum(AN) where ((${dateFilter(p1Y,p1M)}) or (${dateFilter(p2Y,p2M)})) and AN>0 and ${CF} group by G, Y`
+      `select G, Y, sum(AN) where ((${dateFilter(p1Y,p1M)}) or (${dateFilter(p2Y,p2M)})) and (AN > 0 or AN < 0) and ${CF} group by G, Y`
     );
 
     // ── Save state for drill-down ──
@@ -1310,8 +1316,8 @@ async function openDrilldown(custName) {
   try {
     const cq = `G = '${escQ(custName)}'`;
     const [curTbl, prevTbl] = await Promise.all([
-      gvizFetch(`select Y, sum(AN) where O=${CUR_Y} and M=${CUR_M} and AN>0 and ${cq} group by Y`),
-      gvizFetch(`select Y, sum(AN) where ((O=${P1_Y} and M=${P1_M}) or (O=${P2_Y} and M=${P2_M})) and AN>0 and ${cq} group by Y`)
+      gvizFetch(`select Y, sum(AN) where O=${CUR_Y} and M=${CUR_M} and (AN > 0 or AN < 0) and ${cq} group by Y`),
+      gvizFetch(`select Y, sum(AN) where ((O=${P1_Y} and M=${P1_M}) or (O=${P2_Y} and M=${P2_M})) and (AN > 0 or AN < 0) and ${cq} group by Y`)
     ]);
 
     // aggregate by dept name (ALL depts, not filtered)
@@ -1384,8 +1390,8 @@ async function openSKUDrilldown(custName, deptName) {
   try {
     const cq = `G = '${escQ(custName)}' and Y = '${escQ(deptName)}'`;
     const [curTbl, prevTbl] = await Promise.all([
-      gvizFetch(`select V, sum(AN) where O=${CUR_Y} and M=${CUR_M} and AN>0 and ${cq} group by V`),
-      gvizFetch(`select V, sum(AN) where ((O=${P1_Y} and M=${P1_M}) or (O=${P2_Y} and M=${P2_M})) and AN>0 and ${cq} group by V`)
+      gvizFetch(`select V, sum(AN) where O=${CUR_Y} and M=${CUR_M} and (AN > 0 or AN < 0) and ${cq} group by V`),
+      gvizFetch(`select V, sum(AN) where ((O=${P1_Y} and M=${P1_M}) or (O=${P2_Y} and M=${P2_M})) and (AN > 0 or AN < 0) and ${cq} group by V`)
     ]);
 
     const pmap = {};
