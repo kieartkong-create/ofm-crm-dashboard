@@ -102,11 +102,12 @@ async function build(){
   let p1Y=curY, p1M=curM-1; if(p1M<=0){p1M+=12;p1Y--;}
   let p2Y=p1Y, p2M=p1M-1; if(p2M<=0){p2M+=12;p2Y--;}
 
-  const CF = "G is not null and G!='' and G!='ไม่มีชื่อ'";
+  // บัญชีภายใน (เจ้าของ / พนักงาน) ไม่ใช่ลูกค้า
+  const CF = "G is not null and G!='' and G!='ไม่มีชื่อ' and not G contains 'วรลักษณ์ ฉัตรไชยศิริ' and not G contains 'พนักงานOffice Mate'";
   const curRows = await gvizFetch(`select G, sum(AN) where O=${curY} and M=${curM} and (AN > 0 or AN < 0) and ${CF} group by G`);
   const prevRows = await gvizFetch(`select G, sum(AN) where ((O=${p1Y} and M=${p1M}) or (O=${p2Y} and M=${p2M})) and (AN > 0 or AN < 0) and ${CF} group by G`);
   // หมวดสินค้า (Y) ล่าสุด 2 เดือน เพื่อหา cross-sell gap
-  const catRows = await gvizFetch(`select G, Y where ((O=${p1Y} and M=${p1M}) or (O=${curY} and M=${curM})) and AN>0 and ${CF} group by G, Y`);
+  const catRows = await gvizFetch(`select G, Y, count(AN) where ((O=${p1Y} and M=${p1M}) or (O=${curY} and M=${curM})) and AN>0 and ${CF} group by G, Y`);
   // วันแรกที่เคยซื้อ (หาลูกค้าใหม่ ≤60 วัน)
   const firstRows = await gvizFetch(`select G, min(K) where AN>0 and ${CF} group by G`);
   // ลูกค้าที่ซื้อเดือนนี้แล้ว (เพื่อเช็คว่าลูกค้าใหม่กลับมาซื้อรอบ 2 หรือยัง)
@@ -132,17 +133,18 @@ async function build(){
 
   // เสาที่ 1 — เสี่ยงหลุด: avg baseline >=3000 แต่เดือนนี้ยังไม่ซื้อเลย
   const atrisk = Object.keys(prev)
-    .filter(n=>{ const avg=prev[n]/Math.max(prevCount[n],1); return avg>=3000 && !cur[n]; })
-    .map(n=>({name:n, avg:prev[n]/Math.max(prevCount[n],1)}))
+    .filter(n=>{ const avg=prev[n]/2; return avg>=3000 && !cur[n]
+      && !((curM===4||curM===10) && n.includes('โรงเรียน')); })   // โรงเรียนปิดเทอม เม.ย./ต.ค.
+    .map(n=>({name:n, avg:prev[n]/2}))
     .sort((a,b)=>b.avg-a.avg);
 
   // เสาที่ 2 — cross-sell: ลูกค้าประจำ avg 2-10k มีหมวดว่าง
   const cross = Object.keys(prev)
-    .filter(n=>{ const avg=prev[n]/Math.max(prevCount[n],1); return avg>=2000 && avg<=10000; })
+    .filter(n=>{ const avg=prev[n]/2; return avg>=2000 && avg<=10000; })
     .map(n=>{
       const have = boughtCats[n] ? [...boughtCats[n]] : [];
       const gaps = ALLCATS.filter(c=>!have.includes(c));
-      return {name:n, avg:prev[n]/Math.max(prevCount[n],1), gaps, have};
+      return {name:n, avg:prev[n]/2, gaps, have};
     })
     .filter(x=>x.gaps.length && x.have.length)
     .sort((a,b)=>b.avg-a.avg);
@@ -156,7 +158,7 @@ async function build(){
     const days = Math.floor((today-d)/86400000);
     return {name:n, days, bought:curSet.has(n)};
   }).filter(x=>x && x.days>=0 && x.days<=60 && !x.bought)
-    .map(x=>({...x, avg: prev[x.name] || cur[x.name] || 0}))
+    .map(x=>({...x, avg: (prev[x.name]||0)/2 || cur[x.name] || 0}))
     .sort((a,b)=>b.avg-a.avg);
 
   render(now, {atrisk, cross, newCust});

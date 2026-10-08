@@ -1083,7 +1083,8 @@ async function loadSignals() {
     if (p1M <= 0) { p1M += 12; p1Y--; }
     if (p2M <= 0) { p2M += 12; p2Y--; }
 
-    const CF = `G is not null and G != '' and G != 'ไม่มีชื่อ'`;
+    // บัญชีภายใน (เจ้าของ / พนักงาน) ไม่ใช่ลูกค้า — ตัดออกจากการวิเคราะห์ลูกค้าทั้งหมด
+    const CF = `G is not null and G != '' and G != 'ไม่มีชื่อ' and not G contains 'วรลักษณ์ ฉัตรไชยศิริ' and not G contains 'พนักงานOffice Mate'`;
     const dateFilter = (y, m) => `O=${y} and M=${m}`;
 
     // ── Fetch RFM data concurrently (all-time) ──

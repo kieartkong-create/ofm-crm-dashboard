@@ -241,7 +241,7 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
   </div>
 
   <!-- B2B Tracked Monthly Table -->
-  <h2>📋 B2B Tracked Customers — ยอดรายเดือน <span style="font-size:11px;font-weight:400;color:#94a3b8;">15 บริษัทหลัก · ยอดสุทธิหักคืนของแล้ว · ก.ย. ครบทั้งเดือน</span></h2>
+  <h2>📋 B2B Tracked Customers — ยอดรายเดือน <span style="font-size:11px;font-weight:400;color:#94a3b8;">14 บริษัทหลัก · ยอดสุทธิหักคืนของแล้ว · ก.ย. ครบทั้งเดือน</span></h2>
   <div class="pro-note">📅 ก.พ. – ก.ย. 2569 · ยอดสุทธิ &nbsp;|&nbsp; ✅ Active &nbsp; ⚠️ Pending &nbsp; 🔴 Inactive / ติดต่อไม่ได้ &nbsp;|&nbsp; คลิกแถวเพื่อดูรายละเอียด</div>
   <div class="card" style="overflow-x:auto;padding:0;margin-bottom:24px;">
     <table>
@@ -494,7 +494,6 @@ const B2B = [
   {n:"บ.ซันเคียว คาเนฮิโร (ประเทศไทย)",g:"A-",s:"regular",feb:13870,mar:15275,apr:20872,may:20960,jun:21572,jul:19143,aug:17037,sep:25539,status:"Active",freq:7},
   {n:"บ.อาภานนท์ ดีซี",g:"A-",s:"regular",feb:0,mar:0,apr:19581,may:21364,jun:23224,jul:21561,aug:30052,sep:35198,status:"Active",freq:5},
   {n:"บ.วิรัชทุ่งสงค้าข้าว",g:"A-",s:"promising",feb:18857,mar:10509,apr:10638,may:12570,jun:10633,jul:1860,aug:30625,sep:0,status:"Active",freq:7},
-  {n:"คุณวรลักษณ์ ฉัตรไชยศิริ",g:"B+",s:"sleeping",feb:0,mar:1166,apr:2439,may:0,jun:2474,jul:2342,aug:7467,sep:18242,status:"Inactive",freq:2},
   {n:"บ.สยามสตีลทาวเวอร์",g:"B+",s:"rescue",feb:0,mar:12285,apr:13984,may:12278,jun:6963,jul:30603,aug:0,sep:0,status:"Pending",freq:5},
   {n:"บ.สานิตแอนด์ซันส์",g:"B+",s:"regular",feb:4733,mar:24905,apr:11344,may:16733,jun:11561,jul:5824,aug:5857,sep:4377,status:"Active",freq:7},
   {n:"บ.เอสพีที เทรดดิ้ง 2015",g:"B+",s:"promising",feb:8420,mar:14570,apr:0,may:25294,jun:8096,jul:5862,aug:16608,sep:0,status:"Active",freq:6},
@@ -519,7 +518,6 @@ const CUSTOMERS = [
   {name:"บริษัท ล้อพูนผลไรซ์มิลล์ จำกัด",seg:"Champion",freq:314,monetary:175611,last:"2026-12-5",r:5,f:4,m:4,total:13},
   {name:"บริษัท วงศ์ โพลีแซค จำกัด",seg:"Loyal",freq:72,monetary:169493,last:"2026-4-2",r:3,f:2,m:4,total:9},
   {name:"บริษัท อัศวสามัคคีขนส่ง จำกัด",seg:"Loyal",freq:263,monetary:153536,last:"2025-12-12",r:2,f:4,m:4,total:10},
-  {name:"คุณวรลักษณ์ ฉัตรไชยศิริ",seg:"Loyal",freq:86,monetary:131506,last:"2026-9-5",r:5,f:2,m:4,total:11},
   {name:"บริษัท ไพรม์เทค อิเล็คทรอนิคส์ (ประเทศไทย) จำกัด",seg:"Champion",freq:131,monetary:129304,last:"2026-9-4",r:5,f:3,m:4,total:12},
   {name:"บริษัท บรอดเวย์ พรีซิชั่น(ไทยแลนด์)จำกัด",seg:"Champion",freq:113,monetary:127132,last:"2026-9-2",r:5,f:3,m:4,total:12},
   {name:"บริษัท เคเอสแอล สยามโกลด์(2019) จำกัด",seg:"Champion",freq:441,monetary:125163,last:"2026-12-1",r:5,f:5,m:4,total:14},
@@ -1304,7 +1302,7 @@ async function loadRFM() {
       `(O < ${curY} or (O = ${curY} and M < ${curM}) or (O = ${curY} and M = ${curM} and K <= ${curD}))`;
     const WHERE =
       `where (AN > 0 or AN < 0) and O is not null and G is not null ` +
-      `and G != '' and G != 'ไม่มีชื่อ' and ${DATE_FILTER}`;
+      `and G != '' and G != 'ไม่มีชื่อ' and not G contains 'วรลักษณ์ ฉัตรไชยศิริ' and not G contains 'พนักงานOffice Mate' and ${DATE_FILTER}`;
 
     const tbl = await gvizFetch(
       `select G, O, M, K, Q, sum(AN) ${WHERE} group by G, O, M, K, Q`
@@ -1432,8 +1430,8 @@ async function loadCallSheet(){
     const filt = '(' + months.map(([y,m])=>`(O=${y} and M=${m})`).join(' or ') + ')';
     // ใช้สูตรเดียวกับ Signal Board เป๊ะ: ดึงรายวันทั้งประวัติ ยอดสุทธิ แล้วนับเฉพาะวันที่ยอดสุทธิ > 0
     const [tbl, ctbl] = await Promise.all([
-      gvizFetch(`select G, O, M, K, sum(AN) where (AN > 0 or AN < 0) and G is not null and G != '' and G != 'ไม่มีชื่อ' group by G, O, M, K`),
-      gvizFetch(`select G, Y, sum(AN) where AN>0 and ${filt} and G is not null and G != '' and G != 'ไม่มีชื่อ' group by G, Y`)
+      gvizFetch(`select G, O, M, K, sum(AN) where (AN > 0 or AN < 0) and G is not null and G != '' and G != 'ไม่มีชื่อ' and not G contains 'วรลักษณ์ ฉัตรไชยศิริ' and not G contains 'พนักงานOffice Mate' group by G, O, M, K`),
+      gvizFetch(`select G, Y, sum(AN) where AN>0 and ${filt} and G is not null and G != '' and G != 'ไม่มีชื่อ' and not G contains 'วรลักษณ์ ฉัตรไชยศิริ' and not G contains 'พนักงานOffice Mate' group by G, Y`)
     ]);
     const rev = {}, firstDay = {};
     (tbl.rows||[]).forEach(r=>{
