@@ -242,7 +242,7 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
 
   <!-- ── ลูกค้ากระดาษยกลัง ตามรอบ 90 วัน ───────────────────────────── -->
   <h2 class="no-print">📦 ลูกค้ากระดาษยกลัง — ตามรอบ 90 วัน
-    <span style="font-size:11px;font-weight:400;color:#94a3b8;">ลูกค้าที่เคยสั่งกระดาษถ่ายเอกสาร 50 แพ็คขึ้นไปในวันเดียว · อัปเดตสดจาก Google Sheets</span>
+    <span style="font-size:11px;font-weight:400;color:#94a3b8;">ลูกค้าที่เคยซื้อกระดาษถ่ายเอกสารวันเดียว ฿15,000 ขึ้นไป · อัปเดตสดจาก Google Sheets</span>
   </h2>
   <div class="pro-note no-print">
     🔴 ถึงรอบแล้ว (ห่างจากล็อตล่าสุดเกินรอบปกติ หรือเกิน 90 วัน) &nbsp;|&nbsp; ⚫ ไม่สั่งยกลังเกิน 6 เดือน = ต้องไปเยี่ยม
@@ -1530,7 +1530,7 @@ async function loadCallSheet(){
   }
 }
 
-// ── ลูกค้ากระดาษยกลัง: ล็อต = วันที่ซื้อกระดาษถ่ายเอกสาร ≥ 50 แพ็ค ──────────────
+// ── ลูกค้ากระดาษยกลัง: ล็อต = วันที่ซื้อกระดาษถ่ายเอกสาร ≥ ฿15,000 (นับเป็นเงิน เพราะบาง SKU เป็นรีม ไม่ใช่แพ็ค) ──────────────
 async function loadBulkPaper(){
   const body = document.getElementById('bulk-body');
   if(!body) return;
@@ -1544,7 +1544,7 @@ async function loadBulkPaper(){
       if(!g||!y||!m||!k) return;
       const c = (cust[g] = cust[g] || {lots:[], curQty:0});
       if(y===curY && m===curM) c.curQty += q;
-      if(q >= 50) c.lots.push({d:new Date(y,m-1,k), q, a});
+      if(a >= 15000) c.lots.push({d:new Date(y,m-1,k), q, a});
     });
     const DAY = 86400000, money = v => '฿' + Math.round(v).toLocaleString();
     const fmt = d => `${d.getDate()} ${THAI_MO[d.getMonth()]} ${String(d.getFullYear()+543).slice(2)}`;
@@ -1571,11 +1571,11 @@ async function loadBulkPaper(){
       <tr>
         <td style="font-weight:700;">${x.g}</td>
         <td>${x.st}</td>
-        <td>${fmt(x.last.d)}<div style="font-size:11px;color:#64748b;">${Math.round(x.last.q)} แพ็ค · ${money(x.last.a)}</div></td>
+        <td>${fmt(x.last.d)}<div style="font-size:11px;color:#64748b;">${money(x.last.a)} · ${Math.round(x.last.q)} ชิ้น</div></td>
         <td style="font-weight:700;">${x.since >= 60 ? (x.since/30.4).toFixed(1)+' เดือน' : x.since+' วัน'}</td>
         <td>${x.gap ? 'ทุก ~'+(x.gap/30.4).toFixed(1)+' เดือน' : '<span style="color:#94a3b8;">สั่งยกลังครั้งเดียว</span>'}</td>
         <td style="text-align:center;">${x.recent}</td>
-        <td>${x.curQty>0 ? Math.round(x.curQty)+' แพ็ค' : '<span style="color:#94a3b8;">ยังไม่ซื้อ</span>'}</td>
+        <td>${x.curQty>0 ? Math.round(x.curQty)+' ชิ้น' : '<span style="color:#94a3b8;">ยังไม่ซื้อ</span>'}</td>
       </tr>`).join('')
       : '<tr><td colspan="7" style="padding:18px;color:#64748b;">— ไม่มีลูกค้าที่เคยสั่งยกลัง —</td></tr>';
   }catch(e){
