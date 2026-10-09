@@ -524,7 +524,6 @@ const CUSTOMERS = [
   {name:"บริษัท วาณีฟู๊ด โปรดักส์ จำกัด",seg:"Champion",freq:395,monetary:564862,last:"2026-9-4",r:5,f:4,m:5,total:14},
   {name:"เทศบาลตำบลหนองโดน",seg:"Champion",freq:745,monetary:519067,last:"2026-12-3",r:5,f:5,m:5,total:15},
   {name:"บริษัท วัชรธุรกิจเซ็นเตอร์ จำกัด",seg:"Champion",freq:262,monetary:509446,last:"2026-4-2",r:3,f:4,m:5,total:12},
-  {name:"บริษัท สยามโกลเด้นไรซ์ จำกัด",seg:"Champion",freq:451,monetary:435582,last:"2026-10-4",r:5,f:5,m:5,total:15},
   {name:"บริษัท ธนสรร ไรซ์ จำกัด",seg:"Champion",freq:400,monetary:432189,last:"2026-10-3",r:5,f:5,m:5,total:15},
   {name:"บริษัท วิรัชทุ่งสงค้าข้าว จำกัด",seg:"Loyal",freq:206,monetary:362886,last:"2025-11-7",r:1,f:4,m:5,total:10},
   {name:"บริษัท ซันเคียว คาเนฮิโร (ประเทศไทย) จำกัด",seg:"Champion",freq:1050,monetary:329452,last:"2026-12-5",r:5,f:5,m:5,total:15},
@@ -539,7 +538,6 @@ const CUSTOMERS = [
   {name:"บริษัท ไพรม์เทค อิเล็คทรอนิคส์ (ประเทศไทย) จำกัด",seg:"Champion",freq:131,monetary:129304,last:"2026-9-4",r:5,f:3,m:4,total:12},
   {name:"บริษัท บรอดเวย์ พรีซิชั่น(ไทยแลนด์)จำกัด",seg:"Champion",freq:113,monetary:127132,last:"2026-9-2",r:5,f:3,m:4,total:12},
   {name:"บริษัท เคเอสแอล สยามโกลด์(2019) จำกัด",seg:"Champion",freq:441,monetary:125163,last:"2026-12-1",r:5,f:5,m:4,total:14},
-  {name:"บริษัท โชคฉัตรไชยไรซ์มิล จำกัด",seg:"Loyal",freq:194,monetary:120315,last:"2025-2-9",r:1,f:3,m:4,total:8},
   {name:"บจก. เอส เค คอมเมอร์เชียล กรุ๊ป",seg:"Loyal",freq:139,monetary:114517,last:"2026-8-4",r:4,f:3,m:4,total:11},
   {name:"บริษัท เอสพีที เทรดดิ้ง 2015 จำกัด",seg:"Loyal",freq:180,monetary:110638,last:"2025-9-9",r:1,f:3,m:4,total:8},
   {name:"บริษัท อีซูซุลพบุรี จำกัด",seg:"Champion",freq:162,monetary:107465,last:"2026-11-3",r:5,f:3,m:4,total:12},
@@ -614,7 +612,6 @@ const CUSTOMERS = [
   {name:"บริษัท รวมใจเจริญทรัพย์ จำกัด",seg:"Loyal",freq:11,monetary:22283,last:"2026-9-3",r:5,f:1,m:2,total:8},
   {name:"บริษัท ภัทรา พอร์ซเลน จำกัด",seg:"At Risk",freq:33,monetary:21269,last:"2026-2-3",r:2,f:1,m:2,total:5},
   {name:"บริษัท สันติพาณิชย์ โรสเตอร์ จำกัด",seg:"At Risk",freq:61,monetary:20971,last:"2025-2-10",r:1,f:2,m:2,total:5},
-  {name:"บจก.โรงสีโชควรลักษณ์รุ่งเรืองกิจ",seg:"At Risk",freq:9,monetary:20638,last:"2026-3-4",r:3,f:1,m:2,total:6},
   {name:"บริษัท ไทยประกันชีวิต สาขาสระบุรี",seg:"At Risk",freq:50,monetary:20119,last:"2025-12-11",r:2,f:2,m:2,total:6},
   {name:"บริษัท สยามเฮอร์เบิลฟาร์มาซูติคอล จำกัด",seg:"Loyal",freq:75,monetary:19702,last:"2026-11-4",r:5,f:2,m:1,total:8},
   {name:"บริษัท พีพี ฟู๊ด ลพบุรี",seg:"At Risk",freq:40,monetary:19595,last:"2026-4-3",r:3,f:1,m:1,total:5},
@@ -1320,7 +1317,7 @@ async function loadRFM() {
       `(O < ${curY} or (O = ${curY} and M < ${curM}) or (O = ${curY} and M = ${curM} and K <= ${curD}))`;
     const WHERE =
       `where (AN > 0 or AN < 0) and O is not null and G is not null ` +
-      `and G != '' and G != 'ไม่มีชื่อ' and not G contains 'วรลักษณ์ ฉัตรไชยศิริ' and not G contains 'พนักงานOffice Mate' and ${DATE_FILTER}`;
+      `and G != '' and G != 'ไม่มีชื่อ' and not G contains 'วรลักษณ์ ฉัตรไชยศิริ' and not G contains 'พนักงานOffice Mate' and not G contains 'สยามโกลเด้นไรซ์' and not G contains 'โชคฉัตรไชยไรซ์มิล' and not G contains 'โชควรลักษณ์' and ${DATE_FILTER}`;
 
     const tbl = await gvizFetch(
       `select G, O, M, K, Q, sum(AN) ${WHERE} group by G, O, M, K, Q`
@@ -1448,8 +1445,8 @@ async function loadCallSheet(){
     const filt = '(' + months.map(([y,m])=>`(O=${y} and M=${m})`).join(' or ') + ')';
     // ใช้สูตรเดียวกับ Signal Board เป๊ะ: ดึงรายวันทั้งประวัติ ยอดสุทธิ แล้วนับเฉพาะวันที่ยอดสุทธิ > 0
     const [tbl, ctbl] = await Promise.all([
-      gvizFetch(`select G, O, M, K, sum(AN) where (AN > 0 or AN < 0) and G is not null and G != '' and G != 'ไม่มีชื่อ' and not G contains 'วรลักษณ์ ฉัตรไชยศิริ' and not G contains 'พนักงานOffice Mate' group by G, O, M, K`),
-      gvizFetch(`select G, Y, sum(AN) where AN>0 and ${filt} and G is not null and G != '' and G != 'ไม่มีชื่อ' and not G contains 'วรลักษณ์ ฉัตรไชยศิริ' and not G contains 'พนักงานOffice Mate' group by G, Y`)
+      gvizFetch(`select G, O, M, K, sum(AN) where (AN > 0 or AN < 0) and G is not null and G != '' and G != 'ไม่มีชื่อ' and not G contains 'วรลักษณ์ ฉัตรไชยศิริ' and not G contains 'พนักงานOffice Mate' and not G contains 'สยามโกลเด้นไรซ์' and not G contains 'โชคฉัตรไชยไรซ์มิล' and not G contains 'โชควรลักษณ์' group by G, O, M, K`),
+      gvizFetch(`select G, Y, sum(AN) where AN>0 and ${filt} and G is not null and G != '' and G != 'ไม่มีชื่อ' and not G contains 'วรลักษณ์ ฉัตรไชยศิริ' and not G contains 'พนักงานOffice Mate' and not G contains 'สยามโกลเด้นไรซ์' and not G contains 'โชคฉัตรไชยไรซ์มิล' and not G contains 'โชควรลักษณ์' group by G, Y`)
     ]);
     const rev = {}, firstDay = {};
     (tbl.rows||[]).forEach(r=>{
@@ -1539,7 +1536,7 @@ async function loadBulkPaper(){
   if(!body) return;
   try{
     const now = new Date(), curY = now.getFullYear(), curM = now.getMonth()+1;
-    const tbl = await gvizFetch(`select G, O, M, K, sum(AD), sum(AN) where AN > 0 and V contains 'กระดาษถ่ายเอกสาร' and G is not null and G != '' and G != 'ไม่มีชื่อ' and not G contains 'วรลักษณ์ ฉัตรไชยศิริ' and not G contains 'พนักงานOffice Mate' group by G, O, M, K`);
+    const tbl = await gvizFetch(`select G, O, M, K, sum(AD), sum(AN) where AN > 0 and V contains 'กระดาษถ่ายเอกสาร' and G is not null and G != '' and G != 'ไม่มีชื่อ' and not G contains 'วรลักษณ์ ฉัตรไชยศิริ' and not G contains 'พนักงานOffice Mate' and not G contains 'สยามโกลเด้นไรซ์' and not G contains 'โชคฉัตรไชยไรซ์มิล' and not G contains 'โชควรลักษณ์' group by G, O, M, K`);
     const num = v => typeof v === 'number' ? v : parseFloat(String(v||0).replace(/,/g,'')) || 0;
     const cust = {};
     (tbl.rows||[]).forEach(r=>{
