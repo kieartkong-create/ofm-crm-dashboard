@@ -62,14 +62,24 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
 .cs-hot{background:#fee2e2;color:#b91c1c;font-weight:700;padding:1px 6px;border-radius:9px;font-size:10px;}
 .cs-warm{background:#fef3c7;color:#b45309;font-weight:700;padding:1px 6px;border-radius:9px;font-size:10px;}
 #cs-printhead{display:none;}
+#papersheet table{width:100%;border-collapse:collapse;}
+#papersheet th{background:#0f766e;color:#fff;font-size:12px;padding:8px 6px;text-align:left;}
+#papersheet td{border-bottom:1px solid #e2e8f0;padding:7px 6px;font-size:12px;vertical-align:top;}
+#papersheet .cs-name{font-weight:700;color:#0f172a;}
+#papersheet .cs-sub{font-size:10px;color:#64748b;font-weight:400;}
+#papersheet .cs-box{display:inline-block;width:13px;height:13px;border:1.5px solid #94a3b8;border-radius:3px;margin-right:5px;vertical-align:-2px;}
+#papersheet .cs-line{display:block;border-bottom:1px dotted #cbd5e1;height:15px;}
+.ps-printhead{display:none;}
 @media print{
   body *{visibility:hidden;}
-  #callsheet,#callsheet *{visibility:visible;}
-  #callsheet{position:absolute;left:0;top:0;width:100%;margin:0;padding:0;box-shadow:none;border:none;}
-  #cs-printhead{display:block;margin-bottom:8px;}
+  .print-target,.print-target *{visibility:visible;}
+  .print-target{position:absolute;left:0;top:0;width:100%;margin:0;padding:0;box-shadow:none;border:none;}
+  .print-target #cs-printhead,.print-target .ps-printhead{display:block;margin-bottom:8px;}
   .no-print{display:none !important;}
-  #callsheet th{background:#4c1d95 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  #callsheet tr{page-break-inside:avoid;}
+  #callsheet th,#papersheet th{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  #callsheet th{background:#4c1d95 !important;}
+  #papersheet th{background:#0f766e !important;}
+  .print-target tr{page-break-inside:avoid;}
   @page{size:A4 portrait;margin:12mm;}
 }
 </style>
@@ -211,13 +221,13 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
     &nbsp;|&nbsp; แสดงเฉพาะคนที่ถึงรอบซื้อปกติแล้วหรือจะถึงใน 7 วัน &nbsp;|&nbsp; พักโรงเรียนช่วงปิดเทอม (เม.ย./ต.ค.)
     &nbsp;|&nbsp; ยอดเฉลี่ยหาร 5 เดือนเท่ากันทุกราย &nbsp;|&nbsp; เช็คก่อนโทรทุกครั้ง บิลเข้าช้า 2–3 วัน
   </div>
-  <div class="card" id="callsheet" style="padding:14px;margin-bottom:24px;">
+  <div class="card print-target" id="callsheet" style="padding:14px;margin-bottom:24px;">
     <div id="cs-printhead">
       <div style="font-size:16px;font-weight:700;color:#0f172a;">📞 ใบโทร — ลูกค้าประจำที่เดือนนี้ยังไม่ซื้อ</div>
       <div style="font-size:11px;color:#475569;" id="cs-printsub">OfficeMate Plus+ สาขาสระบุรี</div>
     </div>
     <div class="no-print" style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
-      <button onclick="window.print()" style="background:#4c1d95;color:#fff;border:none;border-radius:8px;
+      <button onclick="printSection('callsheet')" style="background:#4c1d95;color:#fff;border:none;border-radius:8px;
         padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">🖨️ พิมพ์ใบโทร</button>
       <button onclick="loadCallSheet()" style="background:#fff;color:#4c1d95;border:1.5px solid #ddd6fe;border-radius:8px;
         padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">🔄 โหลดใหม่</button>
@@ -256,6 +266,47 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
       </tr></thead>
       <tbody id="bulk-body"><tr><td colspan="7" style="padding:18px;color:#64748b;">กำลังโหลด…</td></tr></tbody>
     </table>
+  </div>
+
+
+  <!-- ── ลูกค้ากระดาษรายใหญ่ ที่เดือนนี้ยังไม่ซื้อกระดาษ ─────────────── -->
+  <h2 class="no-print">📄 ลูกค้ากระดาษรายใหญ่ — เดือนนี้ยังไม่ซื้อกระดาษ
+    <span style="font-size:11px;font-weight:400;color:#94a3b8;">20 อันดับแรกจากยอดกระดาษถ่ายเอกสาร 12 เดือนเต็มล่าสุด · อัปเดตสดจาก Google Sheets</span>
+  </h2>
+  <div class="pro-note no-print">
+    🔴 โทรแล้วไม่ได้คุย = <b>โทรซ้ำภายใน 2 วันทำการ ไม่เกิน 3 ครั้ง แล้วเปลี่ยนเป็น LINE / ไปหาถึงที่</b>
+    &nbsp;|&nbsp; ⚫ ยังไม่เคยโทร &nbsp;|&nbsp; ✅ ได้คุยแล้ว &nbsp;|&nbsp; 🔵 โรงเรียนช่วงปิดเทอม (เม.ย./ต.ค.) คุยช่วงก่อนเปิดเทอม
+    &nbsp;|&nbsp; ใครซื้อกระดาษเดือนนี้แล้วจะหายจากลิสต์เอง — เช็คก่อนโทร บิลเข้าช้า 2–3 วัน
+  </div>
+  <div class="card" id="papersheet" style="padding:14px;margin-bottom:24px;">
+    <div class="ps-printhead">
+      <div style="font-size:16px;font-weight:700;color:#0f172a;">📄 ใบโทร — ลูกค้ากระดาษรายใหญ่ที่เดือนนี้ยังไม่ซื้อกระดาษ</div>
+      <div style="font-size:11px;color:#475569;" id="ps-printsub">OfficeMate Plus+ สาขาสระบุรี</div>
+    </div>
+    <div class="no-print" style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
+      <button onclick="printSection('papersheet')" style="background:#0f766e;color:#fff;border:none;border-radius:8px;
+        padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">🖨️ พิมพ์ใบโทรกระดาษ</button>
+      <button onclick="loadPaperSheet()" style="background:#fff;color:#0f766e;border:1.5px solid #99f6e4;border-radius:8px;
+        padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">🔄 โหลดใหม่</button>
+      <span id="ps-count" style="font-size:12px;color:#64748b;">กำลังโหลด…</span>
+    </div>
+    <table>
+      <thead><tr>
+        <th style="width:3%;">#</th>
+        <th style="width:27%;">ลูกค้า</th>
+        <th style="width:11%;">กระดาษ 12 เดือน</th>
+        <th style="width:8%;">ซื้อกี่เดือน</th>
+        <th style="width:11%;">เฉลี่ย/เดือนที่ซื้อ</th>
+        <th style="width:14%;">โทรล่าสุด</th>
+        <th style="width:11%;">ผลการโทร</th>
+        <th style="width:15%;">จดบันทึก</th>
+      </tr></thead>
+      <tbody id="ps-body"><tr><td colspan="8" style="padding:18px;color:#64748b;">กำลังโหลด…</td></tr></tbody>
+    </table>
+    <div style="margin-top:10px;font-size:10.5px;color:#64748b;">
+      สคริปต์: “พี่คะ ปกติพี่สั่งกระดาษกับเราประจำ เดือนนี้ยังไม่เห็นออเดอร์เลย กระดาษยังพอใช้อยู่ไหมคะ จะได้จัดไว้ให้ก่อนค่ะ”
+      &nbsp;·&nbsp; ปิดท้าย: “มีอย่างอื่นต้องใช้เพิ่มไหมคะ ส่งพร้อมกันได้เลย”
+    </div>
   </div>
 
   <!-- B2B Tracked Monthly Table -->
@@ -1583,6 +1634,95 @@ async function loadBulkPaper(){
   }
 }
 
+// ── สั่งพิมพ์เฉพาะส่วน ──────────────────────────────────────────────────────
+function printSection(id){
+  document.querySelectorAll('.print-target').forEach(e=>e.classList.remove('print-target'));
+  document.getElementById(id).classList.add('print-target');
+  window.print();
+}
+
+// ── บันทึกการโทรจาก Apps Script (JSONP · ลองซ้ำ 3 ครั้ง เพราะบางครั้งตอบช้า) ─────
+const CALL_LOG_URL = 'https://script.google.com/macros/s/AKfycbw2b55Kf722t-QanQlV8SjpFXJh7kbGv4QLf9LRnmz90xjU5tai6gCpaQV10ivihOH3XA/exec';
+function fetchCallLog(tries=3){
+  return new Promise(resolve=>{
+    const attempt = n => {
+      const cb = '__calllog_' + Date.now() + '_' + n;
+      const sc = document.createElement('script');
+      const done = data => { clearTimeout(t); delete window[cb]; sc.remove(); resolve(data); };
+      const t = setTimeout(()=>{ delete window[cb]; sc.remove(); n>1 ? attempt(n-1) : resolve(null); }, 10000);
+      window[cb] = data => done(data || {});
+      sc.onerror = ()=>{ clearTimeout(t); delete window[cb]; sc.remove(); n>1 ? attempt(n-1) : resolve(null); };
+      sc.src = `${CALL_LOG_URL}?callback=${cb}`;
+      document.body.appendChild(sc);
+    };
+    attempt(tries);
+  });
+}
+
+// ── ลูกค้ากระดาษรายใหญ่ ที่เดือนนี้ยังไม่ซื้อกระดาษ (Top 20 จาก 12 เดือนเต็มล่าสุด) ──────
+async function loadPaperSheet(){
+  const body = document.getElementById('ps-body'), cnt = document.getElementById('ps-count');
+  if(!body) return;
+  body.innerHTML = '<tr><td colspan="8" style="padding:18px;color:#64748b;">กำลังโหลด…</td></tr>';
+  try{
+    const now = new Date(), curY = now.getFullYear(), curM = now.getMonth()+1;
+    const months = [];                                   // เดือนปัจจุบัน + ย้อนหลัง 12 เดือนเต็ม
+    for(let i=0;i<=12;i++){ let y=curY, m=curM-i; while(m<=0){ m+=12; y--; } months.push([y,m]); }
+    const filt = '(' + months.map(([y,m])=>`(O=${y} and M=${m})`).join(' or ') + ')';
+    const [tbl, log] = await Promise.all([
+      gvizFetch(`select G, O, M, K, sum(AN) where (AN > 0 or AN < 0) and V contains 'กระดาษถ่ายเอกสาร' and ${filt} and G is not null and G != '' and G != 'ไม่มีชื่อ' and not G contains 'วรลักษณ์ ฉัตรไชยศิริ' and not G contains 'พนักงานOffice Mate' and not G contains 'สยามโกลเด้นไรซ์' and not G contains 'โชคฉัตรไชยไรซ์มิล' and not G contains 'โชควรลักษณ์' group by G, O, M, K`),
+      fetchCallLog()
+    ]);
+    const cust = {};
+    (tbl.rows||[]).forEach(r=>{
+      const g=r.c[0]?.v, y=r.c[1]?.v, m=r.c[2]?.v, k=r.c[3]?.v, v=r.c[4]?.v||0;
+      if(!g||!y||!m||!k) return;
+      const c = (cust[g] = cust[g] || {mo:{}, cur:0, last:null});
+      if(y===curY && m===curM){ c.cur += v; return; }
+      c.mo[`${y}-${m}`] = (c.mo[`${y}-${m}`]||0) + v;
+      if(v>0){ const d=new Date(y,m-1,k); if(!c.last || d>c.last) c.last=d; }
+    });
+    const money = v => '฿' + Math.round(v).toLocaleString();
+    const fmt = d => d ? `${d.getDate()} ${THAI_MO[d.getMonth()]} ${String(d.getFullYear()+543).slice(2)}` : '—';
+    const list = Object.entries(cust).map(([g,c])=>{
+      const vals = Object.values(c.mo), tot = vals.reduce((a,b)=>a+b,0), bought = vals.filter(v=>v>0).length;
+      return {g, tot, bought, avg: tot/Math.max(bought,1), last:c.last, cur:c.cur};
+    }).filter(x=>x.tot>0 && x.cur<=0).sort((a,b)=>b.tot-a.tot).slice(0,20);
+
+    const callCell = g => {
+      if(!log) return '<span style="color:#94a3b8;">โหลดบันทึกการโทรไม่ได้</span>';
+      const c = log[g];
+      if(!c || !c.t) return '<b>⚫ ยังไม่เคยโทร</b>';
+      const d = new Date(c.t), dd = `${d.getDate()} ${THAI_MO[d.getMonth()]}`;
+      const who = c.who ? ` (${c.who})` : '';
+      if(c.status==='ok') return `✅ ${dd} ได้คุย${who}`;
+      if(c.status==='call') return `<b style="color:#dc2626;">🔴 ${dd} ไม่ได้คุย${who}</b>`;
+      return `${dd} ${c.status||''}${who}`;
+    };
+    const school = g => (curM===4||curM===10) && g.includes('โรงเรียน');
+    body.innerHTML = list.length ? list.map((x,i)=>`
+      <tr>
+        <td style="font-weight:700;">${i+1}</td>
+        <td><div class="cs-name">${x.g}</div>
+            <div class="cs-sub">ซื้อกระดาษล่าสุด ${fmt(x.last)}${school(x.g)?' · <b style="color:#2563eb;">🔵 ปิดเทอม คุยก่อนเปิดเทอม</b>':''}</div></td>
+        <td style="font-weight:700;">${money(x.tot)}</td>
+        <td style="text-align:center;">${x.bought}/12</td>
+        <td>${money(x.avg)}</td>
+        <td style="font-size:11px;">${callCell(x.g)}</td>
+        <td style="font-size:11px;"><span class="cs-box"></span>สั่งของ<br><span class="cs-box"></span>ยังไม่ต้อง<br><span class="cs-box"></span>ติดต่อไม่ได้</td>
+        <td><span class="cs-line"></span><span class="cs-line"></span></td>
+      </tr>`).join('')
+      : '<tr><td colspan="8" style="padding:18px;color:#64748b;">— ลูกค้ากระดาษรายใหญ่ซื้อกระดาษเดือนนี้ครบแล้ว —</td></tr>';
+    const sum = list.reduce((a,x)=>a+x.avg,0);
+    const unreached = log ? list.filter(x=>log[x.g]?.status==='call').length : 0;
+    if(cnt) cnt.textContent = `${list.length} ราย · ซื้อเฉลี่ยรวม ${money(sum)}/เดือน${log?` · โทรแล้วไม่ได้คุย ${unreached} ราย`:''}`;
+    const sub = document.getElementById('ps-printsub');
+    if(sub) sub.textContent = `OfficeMate Plus+ สาขาสระบุรี · ${list.length} ราย · ยอดกระดาษ 12 เดือนเต็มล่าสุด · พิมพ์วันที่ ${now.getDate()} ${THAI_MO[curM-1]} ${curY+543}`;
+  }catch(e){
+    body.innerHTML = `<tr><td colspan="8" style="padding:14px;color:#dc2626;font-size:13px;">❌ โหลดลิสต์กระดาษไม่ได้: ${e.message}</td></tr>`;
+  }
+}
+
 // ── INIT ─────────────────────────────────────────────────────────────────────
 renderB2B();
 renderNewCust();
@@ -1593,6 +1733,7 @@ loadData();   // ← POS monthly/daily data
 loadRFM();    // ← Live RFM from Google Sheets (concurrent)
 loadCallSheet();  // ← ใบโทรพร้อมพิมพ์ (ลูกค้าประจำที่เดือนนี้ยังไม่ซื้อ)
 loadBulkPaper();  // ← ลูกค้ากระดาษยกลัง ตามรอบ 90 วัน
+loadPaperSheet(); // ← ลูกค้ากระดาษรายใหญ่ที่เดือนนี้ยังไม่ซื้อ (พิมพ์ได้)
 </script>
 </body>
 </html>
