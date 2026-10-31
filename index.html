@@ -70,6 +70,13 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
 #papersheet .cs-box{display:inline-block;width:13px;height:13px;border:1.5px solid #94a3b8;border-radius:3px;margin-right:5px;vertical-align:-2px;}
 #papersheet .cs-line{display:block;border-bottom:1px dotted #cbd5e1;height:15px;}
 .ps-printhead{display:none;}
+.st-btns{display:flex;gap:3px;}
+.st-btns button{border:1.5px solid #e5e9f0;background:#fff;border-radius:7px;width:28px;height:26px;cursor:pointer;font-size:13px;padding:0;line-height:1;}
+.st-btns button.on{border-color:transparent;}
+.st-btns button.clr{width:22px;font-size:10px;color:#94a3b8;border-style:dashed;}
+.st-btns button.on.call{background:#dbeafe;} .st-btns button.on.ok{background:#dcfce7;} .st-btns button.on.no{background:#fee2e2;}
+.who-btn{border:1.5px solid #e5e9f0;background:#fff;border-radius:16px;padding:3px 11px;font-size:12px;cursor:pointer;margin-left:4px;color:#475569;}
+.who-btn.on{background:#2563eb;color:#fff;border-color:#2563eb;font-weight:700;}
 @media print{
   body *{visibility:hidden;}
   .print-target,.print-target *{visibility:visible;}
@@ -219,6 +226,7 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
     <span style="font-size:11px;font-weight:400;color:#94a3b8;">คัดจากประวัติ 5 เดือนเต็ม · อัปเดตสดจาก Google Sheets</span>
   </h2>
   <div class="pro-note no-print">
+    <div class="who-slot" style="margin-bottom:6px;"></div>
     🔴 เงียบเดือนเดียว = โทรก่อน (เขาแค่ยังไม่ถึงคิว) &nbsp;|&nbsp; 🟡 เงียบ 2 เดือน = โอกาสต่ำกว่า
     &nbsp;|&nbsp; แสดงเฉพาะคนที่ถึงรอบซื้อปกติแล้วหรือจะถึงใน 7 วัน &nbsp;|&nbsp; พักโรงเรียนช่วงปิดเทอม (เม.ย./ต.ค.)
     &nbsp;|&nbsp; ยอดเฉลี่ยหาร 5 เดือนเท่ากันทุกราย &nbsp;|&nbsp; เช็คก่อนโทรทุกครั้ง บิลเข้าช้า 2–3 วัน
@@ -258,6 +266,7 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
     <span style="font-size:11px;font-weight:400;color:#94a3b8;">แยกตามคนโทร · เดือนนี้ยังไม่ซื้อ · ผลโทรล่าสุดจากบันทึกการโทร</span>
   </h2>
   <div class="pro-note no-print">
+    <div class="who-slot" style="margin-bottom:6px;"></div>
     โทรซ้ำให้ครบภายใน 2 วันทำการ (ไม่นับวันอาทิตย์/วันหยุดร้าน) · รายที่เดือนนี้ซื้อแล้วจะหายเอง · เช็คในระบบก่อนโทรทุกครั้ง บิลเข้าช้า 2–3 วัน
     <span id="retry-count" style="margin-left:8px;font-weight:700;">กำลังโหลด…</span>
   </div>
@@ -1647,13 +1656,15 @@ async function loadCallSheet(){
         <td style="font-size:11px;">
           <span class="cs-box"></span>สั่งของ<br>
           <span class="cs-box"></span>ยังไม่ต้อง<br>
-          <span class="cs-box"></span>ติดต่อไม่ได้</td>
+          <span class="cs-box"></span>ติดต่อไม่ได้
+          <div class="no-print call-slot" data-name="${escHTML(c.name)}" style="margin-top:6px;"></div></td>
         <td><span class="cs-line"></span><span class="cs-line"></span><span class="cs-line"></span></td>
       </tr>`).join('')
       : '<tr><td colspan="6" style="padding:18px;color:#64748b;">— ไม่มีลูกค้าประจำที่ค้างอยู่ในรอบนี้ —</td></tr>';
 
     const hot = list.filter(c=>!c.silent2).length;
     const sum = list.reduce((a,c)=>a+c.avg5,0);
+    renderCallBtns();
     if(cnt) cnt.textContent = `${list.length} ราย (🔴 ${hot} · 🟡 ${list.length-hot}) · มูลค่ารวม ${money(sum)}/เดือน`;
     const sub = document.getElementById('cs-printsub');
     if(sub) sub.textContent = `OfficeMate Plus+ สาขาสระบุรี · ${list.length} ราย · มูลค่ารวม ${money(sum)}/เดือน · พิมพ์วันที่ ${now.getDate()} ${THAI_MO[curM-1]} ${curY+543}`;
@@ -1832,12 +1843,78 @@ function retryWorkdaysAfter(from, to){      // นับวันทำการ
   for(let i=0;i<400;i++){ d=new Date(d.getFullYear(), d.getMonth(), d.getDate()+1); if(retryYmd(d)>end) break; if(retryIsWorkday(d)) n++; }
   return n;
 }
+// ── ปุ่มบันทึกผลโทร 📞 ✅ ❌ ✖ (ค่า/endpoint/localStorage key เดียวกับ Signal Board) ───────────────
+const escHTML = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const CALL_WHO_KEY = 'ofm_focus_who';
+const CALL_WHO_OPTS = ['แจง','กระแต','วัน','telesale','เฮีย'];   // เหมือน Signal Board
+let CALL_WHO = ''; try{ CALL_WHO = localStorage.getItem(CALL_WHO_KEY) || ''; }catch(_){}
+let CALL_META = {};   // name -> {status, who, t}  (จากบันทึกการโทร + ที่เพิ่งกดบนหน้านี้)
+function callSetWho(v){ CALL_WHO=v; try{ localStorage.setItem(CALL_WHO_KEY,v); }catch(_){} renderCallBtns(); }
+function callPush(name,status){
+  fetch(CALL_LOG_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({name,status,who:CALL_WHO||'ไม่ระบุ'})}).catch(()=>{});
+}
+// สถานะของเดือนก่อน = ยังไม่โทรเดือนนี้ (กติกาเดียวกับ Signal Board: ล้างทุกต้นเดือน)
+const CALL_MONTH_START = (()=>{ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01'; })();
+function callThisMonth(m){ return !!(m && m.t && String(m.t) >= CALL_MONTH_START); }
+function callNote(name){
+  const m = CALL_META[name]; if(!m || !m.t) return '';
+  const d = new Date(m.t); if(isNaN(d)) return '';
+  const icon = m.status==='ok'?'✅':m.status==='no'?'❌':'📞';
+  const dl = d.getDate()+' '+THAI_MO[d.getMonth()];
+  if(!callThisMonth(m)) return `<div style="font-size:10px;color:#94a3b8;margin-top:3px;">ครั้งก่อน ${escHTML(m.who||'')} · ${dl} (เดือนนี้ยังไม่โทร)</div>`;
+  const isToday = d.toDateString()===new Date().toDateString();
+  return `<div style="font-size:10px;color:#16a34a;margin-top:3px;">ล่าสุด: ${icon} ${escHTML(m.who||'')} · ${isToday?'วันนี้':dl}</div>`;
+}
+function callBtnsHTML(name){
+  const m = CALL_META[name];
+  const s = callThisMonth(m) ? (m.status || '') : '';
+  const b=(v,ic)=>`<button class="${v} ${s===v?'on '+v:''}" onclick="callSet(this,'${v}')" title="${v}">${ic}</button>`;
+  const clr = s ? `<button class="clr" onclick="callClear(this)" title="ล้างสถานะ">✖</button>` : '';
+  return `<div class="st-btns">${b('call','📞')}${b('ok','✅')}${b('no','❌')}${clr}</div>${callNote(name)}`;
+}
+function renderCallBtns(){
+  document.querySelectorAll('.who-slot').forEach(el=>{
+    el.innerHTML = '👤 ฉันคือ: ' + CALL_WHO_OPTS.map(o=>`<button class="who-btn ${CALL_WHO===o?'on':''}" onclick="callSetWho('${o}')">${o}</button>`).join('');
+  });
+  document.querySelectorAll('.call-slot').forEach(el=>{ el.innerHTML = callBtnsHTML(el.dataset.name); });
+}
+function retryRecount(){
+  document.querySelectorAll('#retry-wrap .card').forEach(card=>{
+    const n = card.querySelectorAll('tr.retry-row').length;
+    if(!n){ card.remove(); return; }
+    const sp = card.querySelector('.rc-n'); if(sp) sp.textContent = n;
+  });
+  const total = document.querySelectorAll('#retry-wrap tr.retry-row').length;
+  const cnt = document.getElementById('retry-count'); if(cnt) cnt.textContent = `รวม ${total} ราย`;
+  const wrap = document.getElementById('retry-wrap');
+  if(wrap && !total) wrap.innerHTML = '<div class="card" style="padding:18px;color:#64748b;">— วันนี้ไม่มีรายที่ต้องโทรซ้ำ —</div>';
+}
+function callSet(btn,v){
+  if(!CALL_WHO){ alert('กรุณาเลือกก่อนว่า "ฉันคือใคร" (ปุ่มด้านบนของส่วนนี้)'); return; }
+  const slot = btn.closest('.call-slot'), name = slot.dataset.name;
+  CALL_META[name] = {status:v, who:CALL_WHO, t:new Date().toISOString()};
+  callPush(name,v);
+  if(v!=='call'){ document.querySelectorAll('tr.retry-row').forEach(tr=>{ if(tr.dataset.name===name) tr.remove(); }); retryRecount(); }
+  else document.querySelectorAll('tr.retry-row').forEach(tr=>{ if(tr.dataset.name===name){
+    const c=tr.querySelector('.rt-last'); if(c){ const d=new Date(); c.textContent=`${d.getDate()} ${THAI_MO[d.getMonth()]} (${CALL_WHO}) · ไม่ได้คุย · วันนี้`; } } });
+  renderCallBtns();
+}
+function callClear(btn){
+  const name = btn.closest('.call-slot').dataset.name;
+  if(!confirm('ล้างสถานะการโทรของ "'+name+'" ใช่ไหม')) return;
+  CALL_META[name] = null;
+  callPush(name,'');
+  document.querySelectorAll('tr.retry-row').forEach(tr=>{ if(tr.dataset.name===name) tr.remove(); });
+  retryRecount(); renderCallBtns();
+}
 async function loadRetry(){
   const wrap = document.getElementById('retry-wrap'), cnt = document.getElementById('retry-count');
   if(!wrap) return;
   try{
     const log = await fetchCallLog();
     if(!log) throw new Error('ดึงบันทึกการโทรไม่ได้');
+    Object.entries(log).forEach(([k,v])=>{ CALL_META[k]=v; });
     if(!window.CS_REV) throw new Error('ยังไม่มียอดขายเดือนนี้ (ใบโทรโหลดไม่สำเร็จ)');
     const rev = window.CS_REV, now = new Date(), curY=now.getFullYear(), curM=now.getMonth()+1;
     const mk = (y,m)=>`${y}-${m}`;
@@ -1867,18 +1944,20 @@ async function loadRetry(){
       const items = by[w].sort((a,b)=>b.usual-a.usual); total += items.length;
       const id = 'retry-' + w;
       return `<div class="card" id="${id}" style="padding:14px;margin-bottom:14px;">
-        <div style="font-size:16px;font-weight:700;color:#0f172a;">📞 รอโทรซ้ำ — ${w==='ไม่ระบุ'?'ยังไม่ระบุคนโทร':'ของ '+w} · ${items.length} ราย</div>
+        <div style="font-size:16px;font-weight:700;color:#0f172a;">📞 รอโทรซ้ำ — ${w==='ไม่ระบุ'?'ยังไม่ระบุคนโทร':'ของ '+w} · <span class="rc-n">${items.length}</span> ราย</div>
         <div style="font-size:11px;color:#475569;margin-bottom:8px;">OfficeMate Plus+ สาขาสระบุรี · พิมพ์วันที่ ${now.getDate()} ${THAI_MO[curM-1]} ${curY+543}</div>
         <div class="no-print" style="margin-bottom:10px;"><button onclick="printSection('${id}')" style="background:#be123c;color:#fff;border:none;border-radius:8px;
           padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">🖨️ พิมพ์ใบของ ${w}</button></div>
         <table><thead><tr><th style="width:36%;">ลูกค้า</th><th style="width:26%;">โทรล่าสุด</th><th style="width:14%;">ซื้อปกติ/เดือน</th><th>ผลโทรรอบนี้</th></tr></thead>
-        <tbody>${items.map(x=>`<tr>
+        <tbody>${items.map(x=>`<tr class="retry-row" data-name="${escHTML(x.name)}">
           <td><div class="cs-name">${x.name}</div></td>
-          <td>${fmt(x.t)} (${x.who}) · ไม่ได้คุย · ผ่าน ${x.wd} วันทำการ</td>
+          <td class="rt-last">${fmt(x.t)} (${x.who}) · ไม่ได้คุย · ผ่าน ${x.wd} วันทำการ</td>
           <td>${x.usual>0?money(x.usual):'<span style="color:#94a3b8;">ไม่มีประวัติ</span>'}</td>
-          <td><span class="cs-box"></span>สั่งของ <span class="cs-box"></span>ยังไม่ต้อง <span class="cs-box"></span>ติดต่อไม่ได้</td></tr>`).join('')}</tbody></table></div>`;
+          <td><span class="cs-box"></span>สั่งของ <span class="cs-box"></span>ยังไม่ต้อง <span class="cs-box"></span>ติดต่อไม่ได้
+            <div class="no-print call-slot" data-name="${escHTML(x.name)}" style="margin-top:6px;"></div></td></tr>`).join('')}</tbody></table></div>`;
     }).join('') || '<div class="card" style="padding:18px;color:#64748b;">— วันนี้ไม่มีรายที่ต้องโทรซ้ำ —</div>';
     if(cnt) cnt.textContent = `รวม ${total} ราย`;
+    renderCallBtns();
   }catch(e){
     wrap.innerHTML = `<div style="padding:14px;color:#dc2626;font-size:13px;">❌ โหลดรอโทรซ้ำไม่ได้: ${e.message}</div>`;
     if(cnt) cnt.textContent = '';
