@@ -85,6 +85,7 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
 </style>
 </head>
 <body>
+<div id="data-warn" style="display:none;background:#fef9c3;color:#854d0e;border-bottom:2px solid #eab308;padding:10px 16px;font-size:13px;font-weight:700;text-align:center;"></div>
 
 <!-- ── HEADER ─────────────────────────────────────────────── -->
 <div style="background:#0f172a;color:#fff;padding:0 24px;display:flex;align-items:center;
@@ -143,6 +144,7 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
     </select>
     <span id="period-badge" style="background:#ede9fe;color:#4f46e5;padding:4px 14px;
           border-radius:20px;font-size:12px;font-weight:700;"></span>
+    <span id="data-asof" style="background:#ecfdf5;color:#047857;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-left:6px;"></span>
     <span style="font-size:11px;color:#94a3b8;margin-left:4px;">ข้อมูลจาก POS ทุกช่องทาง</span>
   </div>
 
@@ -249,6 +251,17 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
       &nbsp;·&nbsp; ปิดท้ายทุกสาย: “เดือนหน้าต้องใช้ของเพิ่มไหมคะ จองไว้ก่อนได้เลย”
     </div>
   </div>
+
+
+  <!-- ── 📞 รอโทรซ้ำวันนี้ แยกตามคนโทร ─────────────────────────────── -->
+  <h2 class="no-print">📞 รอโทรซ้ำวันนี้ — โทรแล้วไม่ได้คุย ผ่าน ≥2 วันทำการ
+    <span style="font-size:11px;font-weight:400;color:#94a3b8;">แยกตามคนโทร · เดือนนี้ยังไม่ซื้อ · ผลโทรล่าสุดจากบันทึกการโทร</span>
+  </h2>
+  <div class="pro-note no-print">
+    โทรซ้ำให้ครบภายใน 2 วันทำการ (ไม่นับวันอาทิตย์/วันหยุดร้าน) · รายที่เดือนนี้ซื้อแล้วจะหายเอง · เช็คในระบบก่อนโทรทุกครั้ง บิลเข้าช้า 2–3 วัน
+    <span id="retry-count" style="margin-left:8px;font-weight:700;">กำลังโหลด…</span>
+  </div>
+  <div id="retry-wrap" style="margin-bottom:24px;"></div>
 
   <!-- ── ลูกค้ากระดาษยกลัง ตามรอบ 90 วัน ───────────────────────────── -->
   <h2 class="no-print">📦 ลูกค้ากระดาษยกลัง — ตามรอบ 90 วัน
@@ -1240,6 +1253,64 @@ async function gvizFetch(tq) {
   return obj.table;
 }
 
+
+// ── BAD_DATE_FIX: บิลที่วันที่ในชีทเสีย (คอลัมน์ H คีย์ผิด → O/M/K กระจายไป ม.ค.–ธ.ค./เดือน 13–31) ──
+// ที่มา: work/2026-10-31/da_oct_close.md (ปัญหา 1) — บล็อก 12 บิล 40 แถว ฿55,382.41 ลำดับเลขบิลอยู่ระหว่าง 12–15 ต.ค. 69
+// → DA กำหนดให้ใช้ 14 ต.ค. 2026 · เมื่อคนคีย์แก้คอลัมน์ H ครบแล้ว ให้ตั้ง bills: [] (ว่างได้ ระบบทำงานปกติ) ห้ามลบทั้งก้อน const
+// (ค้นด้วยเลขบิลคอลัมน์ Q ไม่ใช่เลขแถว) · ถ้าเจอบล็อกใหม่ ให้เพิ่มเลขบิลที่นี่ + วันที่ที่ถูก
+const BAD_DATE_FIX = {
+  date: { y: 2026, m: 10, d: 14 },
+  bills: [
+    '0005F-000006868','0005F-000006869','0005F-000006870','0005F-000006871',
+    '0005F-000006872','0005F-000006873','0005F-000006874','0005F-000006875',
+    'SI-036819261000049','SI-036819261000050','SI-036819261000051','SI-036819261000052'
+  ]
+};
+
+// ดึงแบบแก้วันที่ (query เดียว ไม่มี query เสริม): ดึง Q มาด้วยทุกครั้ง แล้วแก้วันที่ใน JS
+//   ถ้า Q อยู่ใน BAD_DATE_FIX.bills → ใช้ O/M/K = BAD_DATE_FIX.date · แล้วรวมแถวที่ key เดียวกัน (กรณีเพิ่ม Q เข้า group by)
+//   pre = คอลัมน์ก่อน O,M,K · mid = คอลัมน์หลัง K · post = aggregate (ตัวเลขล้วน) · where = เงื่อนไข (ห้ามกรองวันที่ในนี้)
+//   keep(y,m,k) = ตัวกรองวันที่ "หลังแก้แล้ว" ทำใน JS (ไม่ใส่ = เอาทุกแถว) · รายการ bills ว่างได้ (= ไม่แก้อะไร)
+async function gvizD({pre=[], mid=[], post, where, keep}) {
+  const hasQ = mid.includes('Q');
+  const cols = [...pre, 'O', 'M', 'K', ...mid, ...(hasQ ? [] : ['Q'])];
+  const t = await gvizFetch(`select ${cols.join(', ')}, ${post} where ${where} group by ${cols.join(', ')}`);
+  const n = pre.length, qi = n + 3 + (hasQ ? mid.indexOf('Q') : mid.length);
+  const bad = new Set(BAD_DATE_FIX.bills), fx = BAD_DATE_FIX.date;
+  const nk = n + 3 + mid.length;                // จำนวนคอลัมน์ key (ไม่รวม Q ที่เพิ่ม)
+  const out = new Map();
+  for (const r of (t.rows || [])) {
+    const c = r.c.slice();
+    const q = c[qi]?.v;
+    if (bad.has(q)) { c[n] = { v: fx.y }; c[n+1] = { v: fx.m }; c[n+2] = { v: fx.d }; }
+    if (keep && !keep(c[n]?.v, c[n+1]?.v, c[n+2]?.v)) continue;
+    if (!hasQ) c.splice(qi, 1);
+    const key = c.slice(0, nk).map(x => x?.v).join('|');
+    const o = out.get(key);
+    if (!o) out.set(key, { c });
+    else for (let i = nk; i < c.length; i++) o.c[i] = { v: (o.c[i]?.v || 0) + (c[i]?.v || 0) };
+  }
+  return { rows: [...out.values()] };
+}
+
+// แถบเตือนสีเหลือง: แถว M>12 หรือ K>31 ที่เลขบิลไม่อยู่ใน BAD_DATE_FIX (= วันที่เสียที่ยังไม่มีใครแก้)
+async function checkBadDates() {
+  try {
+    const t = await gvizFetch(`select Q, count(AN), sum(AN) where (AN > 0 or AN < 0) and (M > 12 or K > 31) group by Q order by Q`);
+    const bad = new Set(BAD_DATE_FIX.bills);
+    const rows = (t.rows || []).filter(r => r.c[0] && r.c[0].v && !bad.has(r.c[0].v));
+    const el = document.getElementById('data-warn');
+    if (!el) return;
+    if (!rows.length) { el.style.display = 'none'; el.innerHTML = ''; return; }
+    const n = rows.reduce((a, r) => a + (r.c[1]?.v || 0), 0);
+    const amt = rows.reduce((a, r) => a + (r.c[2]?.v || 0), 0);
+    const bills = rows.map(r => r.c[0].v);
+    el.innerHTML = `⚠️ พบ ${n} แถววันที่ผิดในชีท (เลขบิล ${bills.slice(0, 6).join(', ')}${bills.length > 6 ? ' …อีก ' + (bills.length - 6) + ' ใบ' : ''}) ` +
+      `ยอด ฿${Math.round(amt).toLocaleString()} อาจคลาด — แจ้งคนคีย์`;
+    el.style.display = 'block';
+  } catch (e) { console.warn('checkBadDates', e); }
+}
+
 async function loadData() {
   // Loading indicator
   document.getElementById('period-kpi').innerHTML =
@@ -1258,13 +1329,12 @@ async function loadData() {
     // filter เฉพาะวันที่ผ่านมาแล้ว (ตัด future POS errors)
     const DATE_FILTER = `(O < ${curY} or (O = ${curY} and M < ${curM}) or (O = ${curY} and M = ${curM} and K <= ${curD}))`;
     // Q is not null: ต้องการ Invoice No. เพื่อ count distinct invoices
-    const WHERE = `where (AN > 0 or AN < 0) and O is not null and Q is not null and ${DATE_FILTER}`;
+    const WHERE_BASE = `(AN > 0 or AN < 0) and O is not null and Q is not null`;
 
     // Single query: group by O,M,K,Q → 1 row per invoice
     // gviz ไม่รองรับ count(distinct) → ใช้วิธี group แล้วนับ rows ใน JS แทน
-    const qTable = await gvizFetch(
-      `select O, M, K, Q, sum(AN) ${WHERE} group by O, M, K, Q order by O, M, K, Q`
-    );
+    const keepDate = (y,m,k) => y < curY || (y === curY && (m < curM || (m === curM && k <= curD)));   // ตัด future POS errors หลังแก้วันที่
+    const qTable = await gvizD({ mid:['Q'], post:'sum(AN)', where:WHERE_BASE, keep:keepDate });
 
     // Set approach: นับ distinct Q per month (นับ CN credit notes ด้วย — ตรง Looker)
     // — Looker นับ ALL distinct invoice numbers รวม credit notes
@@ -1297,6 +1367,13 @@ async function loadData() {
       .map(d => ({ yr: d.yr, mo: d.mo, d: d.d, inv: d.inv, rev: Math.round(d.rev) }))
       .sort((a, b) => a.yr !== b.yr ? a.yr - b.yr : a.mo !== b.mo ? a.mo - b.mo : a.d - b.d);
 
+    // ป้าย "ข้อมูลถึงวันที่ …" = วันสูงสุดของเดือนล่าสุดที่มียอด
+    const asof = document.getElementById('data-asof');
+    if (asof && DAILY_DATA.length) {
+      const ld = DAILY_DATA[DAILY_DATA.length-1];
+      asof.textContent = `ข้อมูลถึงวันที่ ${ld.d} ${THAI_MO[ld.mo-1]} ${(ld.yr+543)%100}`;
+    }
+
     // ── Dynamic selectors: generate จาก data จริง ──
     if (MONTHLY_POS.length > 0) {
       const last = MONTHLY_POS[MONTHLY_POS.length - 1];
@@ -1321,6 +1398,7 @@ async function loadData() {
     }
 
     renderPeriodKPIs();
+    checkBadDates();   // R2-A: เริ่มหลัง KPI ขึ้นแล้ว
     renderDailyChart();
     renderDOW();
 
@@ -1367,12 +1445,11 @@ async function loadRFM() {
     const DATE_FILTER =
       `(O < ${curY} or (O = ${curY} and M < ${curM}) or (O = ${curY} and M = ${curM} and K <= ${curD}))`;
     const WHERE =
-      `where (AN > 0 or AN < 0) and O is not null and G is not null ` +
-      `and G != '' and G != 'ไม่มีชื่อ' and not G contains 'วรลักษณ์ ฉัตรไชยศิริ' and not G contains 'พนักงานOffice Mate' and not G contains 'สยามโกลเด้นไรซ์' and not G contains 'โชคฉัตรไชยไรซ์มิล' and not G contains 'โชควรลักษณ์' and ${DATE_FILTER}`;
+      `(AN > 0 or AN < 0) and O is not null and G is not null ` +
+      `and G != '' and G != 'ไม่มีชื่อ' and not G contains 'วรลักษณ์ ฉัตรไชยศิริ' and not G contains 'พนักงานOffice Mate' and not G contains 'สยามโกลเด้นไรซ์' and not G contains 'โชคฉัตรไชยไรซ์มิล' and not G contains 'โชควรลักษณ์'`;
 
-    const tbl = await gvizFetch(
-      `select G, O, M, K, Q, sum(AN) ${WHERE} group by G, O, M, K, Q`
-    );
+    const tbl = await gvizD({ pre:['G'], mid:['Q'], post:'sum(AN)', where:WHERE,
+      keep:(y,m,k) => y < curY || (y === curY && (m < curM || (m === curM && k <= curD))) });
 
     // ── Aggregate per customer ──────────────────────────────────────────────
     const map = {};
@@ -1496,18 +1573,22 @@ async function loadCallSheet(){
     const filt = '(' + months.map(([y,m])=>`(O=${y} and M=${m})`).join(' or ') + ')';
     // ใช้สูตรเดียวกับ Signal Board เป๊ะ: ดึงรายวันทั้งประวัติ ยอดสุทธิ แล้วนับเฉพาะวันที่ยอดสุทธิ > 0
     const [tbl, ctbl] = await Promise.all([
-      gvizFetch(`select G, O, M, K, sum(AN) where (AN > 0 or AN < 0) and G is not null and G != '' and G != 'ไม่มีชื่อ' and not G contains 'วรลักษณ์ ฉัตรไชยศิริ' and not G contains 'พนักงานOffice Mate' and not G contains 'สยามโกลเด้นไรซ์' and not G contains 'โชคฉัตรไชยไรซ์มิล' and not G contains 'โชควรลักษณ์' group by G, O, M, K`),
+      gvizD({ pre:['G'], post:'sum(AN)', where:`(AN > 0 or AN < 0) and G is not null and G != '' and G != 'ไม่มีชื่อ' and not G contains 'วรลักษณ์ ฉัตรไชยศิริ' and not G contains 'พนักงานOffice Mate' and not G contains 'สยามโกลเด้นไรซ์' and not G contains 'โชคฉัตรไชยไรซ์มิล' and not G contains 'โชควรลักษณ์'` }),
       gvizFetch(`select G, Y, sum(AN) where AN>0 and ${filt} and G is not null and G != '' and G != 'ไม่มีชื่อ' and not G contains 'วรลักษณ์ ฉัตรไชยศิริ' and not G contains 'พนักงานOffice Mate' and not G contains 'สยามโกลเด้นไรซ์' and not G contains 'โชคฉัตรไชยไรซ์มิล' and not G contains 'โชควรลักษณ์' group by G, Y`)
     ]);
-    const rev = {}, firstDay = {};
+    const rev = {}, firstDay = {}, net = {};
     (tbl.rows||[]).forEach(r=>{
       const g=r.c[0]?.v, y=r.c[1]?.v, m=r.c[2]?.v, k=r.c[3]?.v, v=r.c[4]?.v||0;
-      if(!g||!y||!m||!k||v<=0) return;
+      if(!g||!y||!m||!k||isControl(g)) return;   // isControl = กลุ่มทดลองถึง 15 พ.ย. 69
       const key=`${y}-${m}`;
+      (net[g] = net[g] || {})[key] = (net[g][key]||0) + v;   // R2-D: ยอดสุทธิรวมคืนสินค้า (ให้ 'ซื้อปกติ')
+      if(v<=0) return;
       (rev[g] = rev[g] || {})[key] = (rev[g][key]||0) + v;
       const fd = (firstDay[g] = firstDay[g] || {});
       if(fd[key]===undefined || k<fd[key]) fd[key]=k;
     });
+    window.CS_NET = net;
+    window.CS_REV = rev;                                     // ให้ส่วน 'รอโทรซ้ำ' ใช้ต่อ (ยอดหลังแก้วันที่แล้ว)
     const cats = {};
     (ctbl.rows||[]).forEach(r=>{
       const g=r.c[0]?.v, y=r.c[1]?.v, v=r.c[2]?.v||0;
@@ -1587,12 +1668,12 @@ async function loadBulkPaper(){
   if(!body) return;
   try{
     const now = new Date(), curY = now.getFullYear(), curM = now.getMonth()+1;
-    const tbl = await gvizFetch(`select G, O, M, K, sum(AD), sum(AN) where AN > 0 and V contains 'กระดาษถ่ายเอกสาร' and G is not null and G != '' and G != 'ไม่มีชื่อ' and not G contains 'วรลักษณ์ ฉัตรไชยศิริ' and not G contains 'พนักงานOffice Mate' and not G contains 'สยามโกลเด้นไรซ์' and not G contains 'โชคฉัตรไชยไรซ์มิล' and not G contains 'โชควรลักษณ์' group by G, O, M, K`);
+    const tbl = await gvizD({ pre:['G'], post:'sum(AD), sum(AN)', where:`AN > 0 and V contains 'กระดาษถ่ายเอกสาร' and G is not null and G != '' and G != 'ไม่มีชื่อ' and not G contains 'วรลักษณ์ ฉัตรไชยศิริ' and not G contains 'พนักงานOffice Mate' and not G contains 'สยามโกลเด้นไรซ์' and not G contains 'โชคฉัตรไชยไรซ์มิล' and not G contains 'โชควรลักษณ์'` });
     const num = v => typeof v === 'number' ? v : parseFloat(String(v||0).replace(/,/g,'')) || 0;
     const cust = {};
     (tbl.rows||[]).forEach(r=>{
       const g=r.c[0]?.v, y=r.c[1]?.v, m=r.c[2]?.v, k=r.c[3]?.v, q=num(r.c[4]?.v), a=num(r.c[5]?.v);
-      if(!g||!y||!m||!k) return;
+      if(!g||!y||!m||!k||isControl(g)) return;   // กลุ่มทดลองถึง 15 พ.ย. 69
       const c = (cust[g] = cust[g] || {lots:[], curQty:0});
       if(y===curY && m===curM) c.curQty += q;
       if(a >= 15000) c.lots.push({d:new Date(y,m-1,k), q, a});
@@ -1670,13 +1751,14 @@ async function loadPaperSheet(){
     for(let i=0;i<=12;i++){ let y=curY, m=curM-i; while(m<=0){ m+=12; y--; } months.push([y,m]); }
     const filt = '(' + months.map(([y,m])=>`(O=${y} and M=${m})`).join(' or ') + ')';
     const [tbl, log] = await Promise.all([
-      gvizFetch(`select G, O, M, K, sum(AN) where (AN > 0 or AN < 0) and V contains 'กระดาษถ่ายเอกสาร' and ${filt} and G is not null and G != '' and G != 'ไม่มีชื่อ' and not G contains 'วรลักษณ์ ฉัตรไชยศิริ' and not G contains 'พนักงานOffice Mate' and not G contains 'สยามโกลเด้นไรซ์' and not G contains 'โชคฉัตรไชยไรซ์มิล' and not G contains 'โชควรลักษณ์' group by G, O, M, K`),
+      gvizD({ pre:['G'], post:'sum(AN)', where:`(AN > 0 or AN < 0) and V contains 'กระดาษถ่ายเอกสาร' and G is not null and G != '' and G != 'ไม่มีชื่อ' and not G contains 'วรลักษณ์ ฉัตรไชยศิริ' and not G contains 'พนักงานOffice Mate' and not G contains 'สยามโกลเด้นไรซ์' and not G contains 'โชคฉัตรไชยไรซ์มิล' and not G contains 'โชควรลักษณ์'`,
+        keep:(y,m)=>months.some(([yy,mm])=>yy===y&&mm===m) }),
       fetchCallLog()
     ]);
     const cust = {};
     (tbl.rows||[]).forEach(r=>{
       const g=r.c[0]?.v, y=r.c[1]?.v, m=r.c[2]?.v, k=r.c[3]?.v, v=r.c[4]?.v||0;
-      if(!g||!y||!m||!k) return;
+      if(!g||!y||!m||!k||isControl(g)) return;   // กลุ่มทดลองถึง 15 พ.ย. 69
       const c = (cust[g] = cust[g] || {mo:{}, cur:0, last:null});
       if(y===curY && m===curM){ c.cur += v; return; }
       c.mo[`${y}-${m}`] = (c.mo[`${y}-${m}`]||0) + v;
@@ -1723,17 +1805,99 @@ async function loadPaperSheet(){
   }
 }
 
+
+// ── 📞 รอโทรซ้ำวันนี้ (ตรรกะเดียวกับ line_retry/Code.gs: status=call · ≥2 วันทำการ · เดือนนี้ยังไม่ซื้อ · ตัดบัญชีภายใน) ──
+// กลุ่มทดลอง "ไม่โทร" (22 ราย) ถึง 15 พ.ย. 69 — ต้องไม่ถูกโทร/ไม่แสดงบนหน้า · เก็บเป็นค่าแฮช (cyrb53) ไม่ใช่ชื่อ
+// ที่มา: work/2026-10-31/sales_nov_control_ห้ามแจกทีม.json (key 'control') · ลบทิ้งหลัง 15 พ.ย. 69
+const RETRY_CONTROL_HASH = new Set([4965380200366674, 2212677979453315, 5955453112584192, 7632933384477562, 3199640478424745, 1016154100873057, 8965974194146815, 7034702215800432, 5508836773684990, 7717305316153451, 5263642264361444, 2296824421850339, 8929710572999382, 7865565125783223, 5956419087478761, 7501283341712728, 6182980716505551, 6249373458907000, 7521513810800504, 632277102989851, 7613273345938031, 6866001557420964]);
+const RETRY_INTERNAL = ['วรลักษณ์ ฉัตรไชยศิริ','พนักงานOffice Mate','สยามโกลเด้นไรซ์','โชคฉัตรไชยไรซ์มิล','โชควรลักษณ์'];
+const RETRY_HOLIDAYS = ['2026-12-05','2026-12-07','2026-12-10','2026-12-31','2027-01-01'];  // เหมือน line_retry/Code.gs
+const RETRY_TEAM = ['แจง','กระแต','วัน'];
+function cyrb53(str){
+  let h1=0xdeadbeef, h2=0x41c6ce57;
+  for(let i=0;i<str.length;i++){ const ch=str.charCodeAt(i); h1=Math.imul(h1^ch,2654435761); h2=Math.imul(h2^ch,1597334677); }
+  h1=Math.imul(h1^(h1>>>16),2246822507)^Math.imul(h2^(h2>>>13),3266489909);
+  h2=Math.imul(h2^(h2>>>16),2246822507)^Math.imul(h1^(h1>>>13),3266489909);
+  return 4294967296*(2097151&h2)+(h1>>>0);
+}
+// กลุ่มทดลองหมดอายุเองหลัง 15 พ.ย. 69 (ใช้ตัดออกจากทุกลิสต์ที่ทีมใช้โทร: ใบโทร · กระดาษรายใหญ่ · ยกลัง · รอโทรซ้ำ)
+function isControl(name){
+  if(retryYmd(new Date()) > '2026-11-15') return false;
+  return !!name && RETRY_CONTROL_HASH.has(cyrb53(name));
+}
+function retryYmd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function retryIsWorkday(d){ return d.getDay()!==0 && !RETRY_HOLIDAYS.includes(retryYmd(d)); }
+function retryWorkdaysAfter(from, to){      // นับวันทำการหลังวันโทร ถึงวันนี้ (นับวันนี้ ไม่นับวันโทร)
+  let n=0, d=new Date(from.getFullYear(), from.getMonth(), from.getDate()); const end=retryYmd(to);
+  for(let i=0;i<400;i++){ d=new Date(d.getFullYear(), d.getMonth(), d.getDate()+1); if(retryYmd(d)>end) break; if(retryIsWorkday(d)) n++; }
+  return n;
+}
+async function loadRetry(){
+  const wrap = document.getElementById('retry-wrap'), cnt = document.getElementById('retry-count');
+  if(!wrap) return;
+  try{
+    const log = await fetchCallLog();
+    if(!log) throw new Error('ดึงบันทึกการโทรไม่ได้');
+    if(!window.CS_REV) throw new Error('ยังไม่มียอดขายเดือนนี้ (ใบโทรโหลดไม่สำเร็จ)');
+    const rev = window.CS_REV, now = new Date(), curY=now.getFullYear(), curM=now.getMonth()+1;
+    const mk = (y,m)=>`${y}-${m}`;
+    const cur = mk(curY,curM), base = [];
+    for(let i=1;i<=5;i++){ let y=curY, m=curM-i; while(m<=0){ m+=12; y--; } base.push(mk(y,m)); }
+    const by = {};
+    Object.keys(log).forEach(name=>{
+      const c = log[name];
+      if(!c || c.status!=='call' || !c.t) return;
+      if(RETRY_INTERNAL.some(s=>name.includes(s))) return;
+      if(c.who==='ระบบ' || /^ทดสอบ/.test(name.trim())) return;   // R2-C: แถวทดสอบ
+      if(isControl(name)) return;       // กลุ่มทดลองไม่โทร
+      const t = new Date(c.t); if(isNaN(t)) return;
+      const wd = retryWorkdaysAfter(t, now); if(wd < 2) return;
+      const r = rev[name] || {};
+      if((r[cur]||0) > 0) return;                          // เดือนนี้ซื้อแล้ว
+      const nr = (window.CS_NET||{})[name] || {};
+      const usual = base.reduce((a,k)=>a+(nr[k]||0),0)/5;   // R2-D: สุทธิรวมคืน
+      const who = RETRY_TEAM.includes(c.who) ? c.who : 'ไม่ระบุ';
+      (by[who] = by[who] || []).push({name, t, wd, usual, who});
+    });
+    const money = v => '฿' + Math.round(v).toLocaleString();
+    const fmt = d => `${d.getDate()} ${THAI_MO[d.getMonth()]}`;
+    const order = [...RETRY_TEAM, 'ไม่ระบุ'];
+    let total = 0;
+    wrap.innerHTML = order.filter(w=>by[w] && by[w].length).map(w=>{
+      const items = by[w].sort((a,b)=>b.usual-a.usual); total += items.length;
+      const id = 'retry-' + w;
+      return `<div class="card" id="${id}" style="padding:14px;margin-bottom:14px;">
+        <div style="font-size:16px;font-weight:700;color:#0f172a;">📞 รอโทรซ้ำ — ${w==='ไม่ระบุ'?'ยังไม่ระบุคนโทร':'ของ '+w} · ${items.length} ราย</div>
+        <div style="font-size:11px;color:#475569;margin-bottom:8px;">OfficeMate Plus+ สาขาสระบุรี · พิมพ์วันที่ ${now.getDate()} ${THAI_MO[curM-1]} ${curY+543}</div>
+        <div class="no-print" style="margin-bottom:10px;"><button onclick="printSection('${id}')" style="background:#be123c;color:#fff;border:none;border-radius:8px;
+          padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">🖨️ พิมพ์ใบของ ${w}</button></div>
+        <table><thead><tr><th style="width:36%;">ลูกค้า</th><th style="width:26%;">โทรล่าสุด</th><th style="width:14%;">ซื้อปกติ/เดือน</th><th>ผลโทรรอบนี้</th></tr></thead>
+        <tbody>${items.map(x=>`<tr>
+          <td><div class="cs-name">${x.name}</div></td>
+          <td>${fmt(x.t)} (${x.who}) · ไม่ได้คุย · ผ่าน ${x.wd} วันทำการ</td>
+          <td>${x.usual>0?money(x.usual):'<span style="color:#94a3b8;">ไม่มีประวัติ</span>'}</td>
+          <td><span class="cs-box"></span>สั่งของ <span class="cs-box"></span>ยังไม่ต้อง <span class="cs-box"></span>ติดต่อไม่ได้</td></tr>`).join('')}</tbody></table></div>`;
+    }).join('') || '<div class="card" style="padding:18px;color:#64748b;">— วันนี้ไม่มีรายที่ต้องโทรซ้ำ —</div>';
+    if(cnt) cnt.textContent = `รวม ${total} ราย`;
+  }catch(e){
+    wrap.innerHTML = `<div style="padding:14px;color:#dc2626;font-size:13px;">❌ โหลดรอโทรซ้ำไม่ได้: ${e.message}</div>`;
+    if(cnt) cnt.textContent = '';
+  }
+}
+
 // ── INIT ─────────────────────────────────────────────────────────────────────
 renderB2B();
 renderNewCust();
 renderSegCards();   // แสดง hardcoded data ก่อน (เร็ว)
 renderRFMTable();
 renderCustTable();
-loadData();   // ← POS monthly/daily data
-loadRFM();    // ← Live RFM from Google Sheets (concurrent)
-loadCallSheet();  // ← ใบโทรพร้อมพิมพ์ (ลูกค้าประจำที่เดือนนี้ยังไม่ซื้อ)
-loadBulkPaper();  // ← ลูกค้ากระดาษยกลัง ตามรอบ 90 วัน
-loadPaperSheet(); // ← ลูกค้ากระดาษรายใหญ่ที่เดือนนี้ยังไม่ซื้อ (พิมพ์ได้)
+// R2-A: KPI ก่อน — query อื่นเริ่มหลัง loadData เสร็จ (ไม่แย่งแบนด์วิดท์กับ KPI)
+loadData().finally(()=>{
+  loadRFM();    // ← Live RFM from Google Sheets
+  loadCallSheet().then(loadRetry);  // ← ใบโทรพร้อมพิมพ์ (ลูกค้าประจำที่เดือนนี้ยังไม่ซื้อ)
+  loadBulkPaper();  // ← ลูกค้ากระดาษยกลัง ตามรอบ 90 วัน
+  loadPaperSheet(); // ← ลูกค้ากระดาษรายใหญ่ที่เดือนนี้ยังไม่ซื้อ (พิมพ์ได้)
+});
 </script>
 </body>
 </html>
