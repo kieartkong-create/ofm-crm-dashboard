@@ -231,9 +231,10 @@ tbody tr td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:midd
 .dn{color:#dc2626;font-weight:700;}
 .big-flag{background:#fef2f2;color:#dc2626;font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;}
 .st-btns{display:flex;gap:3px;}
-.st-btns button{border:1.5px solid #e5e9f0;background:#fff;border-radius:7px;width:28px;height:26px;cursor:pointer;font-size:13px;padding:0;line-height:1;}
+.st-btns{flex-wrap:wrap;align-items:center;} .st-saved{font-size:11px;color:#16a34a;font-weight:700;margin-left:4px;}
+.st-btns button{border:1.5px solid #e5e9f0;background:#fff;border-radius:7px;min-width:28px;height:26px;cursor:pointer;font-size:11px;padding:0 7px;line-height:1;white-space:nowrap;}
 .st-btns button.on{border-color:transparent;}
-.st-btns button.clr{width:22px;font-size:10px;color:#94a3b8;border-style:dashed;}
+.st-btns button.clr{font-size:10px;color:#94a3b8;border-style:dashed;}
 .st-btns button.on.call{background:#dbeafe;} .st-btns button.on.ok{background:#dcfce7;} .st-btns button.on.no{background:#fee2e2;}
 .who-pick{margin-left:auto;font-size:12px;color:#64748b;}
 .who-btn{border:1.5px solid #e5e9f0;background:#fff;border-radius:16px;padding:3px 11px;font-size:12px;cursor:pointer;margin-left:4px;color:#475569;}
@@ -915,11 +916,20 @@ function computeFocus(){
 
 const _THMO=['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 function _dLabel(t){ const d=new Date(t); return isNaN(d)?'' : d.getDate()+' '+_THMO[d.getMonth()+1]; }
+const CALL_LBL={call:'ไม่รับสาย',ok:'คุยแล้ว',no:'ไม่สนใจ'};
+const CALL_DUP_MS=60000, CALL_LASTSAVE={};
+function callSavedMsg(name,msg){
+  document.querySelectorAll('.call-slot,.st-slot').forEach(el=>{ if(el.dataset.name!==name) return;
+    const old=el.querySelector('.st-saved'); if(old) old.remove();
+    const bx=el.querySelector('.st-btns'); if(!bx) return;
+    const sp=document.createElement('span'); sp.className='st-saved'; sp.textContent=msg; bx.appendChild(sp);
+    setTimeout(()=>{ try{sp.remove();}catch(_){} },2000); });
+}
 function lastCallNote(name){
   const m = FOCUS_META[name];
   if(!m || !m.t) return '';
   const thisMonth = (m.t||'') >= MONTH_START;
-  const icon = m.status==='ok'?'✅':m.status==='no'?'❌':'📞';
+  const icon = CALL_LBL[m.status]||'ไม่รับสาย';
   if(thisMonth){
     const today = new Date(); const d = new Date(m.t);
     const isToday = d.toDateString()===today.toDateString();
@@ -929,15 +939,16 @@ function lastCallNote(name){
 }
 function stBtn(name){
   const s = FOCUS_STATUS[name]||'';
-  const b=(v,ic,cls)=>`<button class="${cls} ${s===v?'on '+v:''}" onclick="setFocusStatus('${escJs(name)}','${v}')" title="${cls}">${ic}</button>`;
-  const clr = s ? `<button class="clr" onclick="clearFocusStatus('${escJs(name)}')" title="ล้างสถานะ">✖</button>` : '';
-  return `<div class="st-btns">${b('call','📞','call')}${b('ok','✅','ok')}${b('no','❌','no')}${clr}</div>${lastCallNote(name)}`;
+  const b=(v,ic,cls)=>`<button class="${cls} ${s===v?'on '+v:''}" onclick="setFocusStatus('${escJs(name)}','${v}')" title="${ic}">${ic}</button>`;
+  const clr = s ? `<button class="clr" onclick="clearFocusStatus('${escJs(name)}')" title="ล้างสถานะ">ยกเลิก</button>` : '';
+  return `<div class="st-slot" data-name="${escHTML(name)}"><div class="st-btns">${b('call','ไม่รับสาย','call')}${b('ok','คุยแล้ว','ok')}${b('no','ไม่สนใจ','no')}${clr}</div>${lastCallNote(name)}</div>`;
 }
 const escJs = s => (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
 function clearFocusStatus(name){
   if(!confirm('ล้างสถานะการโทรของ "'+name+'" ใช่ไหม')) return;
   FOCUS_STATUS[name] = '';
   FOCUS_META[name] = null;
+  delete CALL_LASTSAVE[name];
   try{ localStorage.setItem(FOCUS_STATUS_KEY, JSON.stringify(FOCUS_STATUS)); }catch(_){}
   pushStatusToSheet(name, '');
   renderFocus();
@@ -947,6 +958,9 @@ function clearFocusStatus(name){
 function setFocusStatus(name,v){
   if(SYNC_URL && !FOCUS_WHO){ alert('กรุณาเลือกก่อนว่า "ฉันคือใคร" (มุมขวาบนของโฟกัสวันนี้)'); return; }
   const nv = v;
+  const _now=Date.now();
+  if(CALL_LASTSAVE[name] && _now-CALL_LASTSAVE[name] < CALL_DUP_MS){ callSavedMsg(name,'เพิ่งบันทึกไปแล้ว'); return; }
+  CALL_LASTSAVE[name]=_now;
   FOCUS_STATUS[name] = nv;
   FOCUS_META[name] = nv ? {status:nv, who:FOCUS_WHO||'ไม่ระบุ', t:new Date().toISOString()} : null;
   try{
@@ -955,6 +969,7 @@ function setFocusStatus(name,v){
   }catch(_){}
   pushStatusToSheet(name, nv);   // ส่งเข้า Sheet ให้ทุกคนเห็น
   renderFocus();
+  callSavedMsg(name,'บันทึกแล้ว ✓');
 }
 function toggleGroup(id){ document.getElementById(id).classList.toggle('open'); }
 
@@ -1084,7 +1099,7 @@ async function loadSignals() {
     if (p2M <= 0) { p2M += 12; p2Y--; }
 
     // บัญชีภายใน (เจ้าของ / พนักงาน) ไม่ใช่ลูกค้า — ตัดออกจากการวิเคราะห์ลูกค้าทั้งหมด
-    const CF = `G is not null and G != '' and G != 'ไม่มีชื่อ' and not G contains 'วรลักษณ์ ฉัตรไชยศิริ' and not G contains 'พนักงานOffice Mate'`;
+    const CF = `G is not null and G != '' and G != 'ไม่มีชื่อ' and not G contains 'วรลักษณ์ ฉัตรไชยศิริ' and not G contains 'พนักงานOffice Mate' and not G contains 'สยามโกลเด้นไรซ์' and not G contains 'โชคฉัตรไชยไรซ์มิล' and not G contains 'โชควรลักษณ์'`;
     const dateFilter = (y, m) => `O=${y} and M=${m}`;
 
     // ── Fetch RFM data concurrently (all-time) ──

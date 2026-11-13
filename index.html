@@ -71,9 +71,10 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
 #papersheet .cs-line{display:block;border-bottom:1px dotted #cbd5e1;height:15px;}
 .ps-printhead{display:none;}
 .st-btns{display:flex;gap:3px;}
-.st-btns button{border:1.5px solid #e5e9f0;background:#fff;border-radius:7px;width:28px;height:26px;cursor:pointer;font-size:13px;padding:0;line-height:1;}
+.st-btns{flex-wrap:wrap;align-items:center;} .st-saved{font-size:11px;color:#16a34a;font-weight:700;margin-left:4px;}
+.st-btns button{border:1.5px solid #e5e9f0;background:#fff;border-radius:7px;min-width:28px;height:26px;cursor:pointer;font-size:11px;padding:0 7px;line-height:1;white-space:nowrap;}
 .st-btns button.on{border-color:transparent;}
-.st-btns button.clr{width:22px;font-size:10px;color:#94a3b8;border-style:dashed;}
+.st-btns button.clr{font-size:10px;color:#94a3b8;border-style:dashed;}
 .st-btns button.on.call{background:#dbeafe;} .st-btns button.on.ok{background:#dcfce7;} .st-btns button.on.no{background:#fee2e2;}
 .who-btn{border:1.5px solid #e5e9f0;background:#fff;border-radius:16px;padding:3px 11px;font-size:12px;cursor:pointer;margin-left:4px;color:#475569;}
 .who-btn.on{background:#2563eb;color:#fff;border-color:#2563eb;font-weight:700;}
@@ -1850,7 +1851,7 @@ function retryWorkdaysAfter(from, to){      // นับวันทำการ
   for(let i=0;i<400;i++){ d=new Date(d.getFullYear(), d.getMonth(), d.getDate()+1); if(retryYmd(d)>end) break; if(retryIsWorkday(d)) n++; }
   return n;
 }
-// ── ปุ่มบันทึกผลโทร 📞 ✅ ❌ ✖ (ค่า/endpoint/localStorage key เดียวกับ Signal Board) ───────────────
+// ── ปุ่มบันทึกผลโทร (ไม่รับสาย/คุยแล้ว/ไม่สนใจ/ยกเลิก) (ค่า/endpoint/localStorage key เดียวกับ Signal Board) ───────────────
 const escHTML = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 const CALL_WHO_KEY = 'ofm_focus_who';
 const CALL_WHO_OPTS = ['แจง','กระแต','วัน','telesale','เฮีย'];   // เหมือน Signal Board
@@ -1864,10 +1865,19 @@ function callPush(name,status){
 // สถานะของเดือนก่อน = ยังไม่โทรเดือนนี้ (กติกาเดียวกับ Signal Board: ล้างทุกต้นเดือน)
 const CALL_MONTH_START = (()=>{ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01'; })();
 function callThisMonth(m){ return !!(m && m.t && String(m.t) >= CALL_MONTH_START); }
+const CALL_LBL={call:'ไม่รับสาย',ok:'คุยแล้ว',no:'ไม่สนใจ'};
+const CALL_DUP_MS=60000, CALL_LASTSAVE={};
+function callSavedMsg(name,msg){
+  document.querySelectorAll('.call-slot,.st-slot').forEach(el=>{ if(el.dataset.name!==name) return;
+    const old=el.querySelector('.st-saved'); if(old) old.remove();
+    const bx=el.querySelector('.st-btns'); if(!bx) return;
+    const sp=document.createElement('span'); sp.className='st-saved'; sp.textContent=msg; bx.appendChild(sp);
+    setTimeout(()=>{ try{sp.remove();}catch(_){} },2000); });
+}
 function callNote(name){
   const m = CALL_META[name]; if(!m || !m.t) return '';
   const d = new Date(m.t); if(isNaN(d)) return '';
-  const icon = m.status==='ok'?'✅':m.status==='no'?'❌':'📞';
+  const icon = CALL_LBL[m.status]||'ไม่รับสาย';
   const dl = d.getDate()+' '+THAI_MO[d.getMonth()];
   if(!callThisMonth(m)) return `<div style="font-size:10px;color:#94a3b8;margin-top:3px;">ครั้งก่อน ${escHTML(m.who||'')} · ${dl} (เดือนนี้ยังไม่โทร)</div>`;
   const isToday = d.toDateString()===new Date().toDateString();
@@ -1876,9 +1886,9 @@ function callNote(name){
 function callBtnsHTML(name){
   const m = CALL_META[name];
   const s = callThisMonth(m) ? (m.status || '') : '';
-  const b=(v,ic)=>`<button class="${v} ${s===v?'on '+v:''}" onclick="callSet(this,'${v}')" title="${v}">${ic}</button>`;
-  const clr = s ? `<button class="clr" onclick="callClear(this)" title="ล้างสถานะ">✖</button>` : '';
-  return `<div class="st-btns">${b('call','📞')}${b('ok','✅')}${b('no','❌')}${clr}</div>${callNote(name)}`;
+  const b=(v,ic)=>`<button class="${v} ${s===v?'on '+v:''}" onclick="callSet(this,'${v}')" title="${ic}">${ic}</button>`;
+  const clr = s ? `<button class="clr" onclick="callClear(this)" title="ล้างสถานะ">ยกเลิก</button>` : '';
+  return `<div class="st-btns">${b('call','ไม่รับสาย')}${b('ok','คุยแล้ว')}${b('no','ไม่สนใจ')}${clr}</div>${callNote(name)}`;
 }
 function renderCallBtns(){
   document.querySelectorAll('.who-slot').forEach(el=>{
@@ -1900,17 +1910,22 @@ function retryRecount(){
 function callSet(btn,v){
   if(!CALL_WHO){ alert('กรุณาเลือกก่อนว่า "ฉันคือใคร" (ปุ่มด้านบนของส่วนนี้)'); return; }
   const slot = btn.closest('.call-slot'), name = slot.dataset.name;
+  const _now=Date.now();
+  if(CALL_LASTSAVE[name] && _now-CALL_LASTSAVE[name] < CALL_DUP_MS){ callSavedMsg(name,'เพิ่งบันทึกไปแล้ว'); return; }
+  CALL_LASTSAVE[name]=_now;
   CALL_META[name] = {status:v, who:CALL_WHO, t:new Date().toISOString()};
   callPush(name,v);
   if(v!=='call'){ document.querySelectorAll('tr.retry-row').forEach(tr=>{ if(tr.dataset.name===name) tr.remove(); }); retryRecount(); }
   else document.querySelectorAll('tr.retry-row').forEach(tr=>{ if(tr.dataset.name===name){
     const c=tr.querySelector('.rt-last'); if(c){ const d=new Date(); c.textContent=`${d.getDate()} ${THAI_MO[d.getMonth()]} (${CALL_WHO}) · ไม่ได้คุย · วันนี้`; } } });
   renderCallBtns();
+  callSavedMsg(name,'บันทึกแล้ว ✓');
 }
 function callClear(btn){
   const name = btn.closest('.call-slot').dataset.name;
   if(!confirm('ล้างสถานะการโทรของ "'+name+'" ใช่ไหม')) return;
   CALL_META[name] = null;
+  delete CALL_LASTSAVE[name];
   callPush(name,'');
   document.querySelectorAll('tr.retry-row').forEach(tr=>{ if(tr.dataset.name===name) tr.remove(); });
   retryRecount(); renderCallBtns();
