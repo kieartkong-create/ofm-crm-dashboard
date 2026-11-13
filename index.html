@@ -78,7 +78,25 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
 .st-btns button.on.call{background:#dbeafe;} .st-btns button.on.ok{background:#dcfce7;} .st-btns button.on.no{background:#fee2e2;}
 .who-btn{border:1.5px solid #e5e9f0;background:#fff;border-radius:16px;padding:3px 11px;font-size:12px;cursor:pointer;margin-left:4px;color:#475569;}
 .who-btn.on{background:#2563eb;color:#fff;border-color:#2563eb;font-weight:700;}
+/* ใบโทรวันนี้ (todaysheet) */
+#todaysheet .cs-name{font-weight:700;color:#0f172a;font-size:14px;}
+#todaysheet .cs-sub{font-size:11px;color:#475569;margin-top:2px;line-height:1.5;}
+#todaysheet table{width:100%;border-collapse:collapse;}
+#todaysheet th{background:#0f766e;color:#fff;font-size:11px;padding:6px 8px;text-align:left;}
+#todaysheet td{padding:8px;border-bottom:1px solid #e5e9f0;vertical-align:top;font-size:12px;}
+#todaysheet .ts-chip{display:inline-block;font-size:10px;font-weight:700;border-radius:10px;padding:1px 8px;margin-right:4px;background:#e2e8f0;color:#334155;}
+#todaysheet .ts-t1{background:#fee2e2;color:#b91c1c;} #todaysheet .ts-t2{background:#e0e7ff;color:#3730a3;} #todaysheet .ts-t3{background:#fef3c7;color:#92400e;}
+#todaysheet .ts-t4{background:#e2e8f0;color:#475569;} #todaysheet .ts-t5{background:#dcfce7;color:#166534;} #todaysheet .ts-t6{background:#fce7f3;color:#9d174d;}
+#todaysheet details summary{cursor:pointer;color:#0f766e;font-size:11px;}
+#todaysheet .ts-full{font-size:12px;color:#0f172a;background:#f8fafc;border-radius:6px;padding:6px 8px;margin-top:4px;line-height:1.55;}
+#todaysheet .ts-btn{border:1.5px solid #99f6e4;background:#fff;color:#0f766e;border-radius:7px;font-size:11px;padding:3px 9px;cursor:pointer;font-family:inherit;margin-top:4px;}
+#todaysheet select{font-size:11px;font-family:inherit;padding:2px 4px;margin-bottom:4px;}
+#todaysheet .ts-box{display:inline-block;width:13px;height:13px;border:1.5px solid #94a3b8;border-radius:3px;margin-right:5px;vertical-align:-2px;}
+#todaysheet .ts-done{opacity:.55;}
+.print-only{display:none;}
 @media print{
+  th.print-only,td.print-only{display:table-cell !important;} div.print-only{display:block !important;}
+  #todaysheet th{background:#0f766e !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   body *{visibility:hidden;}
   .print-target,.print-target *{visibility:visible;}
   .print-target{position:absolute;left:0;top:0;width:100%;margin:0;padding:0;box-shadow:none;border:none;}
@@ -128,6 +146,31 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
      TAB 1: ภาพรวม
 ════════════════════════════════════════════════════════════ -->
 <div id="tp-overview" class="tp" style="padding:18px 24px;max-width:1600px;margin:0 auto;">
+
+  <!-- ── ใบโทรวันนี้ (v1 · 13 พ.ย. 69) : เลือกคน → ใบ ≤8 ราย/วัน ────────────────── -->
+  <h2 class="no-print">📞 ใบโทรวันนี้ — เลือกชื่อแล้วดูใบของคนนั้น
+    <span style="font-size:11px;font-weight:400;color:#94a3b8;">คนละ 8 ราย/วัน รวมรายค้าง · อังคาร–ศุกร์ได้ใบใหม่ · จันทร์/เสาร์เห็นเฉพาะรายค้าง</span>
+  </h2>
+  <div class="card print-target" id="todaysheet" style="padding:14px;margin-bottom:24px;">
+    <div class="no-print" style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
+      <span style="font-size:13px;font-weight:700;">👤 ใบของ:</span><span id="ts-who"></span>
+      <button class="ts-btn" style="margin:0;" onclick="loadTodaySheet(true)">🔄 โหลดใหม่</button>
+      <button class="ts-btn" style="margin:0;" id="ts-printbtn" onclick="printSection('todaysheet')">🖨️ พิมพ์ใบ</button>
+      <button class="ts-btn" style="margin:0;display:none;" id="ts-admin" onclick="csExportHold()">⬇ ส่งออกรายชื่อที่เก็บไว้ไม่โทร (เจ้าของ/ทีมข้อมูล)</button>
+    </div>
+    <div id="ts-head" style="font-size:16px;font-weight:700;color:#0f172a;">📞 ใบโทรวันนี้</div>
+    <div id="ts-sub" style="font-size:11px;color:#475569;margin-bottom:8px;">OfficeMate Plus+ สาขาสระบุรี</div>
+    <div id="ts-rules" style="font-size:11px;color:#334155;background:#f0fdfa;border:1px solid #99f6e4;border-radius:6px;padding:6px 10px;margin-bottom:8px;line-height:1.6;">
+      1. ก่อนโทร เช็คในระบบว่าซื้อไปแล้วหรือยัง (บิลเข้าช้า 2-3 วัน) ถ้าซื้อแล้ว ให้ขอบคุณอย่างเดียว<br>
+      2. ขึ้นต้นทุกสาย: "สวัสดีค่ะ [ชื่อผู้โทร] จาก OfficeMate สระบุรีนะคะ ขอสายคุณ [ชื่อ/แผนก] ค่ะ"<br>
+      3. ปิดทุกสาย: "มีอย่างอื่นต้องใช้เพิ่มไหมคะ" แล้วกดผลในระบบ · ไม่ติด โทรซ้ำภายใน 2 วันทำการ ไม่เกิน 3 ครั้ง แล้วส่ง LINE
+    </div>
+    <div id="ts-msg" class="no-print" style="font-size:12px;color:#64748b;"></div>
+    <table id="ts-table" style="display:none;"><thead><tr>
+      <th style="width:3%;">#</th><th style="width:32%;">ลูกค้า · ทำไมโทร</th><th style="width:25%;">สคริปต์</th>
+      <th style="width:22%;">แนะนำสินค้า</th><th class="no-print" style="width:18%;">ผล</th>
+      <th class="print-only" style="width:18%;">ผล</th></tr></thead><tbody id="ts-body"></tbody></table>
+  </div>
 
   <!-- Period Selector -->
   <div class="card" style="margin-bottom:18px;padding:12px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
@@ -1044,9 +1087,11 @@ function renderNewCust(){
 let rfmSort = {col:'monetary', dir:-1};
 function sortRFM(col){ rfmSort.dir = rfmSort.col===col ? -rfmSort.dir : -1; rfmSort.col=col; renderRFMTable(); }
 
+// กันชื่อกลุ่มควบคุม/รอคิว/เก็บไว้ไม่โทร ออกจากตารางและ CSV (QA 13 พ.ย.)
+function custVisible(){ return CUSTOMERS.filter(c=>!isControl(c.name)&&!isWaitQueue(c.name)&&!isHeld(c.name)); }
 function renderRFMTable(){
   const seg = document.getElementById('rfm-seg-filter').value;
-  let data = seg ? CUSTOMERS.filter(c=>c.seg===seg) : CUSTOMERS;
+  let data = seg ? custVisible().filter(c=>c.seg===seg) : custVisible();
   data = [...data].sort((a,b) => rfmSort.dir * ((a[rfmSort.col]||0) < (b[rfmSort.col]||0) ? -1 : 1));
   document.getElementById('rfm-count').textContent = `แสดง ${data.length} ราย`;
   const actionMap = {rescue:'โทรด่วนวันนี้ — ทำไมเงียบ?',sleeping:'Re-engage หรือ Inactive',premium:'รักษา + Early Access สินค้าใหม่',promising:'Cross-sell + Bundle Pack',declining:'วิเคราะห์หมวดที่ลด + เสนอทางแก้',regular:'ติดตามปกติ',new:'Onboard + แนะนำสินค้าหลัก'};
@@ -1090,7 +1135,7 @@ function clearAll(){
 function renderCustTable(){
   const seg = document.getElementById('cs-seg').value;
   const q = document.getElementById('cs-search').value.toLowerCase();
-  let data = CUSTOMERS.filter(c =>
+  let data = custVisible().filter(c =>
     (!seg || c.seg===seg) && (!q || c.name.toLowerCase().includes(q))
   );
   data = [...data].sort((a,b)=>custSort.dir*((a[custSort.col]||0)<(b[custSort.col]||0)?-1:1));
@@ -1117,7 +1162,7 @@ function renderCustTable(){
 
 function exportCSV(){
   const rows = [['ชื่อบริษัท','Segment','ยอดรวม','รายการ','R','F','M','RFM Total','ซื้อล่าสุด']];
-  CUSTOMERS.forEach(c=>rows.push([c.name,c.seg,c.monetary,c.freq,c.r,c.f,c.m,c.total,c.lastFmt||c.last]));
+  custVisible().forEach(c=>rows.push([c.name,c.seg,c.monetary,c.freq,c.r,c.f,c.m,c.total,c.lastFmt||c.last]));
   const csv = rows.map(r=>r.join(',')).join('\n');
   const a = document.createElement('a'); a.href='data:text/csv;charset=utf-8,﻿'+encodeURIComponent(csv);
   a.download='ofm_crm_customers.csv'; a.click();
@@ -1232,7 +1277,7 @@ function initCharts(){
   });
 
   // 6. Top 10 Champion
-  const top10 = CUSTOMERS.filter(c=>c.seg==='Champion').sort((a,b)=>b.monetary-a.monetary).slice(0,10);
+  const top10 = custVisible().filter(c=>c.seg==='Champion').sort((a,b)=>b.monetary-a.monetary).slice(0,10);
   new Chart(document.getElementById('chart-top10'),{
     type:'bar',
     data:{
@@ -1589,7 +1634,7 @@ async function loadCallSheet(){
     const rev = {}, firstDay = {}, net = {};
     (tbl.rows||[]).forEach(r=>{
       const g=r.c[0]?.v, y=r.c[1]?.v, m=r.c[2]?.v, k=r.c[3]?.v, v=r.c[4]?.v||0;
-      if(!g||!y||!m||!k||(isControl(g)||isWaitQueue(g))) return;   // isControl = กลุ่มทดลองถึง 15 พ.ย. 69
+      if(!g||!y||!m||!k||(isControl(g)||isWaitQueue(g)||isHeld(g))) return;   // isControl = กลุ่มทดลองถึง 15 พ.ย. 69
       const key=`${y}-${m}`;
       (net[g] = net[g] || {})[key] = (net[g][key]||0) + v;   // R2-D: ยอดสุทธิรวมคืนสินค้า (ให้ 'ซื้อปกติ')
       if(v<=0) return;
@@ -1685,7 +1730,7 @@ async function loadBulkPaper(){
     const cust = {};
     (tbl.rows||[]).forEach(r=>{
       const g=r.c[0]?.v, y=r.c[1]?.v, m=r.c[2]?.v, k=r.c[3]?.v, q=num(r.c[4]?.v), a=num(r.c[5]?.v);
-      if(!g||!y||!m||!k||(isControl(g)||isWaitQueue(g))) return;   // กลุ่มทดลองถึง 15 พ.ย. 69
+      if(!g||!y||!m||!k||(isControl(g)||isWaitQueue(g)||isHeld(g))) return;   // กลุ่มทดลองถึง 15 พ.ย. 69
       const c = (cust[g] = cust[g] || {lots:[], curQty:0});
       if(y===curY && m===curM) c.curQty += q;
       if(a >= 15000) c.lots.push({d:new Date(y,m-1,k), q, a});
@@ -1770,7 +1815,7 @@ async function loadPaperSheet(){
     const cust = {};
     (tbl.rows||[]).forEach(r=>{
       const g=r.c[0]?.v, y=r.c[1]?.v, m=r.c[2]?.v, k=r.c[3]?.v, v=r.c[4]?.v||0;
-      if(!g||!y||!m||!k||(isControl(g)||isWaitQueue(g))) return;   // กลุ่มทดลองถึง 15 พ.ย. 69
+      if(!g||!y||!m||!k||(isControl(g)||isWaitQueue(g)||isHeld(g))) return;   // กลุ่มทดลองถึง 15 พ.ย. 69
       const c = (cust[g] = cust[g] || {mo:{}, cur:0, last:null});
       if(y===curY && m===curM){ c.cur += v; return; }
       c.mo[`${y}-${m}`] = (c.mo[`${y}-${m}`]||0) + v;
@@ -1857,10 +1902,10 @@ const CALL_WHO_KEY = 'ofm_focus_who';
 const CALL_WHO_OPTS = ['แจง','กระแต','วัน','telesale','เฮีย'];   // เหมือน Signal Board
 let CALL_WHO = ''; try{ CALL_WHO = localStorage.getItem(CALL_WHO_KEY) || ''; }catch(_){}
 let CALL_META = {};   // name -> {status, who, t}  (จากบันทึกการโทร + ที่เพิ่งกดบนหน้านี้)
-function callSetWho(v){ CALL_WHO=v; try{ localStorage.setItem(CALL_WHO_KEY,v); }catch(_){} renderCallBtns(); }
+function callSetWho(v){ CALL_WHO=v; try{ localStorage.setItem(CALL_WHO_KEY,v); }catch(_){} renderCallBtns(); if(typeof csOnWho==='function') csOnWho(); }
 function callPush(name,status){
   fetch(CALL_LOG_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body:JSON.stringify({name,status,who:CALL_WHO||'ไม่ระบุ'})}).catch(()=>{});
+    body:JSON.stringify({name,status,who:CALL_WHO||'ไม่ระบุ',outcome:(typeof csOutcomeFor==='function'?csOutcomeFor(name):'')})}).catch(()=>{});
 }
 // สถานะของเดือนก่อน = ยังไม่โทรเดือนนี้ (กติกาเดียวกับ Signal Board: ล้างทุกต้นเดือน)
 const CALL_MONTH_START = (()=>{ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01'; })();
@@ -1920,6 +1965,7 @@ function callSet(btn,v){
     const c=tr.querySelector('.rt-last'); if(c){ const d=new Date(); c.textContent=`${d.getDate()} ${THAI_MO[d.getMonth()]} (${CALL_WHO}) · ไม่ได้คุย · วันนี้`; } } });
   renderCallBtns();
   callSavedMsg(name,'บันทึกแล้ว ✓');
+  if(typeof csAfterPress==='function') csAfterPress(name,v);
 }
 function callClear(btn){
   const name = btn.closest('.call-slot').dataset.name;
@@ -1948,7 +1994,7 @@ async function loadRetry(){
       if(!c || c.status!=='call' || !c.t) return;
       if(RETRY_INTERNAL.some(s=>name.includes(s))) return;
       if(c.who==='ระบบ' || /^ทดสอบ/.test(name.trim())) return;   // R2-C: แถวทดสอบ
-      if(isControl(name)||isWaitQueue(name)) return;       // กลุ่มทดลองไม่โทร
+      if(isControl(name)||isWaitQueue(name)||isHeld(name)) return;       // กลุ่มทดลองไม่โทร
       const t = new Date(c.t); if(isNaN(t)) return;
       const wd = retryWorkdaysAfter(t, now); if(wd < 2) return;
       const r = rev[name] || {};
@@ -1986,6 +2032,457 @@ async function loadRetry(){
   }
 }
 
+// ══ ใบโทรวันนี้ (v1 · เจ้าของอนุมัติ 13 พ.ย. 69) ═══════════════════════════════════════════════════
+// เกณฑ์รอบซื้อ: work/2026-11-13/da_cycle_backtest.md ข้อ 104 (≥3 ครั้ง · ≥฿500 · รอบ ≥21 วัน · ถึงรอบ 100–200% · เลยรอบ >200%)
+// ไม่ใช้คอลัมน์ต้นทุน/กำไร (AU/AV/AX) · กลุ่มทดลอง/รอคิวใช้ isControl/isWaitQueue เดิม · ดึงผ่าน gvizD (แก้วันที่เสียแล้ว)
+// ข้อจำกัด: บันทึกการโทรเก็บแค่ "ครั้งล่าสุดต่อชื่อ" → จำนวนครั้งที่โทร/ใบที่ค้าง/ใบที่ตรึง เก็บใน localStorage ของเครื่องนั้น
+const CS_FIRST_DAY = '2026-11-14';
+// กลุ่ม "เก็บไว้ไม่โทร 20%" (ลำดับ ⑤) — ซ่อนจากรายชื่อเดิมด้านล่างแบบเดียวกับ isControl · ชุดนี้ถูกตั้งตอนใบโทรคำนวณเสร็จ (ใบโทรโหลดก่อนส่วนเดิม)
+window.CS_HOLD_SET = new Set();
+function isHeld(name){ return !!name && window.CS_HOLD_SET.has(name); }
+// ซ่อนชื่อกลุ่ม "เก็บไว้ไม่โทร" ที่หลุดไปอยู่ในตารางอื่นของหน้า (ตาราง hardcoded / ที่สร้างทีหลัง) — เฝ้าดูการเปลี่ยนของหน้า แล้วซ่อนแถวนั้น
+let CS_HIDE_T = null;
+function csHideHeld(){
+  const names = [...window.CS_HOLD_SET]; if(!names.length) return;
+  document.querySelectorAll('tr, li').forEach(el=>{
+    if(el.style.display==='none' || el.closest('#todaysheet')) return;
+    const t = el.textContent; if(names.some(n=>t.includes(n))){ if(el.querySelector('tr,li') ) return; el.style.display='none'; el.dataset.heldHidden='1'; }
+  });
+}
+new MutationObserver(()=>{ clearTimeout(CS_HIDE_T); CS_HIDE_T = setTimeout(csHideHeld, 150); }).observe(document.documentElement,{childList:true,subtree:true});
+const CS_LOG_VALID_FROM = new Date('2026-11-14T00:00:00+07:00').getTime();   // บันทึกการโทรก่อนวันนี้ไม่เชื่อถือ (ทีมเข้าใจปุ่ม 📞 ผิด) — ไม่นับเป็นรายค้าง
+const csLogOk = t => { const x=new Date(t).getTime(); return !isNaN(x) && x>=CS_LOG_VALID_FROM; };
+const CS_MAX_CARRY = 4;   // รายค้างสูงสุดต่อใบ (ที่เหลือให้รายใหม่ ②–⑥) — เจ้าของเปลี่ยนได้ที่ค่าเดียวนี้
+const CS_QUOTA = 8, CS_TEAM = ['แจง','วัน','กระแต'];
+const CS_TIER = {1:['⏳','นัดโทรซ้ำ/ค้าง'],2:['🏛','ราชการ'],3:['💰','บิลใหญ่ยังไม่ซื้อ'],4:['🌙','ลูกค้าเงียบ'],5:['🔁','ถึงรอบซื้อ'],6:['↩','เลยรอบนาน (ดึงกลับ)']};
+const CS_SCRIPT_ID = {2:'ส-1',3:'ส-2',4:'ส-4',5:'ส-3',6:'ส-5'};
+// ★ ถ้อยคำสคริปต์ ส-1..ส-5 อยู่ที่ตัวแปรเดียวนี้ (ฉบับแก้ของฝ่ายขาย work/2026-11-13/sales_scripts.md · แก้ได้ที่นี่ที่เดียว)
+// ช่อง [ ] ที่ระบบเติมเอง: [ชื่อผู้โทร]=คนที่เลือกบนใบ · [หน่วยงาน] · [หมวด/สินค้า] · [จำนวน] · [หมวดที่ซื้อคู่กัน] · [หมวด]  |  ช่องที่ผู้โทรเติมเอง ([ชื่อ] [วัน]) แสดงเป็น ____
+// l = ประโยคที่พูด (ประโยคที่ขึ้นต้น "?" = พูดเฉพาะเมื่อมีข้อมูล เช่น ส-3 ข้อ 3 ต้องมีหมวดคู่กัน, ส-5 ข้อ 3 พูดเมื่อลูกค้าพูดเรื่องราคา) · f = ประโยคสำรอง
+const CALL_SCRIPTS = {
+  'ส-1':{goal:'เป้า: ได้ชื่อผู้ดูแล + ช่วงเวลา · ไม่พูดราคาในสาย', l:[
+    'สวัสดีค่ะ [ชื่อผู้โทร] จาก OfficeMate สระบุรีนะคะ ขอสายเจ้าหน้าที่พัสดุหรือธุรการหน่อยค่ะ',
+    'ปีที่แล้วช่วงนี้ทาง [หน่วยงาน] สั่งวัสดุสำนักงานกับเรา ปีนี้ใครเป็นผู้ดูแลการจัดซื้อคะ',
+    'แล้วคาดว่าจะมีรายการช่วงไหนคะ จะได้เตรียมใบเสนอราคาให้ทันค่ะ',
+    'ขอเบอร์หรือไลน์ของคุณ [ชื่อ] เพื่อส่งรายการสินค้าปีที่แล้วไว้อ้างอิง แล้วดิฉันโทรตามอีกครั้งวันที่ [วัน] นะคะ'],
+    f:{'ไม่ว่าง':'ไม่เป็นไรค่ะ ขออนุญาตโทรใหม่วัน [วัน] ช่วงไหนสะดวกคะ',
+       'ยังไม่ต้องใช้':'ได้ค่ะ ปกติทางหน่วยงานเริ่มทำเรื่องช่วงไหนคะ ดิฉันจะโทรมาก่อนถึงช่วงนั้นค่ะ',
+       'ซื้อที่อื่น':'ขอบคุณที่บอกนะคะ ถ้ารอบหน้าต้องการเทียบใบเสนอราคา ให้เราส่งรายการไปเทียบได้เลยไหมคะ'}},
+  'ส-2':{goal:'เป้า: ได้จำนวนที่ต้องใช้ หรือออเดอร์ (ส่งรายการครั้งล่าสุดทางไลน์)', l:[
+    'สวัสดีค่ะ [ชื่อผู้โทร] จาก OfficeMate สระบุรีนะคะ',
+    'เดือนนี้ดิฉันยังไม่ได้รับรายการจากทางร้าน เลยขออนุญาตส่งรายการที่สั่งครั้งล่าสุดทางไลน์ได้ไหมคะ',
+    'ถ้าอยากปรับจำนวนหรือเพิ่มอะไร บอกได้เลย เดี๋ยวจัดส่งให้ค่ะ',
+    'รอบนี้ต้องใช้ประมาณเท่าเดิมไหมคะ'],
+    f:{'ไม่ว่าง':'ไม่เป็นไรค่ะ ส่งรายการไว้ทางไลน์ ว่างแล้วพิมพ์ตอบมาได้เลยนะคะ',
+       'ยังไม่ต้องใช้':'ได้ค่ะ ของที่มีอยู่ใช้ได้อีกประมาณกี่สัปดาห์คะ ดิฉันจะทักมาอีกทีตอนนั้นค่ะ',
+       'ซื้อที่อื่น':'ขอบคุณที่บอกนะคะ รอบนี้ที่อื่นสั่งอะไรไปบ้างคะ ส่วนที่ยังขาดบอกเราได้เลยค่ะ'}},
+  'ส-3':{goal:'เป้า: ได้จำนวน + วันส่ง (+ หมวดคู่กัน 1 รายการ)', l:[
+    'สวัสดีค่ะ [ชื่อผู้โทร] จาก OfficeMate สระบุรีนะคะ',
+    'ปกติ [หมวด/สินค้า] ของทางร้านน่าจะใกล้หมดแล้ว รอบที่แล้วรับ [จำนวน] รอบนี้รับเท่าเดิมไหมคะ',
+    '?[หมวดที่ซื้อคู่กัน] ก็ต้องใช้ด้วยไหมคะ ส่งไปพร้อมกันได้เลยค่ะ',
+    'ให้ส่งวันไหนดีคะ'],
+    f:{'ไม่ว่าง':'ไม่เป็นไรค่ะ ดิฉันส่งรายการทางไลน์ไว้ ตอบกลับตัวเลขมาได้เลยค่ะ',
+       'ยังไม่ต้องใช้':'ได้ค่ะ ของยังเหลือพอถึงวันไหนคะ ดิฉันจะทักก่อนหมดค่ะ',
+       'ซื้อที่อื่น':'ขอบคุณที่บอกค่ะ รอบหน้าถ้าอยากเทียบ ส่งรายการมาให้เราเสนอด้วยได้เลยนะคะ'}},
+  'ส-4':{goal:'ไม่ขายสายแรก · เป้า: ได้เหตุผล หรือชื่อคนสั่งของ + ช่องทางติดต่อ', l:[
+    'สวัสดีค่ะ [ชื่อผู้โทร] จาก OfficeMate สระบุรีนะคะ ไม่ได้คุยกันนานเลยค่ะ',
+    'ช่วงนี้ยังใช้วัสดุสำนักงานอยู่ใช่ไหมคะ ปกติใครเป็นคนดูแลสั่งของคะ',
+    'ตอนนี้มีของที่ใกล้หมดหรือหายากอยู่ไหมคะ เดี๋ยวดิฉันเช็คสต็อกให้ค่ะ',
+    'ขอเก็บไลน์ไว้ส่งรายการให้ ถ้าต้องใช้อะไรฝากบอกได้เลยค่ะ'],
+    f:{'ไม่ว่าง':'ไม่เป็นไรค่ะ ขอไลน์ไว้ ว่างแล้วทักมาได้เลยนะคะ',
+       'ยังไม่ต้องใช้':'ได้ค่ะ ไม่ต้องรีบเลย ถ้าของใกล้หมดทักมาได้เลยนะคะ',
+       'ซื้อที่อื่น':'ขอบคุณที่บอกค่ะ ถ้ามีรายการที่ที่นั้นไม่มี หรือส่งช้า ฝากเราดูแลได้นะคะ'}},
+  'ส-5':{goal:'เป้า: ได้ "เหตุผลที่หายไป" 1 ข้อ · พูดเรื่องราคาได้เฉพาะ "ส่งราคาล่าสุดให้เทียบ" ที่เจ้าของอนุมัติ ห้ามลดเอง', l:[
+    'สวัสดีค่ะ [ชื่อผู้โทร] จาก OfficeMate สระบุรีนะคะ ปกติทางร้านรับ [หมวด] กับเราเป็นประจำ ช่วงหลังไม่ได้รับรายการเลย',
+    'ขออนุญาตถามเพื่อนำไปปรับปรุงค่ะ ติดเรื่องสินค้า การส่ง ราคา หรือเปลี่ยนคนดูแลสั่งของคะ',
+    '?(ถ้าลูกค้าพูดเรื่องราคา) ขอส่งราคาล่าสุดทางไลน์ให้ดูเทียบได้ไหมคะ',
+    'ถ้าสะดวก รอบหน้าลองให้เราส่งใบเสนอให้ก่อนสั่งได้นะคะ'],
+    f:{'ไม่ว่าง':'ไม่เป็นไรค่ะ ขอส่งข้อความทางไลน์ ว่างแล้วตอบสั้น ๆ ได้เลยนะคะ',
+       'ยังไม่ต้องใช้':'เข้าใจค่ะ ช่วงนี้ใช้น้อยลงใช่ไหมคะ ถ้ากลับมาต้องใช้ ทักมาได้ตลอดเลยค่ะ',
+       'ซื้อที่อื่น':'ขอบคุณที่บอกตรง ๆ นะคะ ส่วนไหนที่เขาทำได้ดีกว่าเราคะ จะได้นำไปปรับค่ะ'}}
+};
+const CALL_SCRIPT_DISCOUNT = 'ถ้าลูกค้าขอส่วนลด: "ขออนุญาตเรียนปรึกษาแล้วโทรกลับนะคะ" (ห้ามบอกตัวเลข ห้ามรับปาก)';
+const CS_CATNAME = {'กระดาษ':'กระดาษ','หมึก-IT':'หมึก/IT','ของใช้ HYGIENE&FMCG':'ของใช้สุขอนามัย','ของใช้สำนักงาน':'ของใช้สำนักงาน'};
+const CS_PAIRLBL = {'PAPERCOPY':'กระดาษถ่ายเอกสาร','IT':'หมึก/IT','OFFICE SUPPLIES':'ของใช้สำนักงาน','WRITING INSTRUMENTS':'เครื่องเขียน','BUSINESS MACHINE':'เครื่องใช้สำนักงาน',
+  'COMPUTER & COMPUTER DEVICE':'อุปกรณ์คอมพิวเตอร์','HYGIENE':'ของใช้สุขอนามัย','HOUSEHOLD':'ของใช้ในบ้าน/ไฟฟ้า'};
+const CS_CAT2PAIR = {'กระดาษ':'PAPERCOPY','หมึก-IT':'IT','ของใช้ HYGIENE&FMCG':'HYGIENE','ของใช้สำนักงาน':'OFFICE SUPPLIES'};
+const CS_GOVK = ['โรงเรียน','เทศบาล','องค์การบริหาร','อบต','โรงพยาบาล','สำนักงาน','สนง','จังหวัด','กรม','ศาล','ตำรวจ','ทหาร','ค่าย','วิทยาลัย','มหาวิทยาลัย','สาธารณสุข','กาชาด','อำเภอ','การไฟฟ้า','การประปา','ศูนย์','ที่ว่าการ','สถานี'];
+const CS_PRIVP = ['บริษัท','บ.','บจก','หจก','ห้างหุ้นส่วน','ห้านหุ้นส่วน','ห.จ.ก'];
+const csIsGov = g => CS_GOVK.some(k=>g.includes(k)) && !CS_PRIVP.some(p=>g.startsWith(p));   // เหมือน DA loader.isgov
+const csDn = (y,m,k) => Math.floor(Date.UTC(y,m-1,k)/864e5);
+const csDnDate = dn => new Date(dn*864e5);
+const csFmt = dn => { const d=csDnDate(dn); return d.getUTCDate()+' '+THAI_MO[d.getUTCMonth()]; };
+const csFmtY = dn => { const d=csDnDate(dn); return d.getUTCDate()+' '+THAI_MO[d.getUTCMonth()]+' '+String(d.getUTCFullYear()+543).slice(2); };
+const csMed = a => { if(!a.length) return 0; const s=a.slice().sort((x,y)=>x-y), n=s.length; return n%2?s[(n-1)/2]:(s[n/2-1]+s[n/2])/2; };
+const csYmd = dn => csDnDate(dn).toISOString().slice(0,10);
+const csIsWorkday = dn => csDnDate(dn).getUTCDay()!==0 && !RETRY_HOLIDAYS.includes(csYmd(dn));
+function csWorkdaysAfter(a,b){ let n=0; for(let d=a+1; d<=b; d++) if(csIsWorkday(d)) n++; return n; }   // วันทำการหลังวัน a ถึง b (นับ b)
+const csHash = s => cyrb53(String(s).trim());
+const csTsDn = ts => { const d=new Date(ts); return csDn(d.getFullYear(), d.getMonth()+1, d.getDate()); };
+const csLS = { get(k,def){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):def; }catch(_){ return def; } },
+               set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(_){} } };
+let CS = null;       // ผลคำนวณล่าสุด
+let CS_ITEMS = [];   // แถวที่แสดงอยู่ (ให้ปุ่มคัดลอกอ้าง)
+const CS_ADMIN = /[?&]admin=1/.test(location.search);
+let CS_STATE = {loading:false, err:null, detailFor:null, lines:null, usedLog:false};
+
+// หมวดต่อบรรทัดสินค้า (นิยามเดียวกับ DA: กระดาษ = V มี 'กระดาษถ่ายเอกสาร' หรือ (A4 และ กระดาษ))
+function csLineCat(y,v){
+  v = v||''; y = y||'';
+  if(v.includes('กระดาษถ่ายเอกสาร') || (v.includes('A4') && v.includes('กระดาษ'))) return 'กระดาษ';
+  if(y==='IT') return 'หมึก-IT';
+  if(y.startsWith('HYGIENE')) return 'ของใช้ HYGIENE&FMCG';
+  if(y==='OFFICE SUPPLIES') return 'ของใช้สำนักงาน';
+  return null;
+}
+function csPairKey(y){
+  if(!y) return null;
+  if(y==='IT'||y==='OFFICE SUPPLIES'||y==='WRITING INSTRUMENTS'||y==='BUSINESS MACHINE'||y==='COMPUTER & COMPUTER DEVICE') return y;
+  if(y.startsWith('HYGIENE')) return 'HYGIENE';
+  if(y.startsWith('HOUSEHOLD')) return 'HOUSEHOLD';
+  return null;
+}
+
+// ── เครื่องคำนวณ (ไม่แตะ DOM) ──────────────────────────────────────────────
+function csEngine(main, paper, log, nowDate, tries){
+  const T = csDn(nowDate.getFullYear(), nowDate.getMonth()+1, nowDate.getDate());
+  const curY = nowDate.getFullYear(), curM = nowDate.getMonth()+1;
+  const cust = new Map(), billSet = new Map();
+  const C = g => { let c=cust.get(g); if(!c){ c={g, day:{}, cat:{}, mon:{}, pair:new Set()}; cust.set(g,c); } return c; };
+  const add = (g,cat,pairKey,y,m,k,q,an) => {
+    if(!g || m>12 || k>31) return;
+    const d = csDn(y,m,k); if(d>T) return;
+    const c = C(g); c.day[d] = (c.day[d]||0)+an;
+    const mk = y+'-'+m; c.mon[mk] = (c.mon[mk]||0)+an;
+    if(cat){ const cc = (c.cat[cat] = c.cat[cat]||{}); cc[d] = (cc[d]||0)+an; }
+    if(pairKey && an>0){ c.pair.add(pairKey); if(q){ let s=billSet.get(q); if(!s){ s=new Set(); billSet.set(q,s); } s.add(pairKey); } }
+  };
+  main.forEach(r=>{ const [g,yy,y,m,k,q,an]=r; add(g, csLineCat(yy,''), csPairKey(yy), y,m,k,q,an); });
+  paper.forEach(r=>{ const [g,y,m,k,q,an]=r; add(g,'กระดาษ','PAPERCOPY',y,m,k,q,an); });
+  // ซื้อคู่กันระดับบิล (ทั้งร้าน): conf = บิลที่มีทั้งคู่ / บิลที่มีหมวดต้นทาง
+  const nC = {}, nCP = {};
+  billSet.forEach(s=>{ const a=[...s]; a.forEach(c=>{ nC[c]=(nC[c]||0)+1; a.forEach(p=>{ if(p!==c){ const k2=c+'|'+p; nCP[k2]=(nCP[k2]||0)+1; } }); }); });
+  const partnerFor = (c, src) => {
+    let best=null, bs=0;
+    Object.keys(CS_PAIRLBL).forEach(p=>{ if(p===src || c.pair.has(p)) return; const n=nCP[src+'|'+p]||0; if(n<20) return;
+      const conf=n/(nC[src]||1); if(conf>bs){ bs=conf; best=p; } });
+    return best ? {key:best, lbl:CS_PAIRLBL[best], conf:bs} : null;
+  };
+  const week = (()=>{ const dow=csDnDate(T).getUTCDay(); return csYmd(T-((dow+6)%7)); })();   // วันจันทร์ของสัปดาห์
+  const cands = new Map(), hold = [];
+  cust.forEach(c=>{
+    const g = c.g;
+    if(!g.trim() || g==='ไม่มีชื่อ' || RETRY_INTERNAL.some(s=>g.includes(s))) return;
+    if(isControl(g) || isWaitQueue(g)) return;
+    const occ = Object.keys(c.day).map(Number).filter(d=>c.day[d]>0).sort((a,b)=>a-b);
+    if(!occ.length) return;
+    const lastAll = occ[occ.length-1], dslAll = T-lastAll;
+    const monthOf = d => { const x=csDnDate(d); return [x.getUTCFullYear(), x.getUTCMonth()+1]; };
+    const boughtThisMonth = occ.some(d=>{ const [y,m]=monthOf(d); return y===curY && m===curM; });
+    const res = {name:g, lastAll, dslAll, boughtThisMonth, occN:occ.length, tiers:{}};
+    // ② ราชการ: เดือนเดียวกันปีก่อนซื้อ · ปีนี้ยังไม่ซื้อ
+    if(csIsGov(g) && !boughtThisMonth){
+      const ly = c.mon[(curY-1)+'-'+curM]||0;
+      if(ly>0) res.tiers[2] = {score:ly, ly};
+    }
+    // ③ บิลใหญ่: เฉลี่ย 5 เดือนเต็มก่อนหน้า ≥ ฿10K · ซื้อ ≥3 ใน 5 เดือน · ถึงวันที่ปกติเริ่มซื้อแล้ว · เดือนนี้ยังไม่ซื้อ
+    if(!boughtThisMonth && !((curM===4||curM===10) && g.includes('โรงเรียน'))){
+      let sum=0, bought=0; const firsts=[];
+      for(let i=1;i<=5;i++){
+        let y=curY, m=curM-i; while(m<=0){ m+=12; y--; }
+        const v=c.mon[y+'-'+m]||0; sum+=v; if(v>0) bought++;
+        const f=occ.find(d=>{ const [yy,mm]=monthOf(d); return yy===y&&mm===m; }); if(f) firsts.push(csDnDate(f).getUTCDate());
+      }
+      const avg5 = sum/5, usual = firsts.length?csMed(firsts):15;
+      if(avg5>=10000 && bought>=3 && usual<=nowDate.getDate()) res.tiers[3] = {score:avg5, avg5, bought, usual};
+    }
+    // ④ เงียบ 2–6 เดือน (60–183 วัน) · เคยซื้อ ≥2 ครั้ง
+    if(dslAll>=60 && dslAll<=183 && occ.length>=2) res.tiers[4] = {score:occ.length, months:Math.floor(dslAll/30.4)};
+    // ⑤ ⑥ รอบซื้อตามหมวด (เกณฑ์ข้อ 104)
+    let bestCat=null;
+    Object.keys(c.cat).forEach(cat=>{
+      const od = Object.keys(c.cat[cat]).map(Number).filter(d=>c.cat[cat][d]>0).sort((a,b)=>a-b);
+      if(od.length<3) return;
+      const amt = csMed(od.map(d=>c.cat[cat][d])); if(amt<500) return;
+      const gaps = []; for(let i=1;i<od.length;i++) gaps.push(od[i]-od[i-1]);
+      const gap = csMed(gaps); if(gap<21) return;
+      const last = od[od.length-1], dsl = T-last, ratio = dsl/gap;
+      if(csWorkdaysAfter(last,T)<=5) return;                 // ซื้อหมวดนี้ไปแล้วใน 5 วันทำการ
+      let kind=null; if(ratio>=1 && ratio<=2) kind=5; else if(ratio>2 && dsl<=365) kind=6;
+      if(!kind) return;
+      const o = {cat, kind, gap:Math.round(gap), dsl, ratio, amt, last, newly:(kind===5 && dsl-gap<=7), n:od.length};
+      const rank = x => (x.kind===5?(x.newly?3e6:2e6):1e6) + x.amt;
+      if(!bestCat || rank(o)>rank(bestCat)) bestCat=o;
+    });
+    if(bestCat) res.tiers[bestCat.kind] = {score:(bestCat.newly?1e7:0)+bestCat.amt, ...bestCat};
+    let topCat=null, topV=-1;
+    Object.keys(c.cat).forEach(k=>{ const s=Object.values(c.cat[k]).reduce((a,b)=>a+b,0); if(s>topV){ topV=s; topCat=k; } });
+    res.topCat = topCat; res.c = c;
+    cands.set(g,res);
+  });
+  // เหตุผลหลัก = เลขน้อยสุด · กลุ่ม ⑤ สุ่ม "เก็บไว้ไม่โทร" 20% (แฮช ชื่อ+หมวด+สัปดาห์ — คงที่ในสัปดาห์เดียวกัน)
+  cands.forEach(r=>{
+    const ks = Object.keys(r.tiers).map(Number).sort((a,b)=>a-b);
+    r.tier = ks[0]||0; r.info = ks.length ? r.tiers[ks[0]] : null;
+    if(r.tier===5 && csHash(r.name+'|'+r.info.cat+'|'+week)%100 < 20){
+      r.held = true; hold.push({week, name:r.name, cat:r.info.cat, gap:r.info.gap, dsl:r.info.dsl, ratio:Math.round(r.info.ratio*100)});
+      r.tier = 0; r.info = null;
+    }
+    const srcCat = (r.tier===5||r.tier===6) ? r.info.cat : r.topCat;
+    r.partner = (r.tier>=3 && srcCat) ? partnerFor(r.c, CS_CAT2PAIR[srcCat]) : null;
+    r.scopeCat = (r.tier===5||r.tier===6) ? r.info.cat : null;
+  });
+  // ① นัดโทรซ้ำ: ไม่รับสายล่าสุด ≥2 วันทำการ · <3 ครั้งใน 14 วัน · เดือนนี้ยังไม่ซื้อ
+  const retries = [];
+  Object.keys(log||{}).forEach(name=>{
+    const c0 = log[name]; if(!c0 || c0.status!=='call' || !c0.t || !csLogOk(c0.t)) return;
+    if(RETRY_INTERNAL.some(s=>name.includes(s)) || c0.who==='ระบบ' || /^ทดสอบ/.test(name.trim())) return;
+    if(isControl(name) || isWaitQueue(name)) return;
+    const t = new Date(c0.t); if(isNaN(t)) return;
+    const td = csTsDn(t); if(T-td>14) return;
+    const wd = csWorkdaysAfter(td,T); if(wd<2) return;
+    const k = Math.max(((tries||{})[name]||[]).filter(x=>T-csTsDn(x)<=14).length, 1); if(k>=3) return;
+    const r = cands.get(name); if(r && r.boughtThisMonth) return;
+    retries.push({name, who:c0.who, td, wd, k});
+  });
+  return {T, cands, hold, retries, week, curY, curM};
+}
+// เจ้าของใบ ตามที่ตกลง: ราชการ→แจง · บิลใหญ่→กระแต/วัน สลับ · เงียบ→วัน · ถึงรอบ/ดึงกลับ→กระจายเท่ากัน (แฮชชื่อ) · นัดโทรซ้ำ→คนที่โทร
+function csOwner(name, tier, whoLogged){
+  if(tier===1) return CS_TEAM.includes(whoLogged) ? whoLogged : CS_TEAM[csHash(name)%3];
+  if(tier===2) return 'แจง';
+  if(tier===3) return csHash(name)%2===0 ? 'กระแต' : 'วัน';
+  if(tier===4) return 'วัน';
+  return CS_TEAM[csHash(name)%3];
+}
+// ใบของ who วันนี้ (ยังไม่ใส่รายการสินค้า)
+function csCompose(E, who, log, isNewDay){
+  const T = E.T, items = [], used = new Set();
+  const meta = n => (log||{})[n];
+  const blocked = n => { const m=meta(n); return !!(m && (m.status==='ok'||m.status==='no') && m.t && T-csTsDn(m.t)<=14); };   // คุยแล้ว/ไม่สนใจใน 14 วัน
+  const pressedSince = (n,dn) => { const m=meta(n); return !!(m && m.t && csTsDn(m.t)>=dn); };
+  const stale = (n,dn) => { const r=E.cands.get(n); return !!(r && r.lastAll>=dn); };       // ซื้อแล้วหลังวันที่ขึ้นใบ
+  const readSheets = w => { const out=[]; for(let back=1; back<=14; back++){ const st=csLS.get('ofm_cs_sheet|'+csYmd(T-back)+'|'+w,null); if(st) out.push({dn:T-back, st}); } return out; };
+  // รายค้าง = เคยขึ้นใบของ who (ในเครื่องนี้ ≤14 วัน) แต่ยังไม่มีการกดเลย
+  const carry = [];
+  readSheets(who).forEach(({dn,st})=>st.items.forEach(it=>{
+    if(carry.some(x=>x.name===it.n) || pressedSince(it.n,dn) || stale(it.n,dn) || blocked(it.n)) return;
+    carry.push({name:it.n, from:dn});
+  }));
+  const carryNames = new Set(carry.map(x=>x.name));
+  const otherCarry = new Set();
+  CS_TEAM.filter(w=>w!==who).forEach(w=>readSheets(w).forEach(({dn,st})=>st.items.forEach(it=>{ if(!pressedSince(it.n,dn) && !stale(it.n,dn)) otherCarry.add(it.n); })));
+  carry.forEach(x=>{ if(items.length<Math.min(CS_QUOTA,CS_MAX_CARRY)){ items.push({name:x.name, tier:1, carry:true, from:x.from}); used.add(x.name); } });
+  E.retries.filter(r=>csOwner(r.name,1,r.who)===who && !blocked(r.name) && !used.has(r.name) && !otherCarry.has(r.name))
+    .sort((a,b)=>b.wd-a.wd).forEach(r=>{ if(items.length<Math.min(CS_QUOTA,CS_MAX_CARRY)){ items.push({name:r.name, tier:1, retry:r}); used.add(r.name); } });
+  if(isNewDay){
+    const mine = [];
+    E.cands.forEach(r=>{
+      if(!r.tier || used.has(r.name) || carryNames.has(r.name) || otherCarry.has(r.name) || blocked(r.name)) return;
+      const m = meta(r.name); if(m && m.status==='call' && m.t && csLogOk(m.t) && T-csTsDn(m.t)<=14) return;   // ไม่รับสายเมื่อเร็ว ๆ นี้ = เรื่องของนัดโทรซ้ำ ไม่ขึ้นซ้ำเป็นรายใหม่
+      if(r.tier<=4 && csWorkdaysAfter(r.lastAll,T)<=5) return;                                  // เพิ่งซื้อไม่เกิน 5 วันทำการ
+      if(csOwner(r.name, r.tier)!==who) return;
+      mine.push(r);
+    });
+    mine.sort((a,b)=>a.tier-b.tier || (b.info.score-a.info.score) || a.name.localeCompare(b.name,'th'));
+    mine.forEach(r=>{ if(items.length<CS_QUOTA){ items.push({name:r.name, tier:r.tier}); used.add(r.name); } });
+  }
+  return items;
+}
+// ── บรรทัดสินค้าของบิลล่าสุด (เฉพาะรายในใบ · ชื่อสินค้า V + จำนวน AD · ไม่ดึงราคาทุน) ──
+async function csFetchLines(names, curY){
+  const out = new Map(); const q = s => s.includes("'") ? (s.includes('"')?null:'"'+s+'"') : "'"+s+"'";
+  const ok = names.map(q).filter(Boolean); const chunks = []; for(let i=0;i<ok.length;i+=6) chunks.push(ok.slice(i,i+6));
+  await Promise.all(chunks.map(async ch=>{
+    const t = await gvizD({ pre:['G','Y','V'], mid:['Q'], post:'sum(AN), sum(AD)',
+      where:`AN > 0 and O >= ${curY-1} and (${ch.map(x=>'G = '+x).join(' or ')})` });
+    (t.rows||[]).forEach(r=>{
+      const g=r.c[0]?.v, y=r.c[1]?.v, v=r.c[2]?.v, yy=r.c[3]?.v, m=r.c[4]?.v, k=r.c[5]?.v, qty=r.c[8]?.v||0, an=r.c[7]?.v||0;
+      if(!g||!yy||!m||!k||!v||m>12||k>31) return;
+      if(!out.has(g)) out.set(g,[]); out.get(g).push({d:csDn(yy,m,k), cat:csLineCat(y,v), v, qty, an});
+    });
+  }));
+  return out;
+}
+const csQty = x => (Math.round(x*100)/100).toLocaleString('en-US');
+function csLinesFor(item, lines){
+  const L = lines||[]; if(!L.length) return {d:null, rows:[]};
+  const r = CS.cands.get(item.name);
+  const pool = (r && r.scopeCat) ? L.filter(x=>x.cat===r.scopeCat) : L;
+  if(!pool.length) return {d:null, rows:[]};
+  const last = Math.max(...pool.map(x=>x.d));
+  const m = new Map(); pool.filter(x=>x.d===last).forEach(x=>{ const o=m.get(x.v)||{v:x.v, qty:0, an:0}; o.qty+=x.qty; o.an+=x.an; m.set(x.v,o); });
+  return {d:last, rows:[...m.values()].sort((a,b)=>b.an-a.an)};
+}
+function csScriptFor(item){
+  const r = CS.cands.get(item.name);
+  if(item.tier!==1) return CS_SCRIPT_ID[item.tier];
+  if(r && r.tier>=2) return CS_SCRIPT_ID[r.tier];
+  return (r && r.occN>=3) ? 'ส-2' : 'ส-4';
+}
+function csFillScript(item, id, lr, asArray){
+  const r = CS.cands.get(item.name), top = lr && lr.rows[0];
+  const who = CS_TEAM.includes(CALL_WHO) ? CALL_WHO : '____';
+  const cat5 = (r&&r.tiers[6]) ? CS_CATNAME[r.tiers[6].cat] : (r&&r.topCat ? CS_CATNAME[r.topCat] : 'ของใช้สำนักงาน');
+  const catLbl = (r&&r.info&&r.info.cat) ? CS_CATNAME[r.info.cat] : 'ของใช้';
+  const out = [];
+  CALL_SCRIPTS[id].l.forEach(raw=>{
+    let t = raw;
+    if(t[0]==='?'){ t = t.slice(1); if(id==='ส-3' && !(r && r.partner)) return; }   // ไม่มีหมวดคู่กันจากข้อมูลจริง → ข้ามประโยค
+    t = t.replace('[ชื่อผู้โทร]', who).replace('[หน่วยงาน]', item.name).replace('[หมวด/สินค้า]', top?top.v:catLbl)
+         .replace('[จำนวน]', top?csQty(top.qty):'เท่าเดิม').replace('[หมวดที่ซื้อคู่กัน]', r&&r.partner?r.partner.lbl:'')
+         .replace('[หมวด]', cat5||'ของใช้สำนักงาน').replace(/\[ชื่อ\]/g,'____').replace(/\[วัน\]/g,'____');
+    out.push(t);
+  });
+  return asArray ? out : out.join(' ');
+}
+function csScriptHTML(item, id, lr){
+  const L = csFillScript(item,id,lr,true), f = CALL_SCRIPTS[id].f;
+  return L.map((t,k)=>`${k+1}. ${escHTML(t)}`).join('<br>') +
+    '<div style="margin-top:4px;color:#475569;">สำรอง: '+Object.keys(f).map(k=>`<br>• <b>${k}</b>: ${escHTML(f[k])}`).join('')+'</div>'+
+    (id==='ส-5'?'<div style="margin-top:4px;color:#b45309;">'+escHTML(CALL_SCRIPT_DISCOUNT)+'</div>':'');
+}
+function csReason(item, lr){
+  const r = CS.cands.get(item.name), i = r && r.info;
+  const lastTxt = (lr && lr.rows.length) ? ' · ครั้งล่าสุด '+lr.rows.slice(0,2).map(x=>x.v+' ×'+csQty(x.qty)).join(' · ')+(lr.rows.length>2?` (+${lr.rows.length-2} รายการ)`:'') : '';
+  let main = '';
+  if(r && r.tier===2) main = `🏛 ราชการ: ปีที่แล้ว ${THAI_MO[CS.curM-1]} สั่งกับเรา ฿${Math.round(i.ly).toLocaleString()} · ปีนี้ยังไม่ซื้อ`+lastTxt;
+  else if(r && r.tier===3) main = `💰 บิลใหญ่: ปกติ ฿${Math.round(i.avg5).toLocaleString()}/เดือน (ซื้อ ${i.bought}/5 เดือน) · ปกติเริ่มสั่งราววันที่ ${i.usual} · เดือนนี้ยังไม่ซื้อ · ซื้อล่าสุด ${csFmt(r.lastAll)}`;
+  else if(r && r.tier===4) main = `🌙 เงียบ ${i.months} เดือน: ซื้อล่าสุด ${csFmt(r.lastAll)} (${r.dslAll} วันที่แล้ว) · เคยซื้อ ${r.occN} ครั้ง`;
+  else if(r && r.tier===5) main = `🔁 ถึงรอบ${CS_CATNAME[i.cat]}${i.newly?' (เพิ่งถึงรอบสัปดาห์นี้ ⭐)':''}: ปกติทุก ${i.gap} วัน · ผ่านมา ${i.dsl} วัน`+lastTxt;
+  else if(r && r.tier===6) main = `↩ เลยรอบ${CS_CATNAME[i.cat]}นาน: ปกติทุก ${i.gap} วัน · ผ่านมา ${i.dsl} วัน (${Math.round(i.ratio*100)}%)`+lastTxt;
+  else if(r) main = `ซื้อล่าสุด ${csFmt(r.lastAll)} (${r.dslAll} วันที่แล้ว)`;
+  if(item.tier===1){
+    const bits = [];
+    if(item.retry){ const x=item.retry; bits.push(`⏳ โทรซ้ำ: ไม่รับสาย ${csFmt(x.td)}${x.who?` (${escHTML(x.who)})`:''} · ผ่าน ${x.wd} วันทำการ · โทรแล้ว ${x.k}/3 ครั้งใน 14 วัน`); }
+    if(item.carry) bits.push(`⏳ ค้างจากใบ ${csFmt(item.from)}: ยังไม่ได้กดผลเลย`);
+    return bits.join('<br>') + (main?'<br><span style="color:#64748b;">'+escHTML(main)+'</span>':'');
+  }
+  return escHTML(main);
+}
+function csRecoHTML(item, lr){
+  const r = CS.cands.get(item.name), t = item.tier===1 ? (r?r.tier:0) : item.tier;
+  const base = lr && lr.rows.length ? 'ของเดิม: '+lr.rows.slice(0,3).map(x=>escHTML(x.v)+' ×'+csQty(x.qty)).join(', ')+(lr.rows.length>3?' …':'') : '';
+  if(t===2) return '❌ ไม่เสนอสินค้า/ราคาในสาย';
+  if(t===4||t===6) return '⚠️ ไม่ขายสายแรก — ฟังก่อน';
+  if(t===3||t===5) return '✅ '+(base||'ของเดิมที่เคยสั่ง')+(r&&r.partner?`<br>➕ แนะนำเพิ่ม: <b>${escHTML(r.partner.lbl)}</b> (ร้านขายคู่กันบ่อย · รายนี้ยังไม่เคยซื้อ)`:'');
+  return '—';
+}
+const CS_OUTCOMES = ['ได้ออเดอร์','นัดวันสั่ง','ซื้อที่อื่น','ราคาแพง','ยังไม่ต้องใช้'];
+function csOutcomeSel(name){
+  const cur = (csLS.get('ofm_cs_outcome',{})[name]||{}).v||'';
+  return `<select onchange="csSetOutcome(this)" data-name="${escHTML(name)}"><option value="">— ผลที่ได้ —</option>${CS_OUTCOMES.map(o=>`<option ${o===cur?'selected':''}>${o}</option>`).join('')}</select>`;
+}
+function csSetOutcome(sel){ const o=csLS.get('ofm_cs_outcome',{}); if(sel.value) o[sel.dataset.name]={v:sel.value,t:Date.now()}; else delete o[sel.dataset.name]; csLS.set('ofm_cs_outcome',o); }
+function csOutcomeFor(name){ const x=csLS.get('ofm_cs_outcome',{})[name]; return x && Date.now()-x.t<12*3600e3 ? x.v : ''; }   // ส่งไปกับปุ่มสถานะที่กดถัดไป (เลือกผลก่อนกดปุ่ม)
+function csAfterPress(name, v){
+  if(v==='call'){ const tr=csLS.get('ofm_cs_tries',{}); tr[name]=(tr[name]||[]).concat(Date.now()).filter(x=>Date.now()-x<30*864e5); csLS.set('ofm_cs_tries',tr); }
+  document.querySelectorAll('#ts-body tr').forEach(tr=>{ if(tr.dataset.name===name) tr.classList.add('ts-done'); });
+}
+function csCopy(i, btn){
+  const it = CS_ITEMS[i]; if(!it) return;
+  let txt = csFillScript(it, it.script, it.lr);
+  if(it.lr && it.lr.rows.length) txt += `\n\nรายการครั้งล่าสุด (${csFmtY(it.lr.d)}):\n`+it.lr.rows.slice(0,15).map(x=>`- ${x.v} × ${csQty(x.qty)}`).join('\n');
+  const done = () => { const o=btn.textContent; btn.textContent='คัดลอกแล้ว ✓'; setTimeout(()=>btn.textContent=o,1800); };
+  const fb = () => { const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); }catch(_){} ta.remove(); done(); };
+  window.__lastCopy = txt;
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, fb); else fb();
+}
+function csExportHold(){
+  const rows = Object.values(csLS.get('ofm_cs_hold_log',{}));
+  const csv = '﻿สัปดาห์,ชื่อลูกค้า,หมวด,รอบปกติ(วัน),ผ่านมา(วัน),%รอบ,วันที่บันทึก\n' + rows.map(r=>[r.week,'"'+String(r.name).replace(/"/g,'""')+'"',CS_CATNAME[r.cat]||r.cat,r.gap,r.dsl,r.ratio,r.on].join(',')).join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download = 'holdout_ไม่โทร_'+new Date().toISOString().slice(0,10)+'.csv'; document.body.appendChild(a); a.click(); a.remove();
+}
+function csOnWho(){ renderTodaySheet(); }
+function csPickWho(v){ callSetWho(v); }   // callSetWho เรียก csOnWho ต่อ
+function csWhoButtons(){
+  const el = document.getElementById('ts-who'); if(!el) return;
+  el.innerHTML = CS_TEAM.map(o=>`<button class="who-btn ${CALL_WHO===o?'on':''}" onclick="csPickWho('${o}')">${o}</button>`).join('');
+}
+async function loadTodaySheet(){
+  const msg = document.getElementById('ts-msg'); if(!msg) return;
+  if(CS_STATE.loading) return; CS_STATE.loading = true; CS_STATE.err = null;
+  msg.textContent = '⏳ กำลังโหลดใบโทร… (ประมาณ 10–15 วินาที)'; document.getElementById('ts-table').style.display='none';
+  csWhoButtons();
+  try{
+    const now = new Date();
+    const where0 = `(AN > 0 or AN < 0) and G is not null and G != '' and G != 'ไม่มีชื่อ' and O >= 2025 and ` + RETRY_INTERNAL.map(s=>`not G contains '${s}'`).join(' and ');
+    const isPaper = `(V contains 'กระดาษถ่ายเอกสาร' or (V contains 'A4' and V contains 'กระดาษ'))`;
+    const [tm, tp, log] = await Promise.all([
+      gvizD({pre:['G','Y'], mid:['Q'], post:'sum(AN)', where:where0+` and not ${isPaper}`}),
+      gvizD({pre:['G'], mid:['Q'], post:'sum(AN)', where:where0+` and ${isPaper}`}),
+      fetchCallLog()
+    ]);
+    if(log) Object.entries(log).forEach(([k,v])=>{ CALL_META[k]=v; });
+    const main = (tm.rows||[]).map(r=>[r.c[0]?.v, r.c[1]?.v||'', r.c[2]?.v, r.c[3]?.v, r.c[4]?.v, r.c[5]?.v, r.c[6]?.v||0]).filter(r=>r[0]&&r[2]&&r[3]&&r[4]);
+    const paper = (tp.rows||[]).map(r=>[r.c[0]?.v, r.c[1]?.v, r.c[2]?.v, r.c[3]?.v, r.c[4]?.v, r.c[5]?.v||0]).filter(r=>r[0]&&r[1]&&r[2]&&r[3]);
+    const E = csEngine(main, paper, log||{}, now, csLS.get('ofm_cs_tries',{}));
+    CS = E; CS.log = log; CS.now = now; CS_STATE.usedLog = !!log; CS_STATE.lines = null; CS_STATE.detailFor = null;
+    window.CS_HOLD = E.hold; window.CS_HOLD_SET = new Set(E.hold.map(h=>h.name)); csHideHeld(); try{ renderRFMTable(); renderCustTable(); }catch(_){}   // รายชื่อที่เก็บไว้ไม่โทร — ไม่แสดงในหน้า (ส่งออกได้เฉพาะ ?admin=1)
+    const hl = csLS.get('ofm_cs_hold_log',{}); E.hold.forEach(h=>{ const k=h.week+'|'+h.name+'|'+h.cat; if(!hl[k]) hl[k]={...h, on:new Date().toISOString().slice(0,10)}; }); csLS.set('ofm_cs_hold_log',hl);
+    msg.textContent = '';
+  }catch(e){
+    CS_STATE.err = e.message||String(e);
+    msg.innerHTML = `<span style="color:#dc2626;">❌ โหลดใบโทรไม่ได้: ${escHTML(CS_STATE.err)}</span> <button class="ts-btn" onclick="loadTodaySheet()">ลองใหม่</button>`;
+  }finally{ CS_STATE.loading = false; }
+  if(!CS_STATE.err) renderTodaySheet();
+}
+async function renderTodaySheet(){
+  csWhoButtons();
+  const adm = document.getElementById('ts-admin'); if(adm) adm.style.display = CS_ADMIN ? '' : 'none';
+  const tbl = document.getElementById('ts-table'), msg = document.getElementById('ts-msg');
+  const head = document.getElementById('ts-head'), sub = document.getElementById('ts-sub');
+  if(!CS || !tbl) return;
+  const who = CS_TEAM.includes(CALL_WHO) ? CALL_WHO : '';
+  if(!who){ tbl.style.display='none'; head.textContent='📞 ใบโทรวันนี้'; sub.textContent=''; msg.innerHTML='👆 กดเลือกชื่อของคุณ (แจง / วัน / กระแต) เพื่อดูใบวันนี้'; return; }
+  const now = CS.now, dow = now.getDay(), T = CS.T;
+  const isNewDay = (dow>=2 && dow<=5 && csIsWorkday(T)) || csYmd(T)===CS_FIRST_DAY;   // อ.–ศ. = ใบใหม่ · ส. 14 พ.ย. 69 = วันเปิดใช้วันแรก ออกใบเต็ม (เจ้าของสั่ง)
+  const key = 'ofm_cs_sheet|'+csYmd(T)+'|'+who;
+  const frozen = csLS.get(key,null);
+  let items;
+  if(frozen) items = frozen.items.map(it=>({name:it.n, tier:it.t, carry:it.c, from:it.f, retry:it.r}));
+  else{
+    items = csCompose(CS, who, CS.log||{}, isNewDay);
+    if(CS_STATE.usedLog) csLS.set(key, {items: items.map(it=>({n:it.name,t:it.tier,c:it.carry,f:it.from,r:it.retry}))});   // ตรึงใบวันนี้ (เฉพาะตอนมีบันทึกการโทรครบ)
+  }
+  items = items.filter(it=>CS.cands.has(it.name) || it.tier===1);
+  const nCarry = items.filter(i=>i.tier===1).length;
+  const dateTxt = `${['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'][dow]} ${now.getDate()} ${THAI_MO[now.getMonth()]} ${now.getFullYear()+543}`;
+  head.textContent = `📞 ใบโทรวันนี้ ของ ${who} — วันนี้ ${items.length} ราย · ค้าง ${nCarry} ราย`;
+  sub.textContent = `OfficeMate Plus+ สาขาสระบุรี · ${dateTxt}` + (isNewDay?'':' · วันนี้ไม่มีใบใหม่ แสดงเฉพาะรายค้าง');
+  msg.innerHTML = (CS_STATE.usedLog?'':'<span style="color:#b45309;">⚠️ โหลดบันทึกการโทรไม่ได้ — ใบนี้อาจรวมรายที่คุยแล้ว และยังไม่ตรึงใบ</span> ') + (items.length?'':'— วันนี้ไม่มีรายที่ต้องโทร —');
+  const sig = who+'|'+items.map(i=>i.name).join('\u0001');
+  if(CS_STATE.detailFor !== sig){
+    renderRows(items, null);
+    try{ CS_STATE.lines = await csFetchLines(items.map(i=>i.name), CS.curY); CS_STATE.detailFor = sig; }
+    catch(e){ CS_STATE.lines = new Map(); msg.innerHTML += ' <span style="color:#b45309;">โหลดรายการสินค้าไม่ได้: '+escHTML(e.message)+'</span>'; }
+  }
+  renderRows(items, CS_STATE.lines);
+}
+function renderRows(items, linesMap){
+  const tbl = document.getElementById('ts-table'), body = document.getElementById('ts-body');
+  tbl.style.display = items.length ? '' : 'none';
+  CS_ITEMS = items.map(it=>({...it, lr: linesMap ? csLinesFor(it, linesMap.get(it.name)) : null, script: csScriptFor(it)}));
+  body.innerHTML = CS_ITEMS.map((it,i)=>{
+    const sc = CALL_SCRIPTS[it.script], full = csScriptHTML(it, it.script, it.lr);
+    const canCopy = it.script==='ส-2' || it.script==='ส-3';
+    return `<tr data-name="${escHTML(it.name)}">
+      <td style="font-weight:700;">${i+1}</td>
+      <td><div class="cs-name">${escHTML(it.name)}</div>
+          <div class="cs-sub"><span class="ts-chip ts-t${it.tier}">${CS_TIER[it.tier][0]} ${CS_TIER[it.tier][1]}</span>${csReason(it, it.lr)}${linesMap?'':' <span style="color:#94a3b8;">(กำลังโหลดรายการสินค้า…)</span>'}</div></td>
+      <td><b>${it.script}</b> <span style="font-size:11px;color:#475569;">${escHTML(sc.goal)}</span>
+          <details class="no-print"><summary>ดูข้อความเต็ม</summary><div class="ts-full">${full}</div></details>
+          <div class="print-only ts-full">${full}</div></td>
+      <td style="font-size:11px;">${csRecoHTML(it, it.lr)}</td>
+      <td class="no-print">${csOutcomeSel(it.name)}
+          <div class="call-slot" data-name="${escHTML(it.name)}"></div>
+          ${canCopy?`<button class="ts-btn" onclick="csCopy(${i},this)">📋 คัดลอกรายการ</button>`:''}</td>
+      <td class="print-only"><span class="ts-box"></span>ได้คุย<br><span class="ts-box"></span>ไม่รับสาย<br><span class="ts-box"></span>ไม่สนใจ<br><span style="display:block;border-bottom:1px dotted #94a3b8;height:14px;"></span></td>
+    </tr>`; }).join('');
+  renderCallBtns();
+}
+
 // ── INIT ─────────────────────────────────────────────────────────────────────
 renderB2B();
 renderNewCust();
@@ -1994,10 +2491,13 @@ renderRFMTable();
 renderCustTable();
 // R2-A: KPI ก่อน — query อื่นเริ่มหลัง loadData เสร็จ (ไม่แย่งแบนด์วิดท์กับ KPI)
 loadData().finally(()=>{
+  // ใบโทรวันนี้ (ส่วนบนสุด) ไปก่อน แล้วค่อยโหลดส่วนอื่น — กัน gviz แย่งกันจนช้า
+  loadTodaySheet().catch(()=>{}).finally(()=>{
   loadRFM();    // ← Live RFM from Google Sheets
   loadCallSheet().then(loadRetry);  // ← ใบโทรพร้อมพิมพ์ (ลูกค้าประจำที่เดือนนี้ยังไม่ซื้อ)
   loadBulkPaper();  // ← ลูกค้ากระดาษยกลัง ตามรอบ 90 วัน
   loadPaperSheet(); // ← ลูกค้ากระดาษรายใหญ่ที่เดือนนี้ยังไม่ซื้อ (พิมพ์ได้)
+  });
 });
 </script>
 </body>
