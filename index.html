@@ -1588,7 +1588,7 @@ async function loadCallSheet(){
     const rev = {}, firstDay = {}, net = {};
     (tbl.rows||[]).forEach(r=>{
       const g=r.c[0]?.v, y=r.c[1]?.v, m=r.c[2]?.v, k=r.c[3]?.v, v=r.c[4]?.v||0;
-      if(!g||!y||!m||!k||isControl(g)) return;   // isControl = กลุ่มทดลองถึง 15 พ.ย. 69
+      if(!g||!y||!m||!k||(isControl(g)||isWaitQueue(g))) return;   // isControl = กลุ่มทดลองถึง 15 พ.ย. 69
       const key=`${y}-${m}`;
       (net[g] = net[g] || {})[key] = (net[g][key]||0) + v;   // R2-D: ยอดสุทธิรวมคืนสินค้า (ให้ 'ซื้อปกติ')
       if(v<=0) return;
@@ -1684,7 +1684,7 @@ async function loadBulkPaper(){
     const cust = {};
     (tbl.rows||[]).forEach(r=>{
       const g=r.c[0]?.v, y=r.c[1]?.v, m=r.c[2]?.v, k=r.c[3]?.v, q=num(r.c[4]?.v), a=num(r.c[5]?.v);
-      if(!g||!y||!m||!k||isControl(g)) return;   // กลุ่มทดลองถึง 15 พ.ย. 69
+      if(!g||!y||!m||!k||(isControl(g)||isWaitQueue(g))) return;   // กลุ่มทดลองถึง 15 พ.ย. 69
       const c = (cust[g] = cust[g] || {lots:[], curQty:0});
       if(y===curY && m===curM) c.curQty += q;
       if(a >= 15000) c.lots.push({d:new Date(y,m-1,k), q, a});
@@ -1769,7 +1769,7 @@ async function loadPaperSheet(){
     const cust = {};
     (tbl.rows||[]).forEach(r=>{
       const g=r.c[0]?.v, y=r.c[1]?.v, m=r.c[2]?.v, k=r.c[3]?.v, v=r.c[4]?.v||0;
-      if(!g||!y||!m||!k||isControl(g)) return;   // กลุ่มทดลองถึง 15 พ.ย. 69
+      if(!g||!y||!m||!k||(isControl(g)||isWaitQueue(g))) return;   // กลุ่มทดลองถึง 15 พ.ย. 69
       const c = (cust[g] = cust[g] || {mo:{}, cur:0, last:null});
       if(y===curY && m===curM){ c.cur += v; return; }
       c.mo[`${y}-${m}`] = (c.mo[`${y}-${m}`]||0) + v;
@@ -1835,6 +1835,13 @@ function cyrb53(str){
 function isControl(name){
   if(retryYmd(new Date()) > '2026-11-15') return false;
   return !!name && RETRY_CONTROL_HASH.has(cyrb53(name));
+}
+// กลุ่มรอคิว (27 ราย) ซ่อนถึง 15 พ.ย. 69 (เจ้าของอนุมัติ 13 พ.ย.) · แสดงปกติตั้งแต่ 16 พ.ย. 69 · เก็บเป็นแฮช ไม่ใช่ชื่อ
+const WAIT_QUEUE_HASH = new Set([8146145602635480, 6079273469470487, 5202231016786074, 2389892287951641, 3281350181135774, 1574286670899331, 4105285544601348, 3502311502415288, 4532233404064418, 7645730395172266, 7137984756985408, 538379933748020, 1180270283460636, 6443313090948103, 2668390669494432, 2412762552791667, 2874864624825699, 6553374071038302, 3527739563100740, 6101778819352468, 484436946467018, 2573054026166921, 3828861239307791, 1028499494884086, 4291075581083795, 575299557925950, 2154530450524368]);
+function isWaitQueue(name){
+  const today = new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Bangkok'});
+  if(today >= '2026-11-16') return false;
+  return !!name && WAIT_QUEUE_HASH.has(cyrb53(String(name).trim()));
 }
 function retryYmd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function retryIsWorkday(d){ return d.getDay()!==0 && !RETRY_HOLIDAYS.includes(retryYmd(d)); }
@@ -1926,7 +1933,7 @@ async function loadRetry(){
       if(!c || c.status!=='call' || !c.t) return;
       if(RETRY_INTERNAL.some(s=>name.includes(s))) return;
       if(c.who==='ระบบ' || /^ทดสอบ/.test(name.trim())) return;   // R2-C: แถวทดสอบ
-      if(isControl(name)) return;       // กลุ่มทดลองไม่โทร
+      if(isControl(name)||isWaitQueue(name)) return;       // กลุ่มทดลองไม่โทร
       const t = new Date(c.t); if(isNaN(t)) return;
       const wd = retryWorkdaysAfter(t, now); if(wd < 2) return;
       const r = rev[name] || {};
