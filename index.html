@@ -86,7 +86,7 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
 #todaysheet td{padding:8px;border-bottom:1px solid #e5e9f0;vertical-align:top;font-size:12px;}
 #todaysheet .ts-chip{display:inline-block;font-size:10px;font-weight:700;border-radius:10px;padding:1px 8px;margin-right:4px;background:#e2e8f0;color:#334155;}
 #todaysheet .ts-t1{background:#fee2e2;color:#b91c1c;} #todaysheet .ts-t2{background:#e0e7ff;color:#3730a3;} #todaysheet .ts-t3{background:#fef3c7;color:#92400e;}
-#todaysheet .ts-t4{background:#e2e8f0;color:#475569;} #todaysheet .ts-t5{background:#dcfce7;color:#166534;} #todaysheet .ts-t6{background:#fce7f3;color:#9d174d;}
+#todaysheet .ts-t4{background:#e2e8f0;color:#475569;} #todaysheet .ts-t5{background:#dcfce7;color:#166534;} #todaysheet .ts-t6{background:#fce7f3;color:#9d174d;} #todaysheet .ts-t7{background:#ede9fe;color:#5b21b6;}
 #todaysheet details summary{cursor:pointer;color:#0f766e;font-size:11px;}
 #todaysheet .ts-full{font-size:12px;color:#0f172a;background:#f8fafc;border-radius:6px;padding:6px 8px;margin-top:4px;line-height:1.55;}
 #todaysheet .ts-btn{border:1.5px solid #99f6e4;background:#fff;color:#0f766e;border-radius:7px;font-size:11px;padding:3px 9px;cursor:pointer;font-family:inherit;margin-top:4px;}
@@ -2054,8 +2054,14 @@ const CS_LOG_VALID_FROM = new Date('2026-11-14T00:00:00+07:00').getTime();   // 
 const csLogOk = t => { const x=new Date(t).getTime(); return !isNaN(x) && x>=CS_LOG_VALID_FROM; };
 const CS_MAX_CARRY = 4;   // รายค้างสูงสุดต่อใบ (ที่เหลือให้รายใหม่ ②–⑥) — เจ้าของเปลี่ยนได้ที่ค่าเดียวนี้
 const CS_QUOTA = 8, CS_TEAM = ['แจง','วัน','กระแต'];
-const CS_TIER = {1:['⏳','นัดโทรซ้ำ/ค้าง'],2:['🏛','ราชการ'],3:['💰','บิลใหญ่ยังไม่ซื้อ'],4:['🌙','ลูกค้าเงียบ'],5:['🔁','ถึงรอบซื้อ'],6:['↩','เลยรอบนาน (ดึงกลับ)']};
-const CS_SCRIPT_ID = {2:'ส-1',3:'ส-2',4:'ส-4',5:'ส-3',6:'ส-5'};
+const CS_TIER = {7:['📌','ปักหมุด'],1:['⏳','นัดโทรซ้ำ/ค้าง'],2:['🏛','ราชการ'],3:['💰','บิลใหญ่ยังไม่ซื้อ'],4:['🌙','ลูกค้าเงียบ'],5:['🔁','ถึงรอบซื้อ'],6:['↩','เลยรอบนาน (ดึงกลับ)']};
+const CS_SCRIPT_ID = {2:'ส-1',3:'ส-2',4:'ส-4',5:'ส-3',6:'ส-5',7:'ส-4'};
+// ── ปักหมุด 9 ราย (เจ้าของสั่ง 20 พ.ย. 69) — ขึ้นต้นส่วนรายใหม่ ส. 21 – ส. 28 พ.ย. 69 (ใบรายใหม่จริง อ. 24 – ศ. 27) แล้วหมดอายุเอง (กลับกติกาเดิม) ──
+// ลำดับ = ลำดับในชุดคนรับ (แจง · กระแต · วัน วนเท่ากัน) ใช้เมื่อรายนั้นไม่อยู่ในกฎแบ่งคนเดิม · ไม่แสดงยอดเงิน/ราคา
+const CS_PIN_FROM = '2026-11-21', CS_PIN_TO = '2026-11-28';
+const CS_PIN_NAMES = ['บริษัท เอส วี ที ซัพพลายแอนด์เซอร์วิส จำกัด','วัดกลาง','ธาราเวชสหคลินิก','บริษัท ล้อพูนผลไรซ์มิลล์ จำกัด','บริษัท รวมใจเจริญทรัพย์ จำกัด','นาย สราวุธ อินสุข','บริษัท โรงสีกิจประเสริฐ จำกัด','บริษัท แต้น่ำไถ่ เฟอร์นิเจอร์ 2001 จำกัด','บริษัท นพปฏล จำกัด'];
+const CS_PIN_RR = ['แจง','กระแต','วัน'];
+const CS_PIN_REASON = 'ปีก่อนซื้อ พ.ย. แต่ปีนี้ยังไม่มา';
 // ★ ถ้อยคำสคริปต์ ส-1..ส-5 อยู่ที่ตัวแปรเดียวนี้ (ฉบับแก้ของฝ่ายขาย work/2026-11-13/sales_scripts.md · แก้ได้ที่นี่ที่เดียว)
 // ช่อง [ ] ที่ระบบเติมเอง: [ชื่อผู้โทร]=คนที่เลือกบนใบ · [หน่วยงาน] · [หมวด/สินค้า] · [จำนวน] · [หมวดที่ซื้อคู่กัน] · [หมวด]  |  ช่องที่ผู้โทรเติมเอง ([ชื่อ] [วัน]) แสดงเป็น ____
 // l = ประโยคที่พูด (ประโยคที่ขึ้นต้น "?" = พูดเฉพาะเมื่อมีข้อมูล เช่น ส-3 ข้อ 3 ต้องมีหมวดคู่กัน, ส-5 ข้อ 3 พูดเมื่อลูกค้าพูดเรื่องราคา) · f = ประโยคสำรอง
@@ -2273,10 +2279,23 @@ function csCompose(E, who, log, isNewDay){
   const otherCarry = new Set();
   CS_TEAM.filter(w=>w!==who).forEach(w=>readSheets(w).forEach(({dn,st})=>st.items.forEach(it=>{ if(!pressedSince(it.n,dn) && !stale(it.n,dn)) otherCarry.add(it.n); })));
   carry.forEach(x=>{ if(items.length<Math.min(CS_QUOTA,CS_MAX_CARRY)){ items.push({name:x.name, tier:1, carry:true, from:x.from}); used.add(x.name); } });
-  E.retries.filter(r=>csOwner(r.name,1,r.who)===who && !blocked(r.name) && !used.has(r.name) && !otherCarry.has(r.name))
+  E.retries.filter(r=>csOwner(r.name,1,r.who)===who && !isHeld(r.name) && !blocked(r.name) && !used.has(r.name) && !otherCarry.has(r.name))
     .sort((a,b)=>b.wd-a.wd).forEach(r=>{ if(items.length<Math.min(CS_QUOTA,CS_MAX_CARRY)){ items.push({name:r.name, tier:1, retry:r}); used.add(r.name); } });
   if(isNewDay){
     const mine = [];
+    // ปักหมุด: อยู่ก่อนรายใหม่ตามเกณฑ์ปกติ · ใช้กฎกรองเดิม (คุยแล้ว/ไม่รับสายเมื่อเร็ว ๆ นี้/ค้าง/กลุ่มควบคุม·รอคิว·เก็บไว้)
+    const pinDn = s => { const [y,m,k]=s.split('-').map(Number); return csDn(y,m,k); };
+    if(T>=pinDn(CS_PIN_FROM) && T<=pinDn(CS_PIN_TO)){
+      CS_PIN_NAMES.forEach((n,idx)=>{
+        if(items.length>=CS_QUOTA || used.has(n) || carryNames.has(n) || otherCarry.has(n) || blocked(n)) return;
+        if(isControl(n)||isWaitQueue(n)||isHeld(n)) return;
+        const m = meta(n); if(m && m.status==='call' && m.t && csLogOk(m.t) && T-csTsDn(m.t)<=14) return;   // ไม่รับสายเมื่อเร็ว ๆ นี้ = เรื่องของนัดโทรซ้ำ
+        const r = E.cands.get(n); if(r && r.boughtThisMonth) return;                                         // ซื้อเดือนนี้แล้ว = ไม่ต้องไล่
+        const owner = (r && r.tier) ? csOwner(n, r.tier) : CS_PIN_RR[idx%3];
+        if(owner!==who) return;
+        items.push({name:n, tier:7}); used.add(n);
+      });
+    }
     E.cands.forEach(r=>{
       if(!r.tier || used.has(r.name) || carryNames.has(r.name) || otherCarry.has(r.name) || blocked(r.name)) return;
       const m = meta(r.name); if(m && m.status==='call' && m.t && csLogOk(m.t) && T-csTsDn(m.t)<=14) return;   // ไม่รับสายเมื่อเร็ว ๆ นี้ = เรื่องของนัดโทรซ้ำ ไม่ขึ้นซ้ำเป็นรายใหม่
@@ -2343,6 +2362,7 @@ function csScriptHTML(item, id, lr){
     (id==='ส-5'?'<div style="margin-top:4px;color:#b45309;">'+escHTML(CALL_SCRIPT_DISCOUNT)+'</div>':'');
 }
 function csReason(item, lr){
+  if(item.tier===7) return escHTML(CS_PIN_REASON);
   const r = CS.cands.get(item.name), i = r && r.info;
   const lastTxt = (lr && lr.rows.length) ? ' · ครั้งล่าสุด '+lr.rows.slice(0,2).map(x=>x.v+' ×'+csQty(x.qty)).join(' · ')+(lr.rows.length>2?` (+${lr.rows.length-2} รายการ)`:'') : '';
   let main = '';
@@ -2363,6 +2383,7 @@ function csReason(item, lr){
 function csRecoHTML(item, lr){
   const r = CS.cands.get(item.name), t = item.tier===1 ? (r?r.tier:0) : item.tier;
   const base = lr && lr.rows.length ? 'ของเดิม: '+lr.rows.slice(0,3).map(x=>escHTML(x.v)+' ×'+csQty(x.qty)).join(', ')+(lr.rows.length>3?' …':'') : '';
+  if(t===7) return '⚠️ ไม่ขายสายแรก — ฟังก่อน';
   if(t===2) return '❌ ไม่เสนอสินค้า/ราคาในสาย';
   if(t===4||t===6) return '⚠️ ไม่ขายสายแรก — ฟังก่อน';
   if(t===3||t===5) return '✅ '+(base||'ของเดิมที่เคยสั่ง')+(r&&r.partner?`<br>➕ แนะนำเพิ่ม: <b>${escHTML(r.partner.lbl)}</b> (ร้านขายคู่กันบ่อย · รายนี้ยังไม่เคยซื้อ)`:'');
@@ -2446,7 +2467,7 @@ async function renderTodaySheet(){
     items = csCompose(CS, who, CS.log||{}, isNewDay);
     if(CS_STATE.usedLog) csLS.set(key, {items: items.map(it=>({n:it.name,t:it.tier,c:it.carry,f:it.from,r:it.retry}))});   // ตรึงใบวันนี้ (เฉพาะตอนมีบันทึกการโทรครบ)
   }
-  items = items.filter(it=>CS.cands.has(it.name) || it.tier===1);
+  items = items.filter(it=>CS.cands.has(it.name) || it.tier===1 || it.tier===7);
   const nCarry = items.filter(i=>i.tier===1).length;
   const dateTxt = `${['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'][dow]} ${now.getDate()} ${THAI_MO[now.getMonth()]} ${now.getFullYear()+543}`;
   head.textContent = `📞 ใบโทรวันนี้ ของ ${who} — วันนี้ ${items.length} ราย · ค้าง ${nCarry} ราย`;
