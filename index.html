@@ -107,6 +107,16 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
   #papersheet th{background:#0f766e !important;}
   .print-target tr{page-break-inside:avoid;}
   @page{size:A4 portrait;margin:12mm;}
+  /* ใบโทรวันนี้: แนวนอน A4 (@page ถูกเติมโดย JS ตอนพิมพ์ใบโทรเท่านั้น) */
+  body.print-ts #todaysheet{font-size:10.5pt;}
+  body.print-ts #todaysheet table{table-layout:fixed;width:100%;}
+  body.print-ts #todaysheet th{font-size:10pt;padding:4px 6px;}
+  body.print-ts #todaysheet td{font-size:10.5pt;padding:5px 6px;word-break:break-word;overflow-wrap:anywhere;white-space:normal;}
+  body.print-ts #todaysheet thead{display:table-header-group;}
+  body.print-ts #todaysheet tr{break-inside:avoid;page-break-inside:avoid;}
+  body.print-ts #todaysheet .cs-name{font-size:11.5pt;}
+  body.print-ts #todaysheet .cs-sub,body.print-ts #todaysheet .ts-full{font-size:10pt;}
+  body.print-ts #todaysheet *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 }
 </style>
 </head>
@@ -155,7 +165,7 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
     <div class="no-print" style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
       <span style="font-size:13px;font-weight:700;">👤 ใบของ:</span><span id="ts-who"></span>
       <button class="ts-btn" style="margin:0;" onclick="loadTodaySheet(true)">🔄 โหลดใหม่</button>
-      <button class="ts-btn" style="margin:0;" id="ts-printbtn" onclick="printSection('todaysheet')">🖨️ พิมพ์ใบ</button>
+      <button class="ts-btn" style="margin:0;" id="ts-printbtn" onclick="printSection('todaysheet')">🖨 พิมพ์ใบโทร</button>
       <button class="ts-btn" style="margin:0;display:none;" id="ts-admin" onclick="csExportHold()">⬇ ส่งออกรายชื่อที่เก็บไว้ไม่โทร (เจ้าของ/ทีมข้อมูล)</button>
     </div>
     <div id="ts-head" style="font-size:16px;font-weight:700;color:#0f172a;">📞 ใบโทรวันนี้</div>
@@ -1776,8 +1786,24 @@ async function loadBulkPaper(){
 function printSection(id){
   document.querySelectorAll('.print-target').forEach(e=>e.classList.remove('print-target'));
   document.getElementById(id).classList.add('print-target');
-  window.print();
+  window.print();   // beforeprint/afterprint ด้านล่างจัดแนวนอนให้ใบโทร
 }
+// ── ใบโทรวันนี้ → พิมพ์แนวนอน A4 อัตโนมัติ (ทั้งปุ่มและ ⌘P) ─────────────────
+function tsPrintLandscape(on){
+  const old = document.getElementById('pg-land'); if(old) old.remove();
+  document.body.classList.toggle('print-ts', on);
+  if(on){
+    const st = document.createElement('style'); st.id = 'pg-land';
+    st.textContent = '@page{size:A4 landscape;margin:8mm;}';
+    document.head.appendChild(st);
+  }
+}
+window.addEventListener('beforeprint', ()=>{
+  const ts = document.getElementById('todaysheet');
+  // เฉพาะตอนใบโทรเป็นเป้าพิมพ์และมองเห็นอยู่ (แท็บอื่นที่ซ่อนใบโทรไว้ ไม่โดนแตะ)
+  tsPrintLandscape(!!(ts && ts.classList.contains('print-target') && ts.offsetParent !== null));
+});
+window.addEventListener('afterprint', ()=>tsPrintLandscape(false));
 
 // ── บันทึกการโทรจาก Apps Script (JSONP · ลองซ้ำ 3 ครั้ง เพราะบางครั้งตอบช้า) ─────
 const CALL_LOG_URL = 'https://script.google.com/macros/s/AKfycbw2b55Kf722t-QanQlV8SjpFXJh7kbGv4QLf9LRnmz90xjU5tai6gCpaQV10ivihOH3XA/exec';
