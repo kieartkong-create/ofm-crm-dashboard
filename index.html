@@ -114,7 +114,8 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
   body.print-ts #todaysheet td{font-size:10.5pt;padding:5px 6px;word-break:break-word;overflow-wrap:anywhere;white-space:normal;}
   body.print-ts #todaysheet thead{display:table-header-group;}
   body.print-ts #todaysheet tr{break-inside:avoid;page-break-inside:avoid;}
-  body.print-ts #todaysheet .cs-name{font-size:11.5pt;}
+  body.print-ts #todaysheet .cs-name{font-size:12.5pt !important;}
+  body.print-ts #todaysheet details{display:none !important;}
   body.print-ts #todaysheet .cs-sub,body.print-ts #todaysheet .ts-full{font-size:10pt;}
   body.print-ts #todaysheet *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 }
@@ -170,16 +171,18 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
     </div>
     <div id="ts-head" style="font-size:16px;font-weight:700;color:#0f172a;">📞 ใบโทรวันนี้</div>
     <div id="ts-sub" style="font-size:11px;color:#475569;margin-bottom:8px;">OfficeMate Plus+ สาขาสระบุรี</div>
-    <div id="ts-rules" style="font-size:11px;color:#334155;background:#f0fdfa;border:1px solid #99f6e4;border-radius:6px;padding:6px 10px;margin-bottom:8px;line-height:1.6;">
+    <div id="ts-rules" style="font-size:12px;color:#334155;background:#f0fdfa;border:1px solid #99f6e4;border-radius:6px;padding:6px 10px;margin-bottom:8px;line-height:1.6;">
+      <b>เช็คว่าซื้อแล้วหรือยังก่อนโทร · วางสายแล้วกดผลทันที</b>
+      <details class="no-print" style="display:inline-block;margin-left:8px;"><summary>ดูเพิ่ม</summary><div style="font-size:11px;">
       1. ก่อนโทร เช็คในระบบว่าซื้อไปแล้วหรือยัง (บิลเข้าช้า 2-3 วัน) ถ้าซื้อแล้ว ให้ขอบคุณอย่างเดียว<br>
       2. ขึ้นต้นทุกสาย: "สวัสดีค่ะ [ชื่อผู้โทร] จาก OfficeMate สระบุรีนะคะ ขอสายคุณ [ชื่อ/แผนก] ค่ะ"<br>
-      3. ปิดทุกสาย: "มีอย่างอื่นต้องใช้เพิ่มไหมคะ" แล้วกดผลในระบบ · ไม่ติด โทรซ้ำภายใน 2 วันทำการ ไม่เกิน 3 ครั้ง แล้วส่ง LINE
+      3. ปิดทุกสาย: "มีอย่างอื่นต้องใช้เพิ่มไหมคะ" แล้วกดผลในระบบ · ไม่ติด โทรซ้ำภายใน 2 วันทำการ ไม่เกิน 3 ครั้ง แล้วส่ง LINE</div></details>
     </div>
     <div id="ts-msg" class="no-print" style="font-size:12px;color:#64748b;"></div>
     <table id="ts-table" style="display:none;"><thead><tr>
-      <th style="width:3%;">#</th><th style="width:32%;">ลูกค้า · ทำไมโทร</th><th style="width:25%;">สคริปต์</th>
-      <th style="width:22%;">แนะนำสินค้า</th><th class="no-print" style="width:18%;">ผล</th>
-      <th class="print-only" style="width:18%;">ผล</th></tr></thead><tbody id="ts-body"></tbody></table>
+      <th style="width:4%;">#</th><th style="width:70%;">ลูกค้า · ทำไมโทร · พูดว่า</th>
+      <th class="no-print" style="width:26%;">ผล</th>
+      <th class="print-only" style="width:26%;">ผล</th></tr></thead><tbody id="ts-body"></tbody></table>
   </div>
 
   <!-- Period Selector -->
@@ -275,6 +278,7 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
   </div>
 
 
+  <details class="no-print" style="margin-bottom:18px;"><summary style="cursor:pointer;color:#64748b;font-size:13px;padding:6px 0;">📞 ใบโทรชุดเก่า (ไม่ต้องใช้) — ใบโทรลูกค้าประจำที่ยังไม่ซื้อ + รอโทรซ้ำ</summary>
   <!-- ── ใบโทรพร้อมพิมพ์ ─────────────────────────────────────────── -->
   <h2 class="no-print">📞 ใบโทรวันนี้ — ลูกค้าประจำที่เดือนนี้ยังไม่ซื้อ
     <span style="font-size:11px;font-weight:400;color:#94a3b8;">คัดจากประวัติ 5 เดือนเต็ม · อัปเดตสดจาก Google Sheets</span>
@@ -285,7 +289,7 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
     &nbsp;|&nbsp; แสดงเฉพาะคนที่ถึงรอบซื้อปกติแล้วหรือจะถึงใน 7 วัน &nbsp;|&nbsp; พักโรงเรียนช่วงปิดเทอม (เม.ย./ต.ค.)
     &nbsp;|&nbsp; ยอดเฉลี่ยหาร 5 เดือนเท่ากันทุกราย &nbsp;|&nbsp; เช็คก่อนโทรทุกครั้ง บิลเข้าช้า 2–3 วัน
   </div>
-  <div class="card print-target" id="callsheet" style="padding:14px;margin-bottom:24px;">
+  <div class="card" id="callsheet" style="padding:14px;margin-bottom:24px;">
     <div id="cs-printhead">
       <div style="font-size:16px;font-weight:700;color:#0f172a;">📞 ใบโทร — ลูกค้าประจำที่เดือนนี้ยังไม่ซื้อ</div>
       <div style="font-size:11px;color:#475569;" id="cs-printsub">OfficeMate Plus+ สาขาสระบุรี</div>
@@ -325,6 +329,7 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
     <span id="retry-count" style="margin-left:8px;font-weight:700;">กำลังโหลด…</span>
   </div>
   <div id="retry-wrap" style="margin-bottom:24px;"></div>
+  </details>
 
   <!-- ── ลูกค้ากระดาษยกลัง ตามรอบ 90 วัน ───────────────────────────── -->
   <h2 class="no-print">📦 ลูกค้ากระดาษยกลัง — ตามรอบ 90 วัน
@@ -345,6 +350,7 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
   </div>
 
 
+  <details class="no-print" style="margin-bottom:18px;"><summary style="cursor:pointer;color:#64748b;font-size:13px;padding:6px 0;">📄 ใบโทรชุดเก่า (ไม่ต้องใช้) — ใบโทรกระดาษรายใหญ่</summary>
   <!-- ── ลูกค้ากระดาษรายใหญ่ ที่เดือนนี้ยังไม่ซื้อกระดาษ ─────────────── -->
   <h2 class="no-print">📄 ลูกค้ากระดาษรายใหญ่ — เดือนนี้ยังไม่ซื้อกระดาษ
     <span style="font-size:11px;font-weight:400;color:#94a3b8;">20 อันดับแรกจากยอดกระดาษถ่ายเอกสาร 12 เดือนเต็มล่าสุด · อัปเดตสดจาก Google Sheets</span>
@@ -384,6 +390,7 @@ select,input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-fa
       &nbsp;·&nbsp; ปิดท้าย: “มีอย่างอื่นต้องใช้เพิ่มไหมคะ ส่งพร้อมกันได้เลย”
     </div>
   </div>
+  </details>
 
   <!-- B2B Tracked Monthly Table -->
   <h2>📋 B2B Tracked Customers — ยอดรายเดือน <span style="font-size:11px;font-weight:400;color:#94a3b8;">14 บริษัทหลัก · ยอดสุทธิหักคืนของแล้ว · ก.ย. ครบทั้งเดือน</span></h2>
@@ -868,6 +875,55 @@ function onPeriodChange() {
   renderDailyChart();
 }
 
+// ── KPI เทียบ "วันขายเท่ากัน" + ตัดแถววางซ้ำ (เฉพาะกล่อง KPI ด้านบน) ──────────────
+// แถวซ้ำ = ทุกคอลัมน์ที่ดึง (O,M,K,G,Q,S,V,Y,AD,AE,AM,AN,H,I) เหมือนกันโดยเทียบตัวเลขเป็นค่าจริง · วันที่ซ้ำ ≥20% ของแถว = วางซ้ำทั้งวัน เก็บ ceil(n/2)
+// (กฎเดียวกับ work/2026-11-20/scripts_list15/make_dedup_num.py) · วันขาย = วันที่มียอด ไม่นับวันอาทิตย์
+const KPI_DD = {};
+async function kpiDedupLoad(y, m) {
+  const key = y+'_'+m;
+  if (KPI_DD[key] !== undefined) return;
+  KPI_DD[key] = 'loading';
+  try {
+    const py = m===1 ? y-1 : y, pm = m===1 ? 12 : m-1;
+    const wins = [[y,m],[py,pm],[y-1,m]];
+    const now = new Date(), cY = now.getFullYear(), cM = now.getMonth()+1, cD = now.getDate();
+    const cols = 'O,M,K,G,Q,S,V,Y,AD,AE,AM,AN,H,I';
+    const bad = new Set(BAD_DATE_FIX.bills), fx = BAD_DATE_FIX.date;
+    const where = '(' + wins.map(w=>`(O = ${w[0]} and M = ${w[1]})`).join(' or ') + (bad.size ? ' or ' + [...bad].map(b=>`Q = '${b}'`).join(' or ') : '') + ')';
+    const t = await gvizFetch(`select ${cols}, count(AN) where ${where} group by ${cols}`);
+    const rows = [];
+    for (const r of (t.rows||[])) {
+      const c = r.c.map(x=>x ? x.v : null);
+      const n = c[14] || 0; let yy=c[0], mm=c[1], kk=c[2];
+      if (bad.has(c[4])) { yy=fx.y; mm=fx.m; kk=fx.d; }
+      if (yy==null||mm==null||kk==null||mm>12||kk>31) continue;
+      if (yy>cY || (yy===cY && (mm>cM || (mm===cM && kk>cD)))) continue;
+      rows.push({y:yy, m:mm, k:kk, an:c[11]||0, n});
+    }
+    const day = new Map();   // y_m_k → {tot, dup}
+    // นับซ้ำต่อวัน ต้องรวมแถวที่ key ต่างแต่ถูกแก้วันที่ให้ตรงวันเดียวกัน → ใช้ n ของแต่ละ key
+    rows.forEach(r=>{ const d=r.y+'_'+r.m+'_'+r.k; const o=day.get(d)||{tot:0,dup:0}; o.tot+=r.n; o.dup+=r.n-1; day.set(d,o); });
+    const rev = new Map();   // y_m → Map(k → rev)
+    rows.forEach(r=>{
+      const d=day.get(r.y+'_'+r.m+'_'+r.k), isDup = d.tot>=2 && d.dup/d.tot>=0.2;
+      const kept = isDup ? Math.ceil(r.n/2) : r.n;
+      const mk=r.y+'_'+r.m; if(!rev.has(mk)) rev.set(mk,new Map());
+      const mp=rev.get(mk); mp.set(r.k,(mp.get(r.k)||0)+kept*r.an);
+    });
+    const sdays = (yy,mm) => [...(rev.get(yy+'_'+mm)||new Map()).entries()]
+      .filter(([k,v])=>Math.abs(v)>0.005 && new Date(Date.UTC(yy,mm-1,k)).getUTCDay()!==0)
+      .sort((a,b)=>a[0]-b[0]);
+    const sumN = (arr,n) => arr.slice(0,n).reduce((s,x)=>s+x[1],0);
+    const cd = sdays(y,m), N = cd.length;
+    const mk = (yy,mm) => { const a=sdays(yy,mm); const n=Math.min(N,a.length); return {rev:sumN(a,N), n, mo:mm, yr:yy}; };
+    KPI_DD[key] = { N, curRev: [...(rev.get(y+'_'+m)||new Map()).values()].reduce((a,b)=>a+b,0), cmp: sumN(cd,N), prev: mk(py,pm), yoy: mk(y-1,m) };
+  } catch (e) {
+    KPI_DD[key] = 'err';
+    console.warn('kpiDedupLoad', e);
+  }
+  if (selYr===y && selMo===m) renderPeriodKPIs();
+}
+
 function renderPeriodKPIs() {
   const cur = getPOS(selYr, selMo);
   // previous month
@@ -887,26 +943,32 @@ function renderPeriodKPIs() {
     return;
   }
 
-  const mom = prev ? (cur.rev - prev.rev) / prev.rev * 100 : null;
-  const yoyPct = yoy ? (cur.rev - yoy.rev) / yoy.rev * 100 : null;
-  const aov = cur.inv > 0 ? cur.rev / cur.inv : 0;
+  let dd = KPI_DD[selYr+'_'+selMo];
+  if (dd === undefined) { kpiDedupLoad(selYr, selMo); dd = 'loading'; }
+  const ddOk = dd && typeof dd === 'object';
+  const revUsed = ddOk ? Math.round(dd.curRev) : cur.rev;
+  const ddPct = (a, b) => (b && b.rev) ? (a - b.rev) / b.rev * 100 : null;
+  const mom = ddOk ? ddPct(dd.cmp, dd.prev) : (dd==='err' && prev ? (cur.rev - prev.rev) / prev.rev * 100 : null);
+  const yoyPct = ddOk ? ddPct(dd.cmp, dd.yoy) : (dd==='err' && yoy ? (cur.rev - yoy.rev) / yoy.rev * 100 : null);
+  const aov = cur.inv > 0 ? revUsed / cur.inv : 0;
+  const cmpLabel = o => ddOk ? `เทียบวันขายที่ 1–${o.n} ของ ${THAI_MO[o.mo-1]} ${(o.yr+543)%100}` : (dd==='loading' ? 'กำลังคำนวณ…' : 'ยังไม่ได้ตัดซ้ำ/เทียบเต็มเดือน (โหลดไม่สำเร็จ)');
 
   const delta = (pct, label) => {
-    if (pct === null) return `<div style="font-size:11px;color:#94a3b8;">ไม่มีข้อมูลปีก่อน</div>`;
+    if (pct === null) return `<div style="font-size:11px;color:#94a3b8;">${dd==='loading'?'กำลังคำนวณ…':'ไม่มีข้อมูลเทียบ'}</div>`;
     const up = pct >= 0;
     return `<div style="font-size:20px;font-weight:800;color:${up?'#059669':'#dc2626'};">${up?'↑':'↓'} ${Math.abs(pct).toFixed(1)}%</div>
-            <div style="font-size:11px;color:#94a3b8;">vs ${label}</div>`;
+            <div style="font-size:11px;color:#94a3b8;">${label}</div>`;
   };
 
-  const tPct = Math.min(100, Math.round(cur.rev / TARGET_MONTHLY * 100));
+  const tPct = Math.min(100, Math.round(revUsed / TARGET_MONTHLY * 100));
   const tColor = tPct >= 100 ? '#059669' : tPct >= 60 ? '#d97706' : '#dc2626';
-  const shortfall = Math.max(0, TARGET_MONTHLY - cur.rev);
+  const shortfall = Math.max(0, TARGET_MONTHLY - revUsed);
 
   document.getElementById('period-kpi').innerHTML = `
     <div class="card" style="flex:1;min-width:130px;">
       <div style="font-size:11px;color:#64748b;margin-bottom:2px;">💰 ยอดขาย</div>
-      <div style="font-size:22px;font-weight:800;color:#2563eb;">${fmtK(cur.rev)}</div>
-      <div style="font-size:11px;color:#94a3b8;">${cur.th} · POS</div>
+      <div style="font-size:22px;font-weight:800;color:#2563eb;">${fmtK(revUsed)}</div>
+      <div style="font-size:11px;color:#94a3b8;">${cur.th} · POS${ddOk?' · ตัดแถวซ้ำแล้ว':''}</div>
     </div>
     <div class="card" style="flex:1;min-width:110px;">
       <div style="font-size:11px;color:#64748b;margin-bottom:2px;">🧾 จำนวนบิล</div>
@@ -928,11 +990,11 @@ function renderPeriodKPIs() {
     </div>
     <div class="card" style="flex:1;min-width:120px;">
       <div style="font-size:11px;color:#64748b;margin-bottom:4px;">📈 MOM</div>
-      ${delta(mom, prev ? prev.th : '')}
+      ${delta(mom, cmpLabel(ddOk?dd.prev:{}))}
     </div>
     <div class="card" style="flex:1;min-width:120px;">
       <div style="font-size:11px;color:#64748b;margin-bottom:4px;">📅 YOY</div>
-      ${delta(yoyPct, yoy ? yoy.th : '')}
+      ${delta(yoyPct, cmpLabel(ddOk?dd.yoy:{}))}
     </div>
   `;
 }
@@ -2507,6 +2569,30 @@ async function renderTodaySheet(){
   }
   renderRows(items, CS_STATE.lines);
 }
+function csSayLine(it){
+  // ตัดคำทักทาย "สวัสดีค่ะ <ชื่อ> จาก OfficeMate สระบุรีนะคะ" ออก แสดงประโยคเนื้อหาแรก (ถ้าสั้นเกินไปต่อประโยคถัดไป) — แสดงผลอย่างเดียว
+  const L = csFillScript(it, it.script, it.lr, true).slice(), re = /^สวัสดีค่ะ.*?จาก OfficeMate สระบุรีนะคะ\s*/;
+  const out = [];
+  for(const t of L){ const r = t.replace(re,'').trim(); if(r) out.push(r); if(out.join(' ').length>=25) break; }
+  return out.join(' ');
+}
+const CS_TIER_SHORT = {1:'โทรซ้ำ',7:'ปักหมุด',2:'ราชการ',3:'บิลใหญ่',4:'ลูกค้าเงียบ',5:'ถึงรอบซื้อ',6:'เลยรอบนาน'};
+const CS_DOW_TH = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+// เหตุผล 1 บรรทัดภาษาคน (ไม่มีตัวเลข/เปอร์เซ็นต์) — แสดงอย่างเดียว ไม่กระทบการคัดรายชื่อ
+function csReasonShort(item){
+  if(item.tier===7) return CS_PIN_REASON;
+  if(item.tier===1){
+    if(item.retry) return 'ไม่รับสายเมื่อวัน'+CS_DOW_TH[csDnDate(item.retry.td).getUTCDay()]+' โทรซ้ำอีกครั้ง';
+    if(item.carry) return 'ค้างจากใบวันที่ '+csFmt(item.from)+' ยังไม่ได้กดผล';
+  }
+  const r = CS.cands.get(item.name), t = r ? r.tier : item.tier;
+  if(t===2) return 'ปีก่อนสั่งช่วงนี้ ปีนี้ยังไม่ซื้อ';
+  if(t===3) return 'ปกติสั่งเป็นประจำ เดือนนี้ยังไม่มา';
+  if(t===4) return 'เงียบไปหลายเดือนแล้ว';
+  if(t===5) return 'ถึงรอบซื้อปกติแล้ว';
+  if(t===6) return 'นานกว่ารอบซื้อปกติมาก';
+  return 'ยังไม่ซื้อเดือนนี้';
+}
 function renderRows(items, linesMap){
   const tbl = document.getElementById('ts-table'), body = document.getElementById('ts-body');
   tbl.style.display = items.length ? '' : 'none';
@@ -2514,18 +2600,21 @@ function renderRows(items, linesMap){
   body.innerHTML = CS_ITEMS.map((it,i)=>{
     const sc = CALL_SCRIPTS[it.script], full = csScriptHTML(it, it.script, it.lr);
     const canCopy = it.script==='ส-2' || it.script==='ส-3';
+    const say = csSayLine(it);
     return `<tr data-name="${escHTML(it.name)}">
       <td style="font-weight:700;">${i+1}</td>
-      <td><div class="cs-name">${escHTML(it.name)}</div>
-          <div class="cs-sub"><span class="ts-chip ts-t${it.tier}">${CS_TIER[it.tier][0]} ${CS_TIER[it.tier][1]}</span>${csReason(it, it.lr)}${linesMap?'':' <span style="color:#94a3b8;">(กำลังโหลดรายการสินค้า…)</span>'}</div></td>
-      <td><b>${it.script}</b> <span style="font-size:11px;color:#475569;">${escHTML(sc.goal)}</span>
-          <details class="no-print"><summary>ดูข้อความเต็ม</summary><div class="ts-full">${full}</div></details>
-          <div class="print-only ts-full">${full}</div></td>
-      <td style="font-size:11px;">${csRecoHTML(it, it.lr)}</td>
+      <td><div class="cs-name" style="font-size:15px;">${escHTML(it.name)} <span class="ts-chip ts-t${it.tier}">${CS_TIER_SHORT[it.tier]}</span></div>
+          <div style="font-size:12px;color:#334155;margin-top:2px;">${escHTML(csReasonShort(it))}</div>
+          <div style="font-size:12px;color:#0f766e;margin-top:2px;">พูด: ${escHTML(say)}</div>
+          <details class="no-print" style="margin-top:4px;"><summary>ดูเพิ่ม</summary>
+            <div class="ts-full"><b>เหตุผลเต็ม:</b> ${csReason(it, it.lr)}${linesMap?'':' <span style="color:#94a3b8;">(กำลังโหลดรายการสินค้า…)</span>'}</div>
+            <div class="ts-full"><b>${it.script}</b> <span style="color:#475569;">${escHTML(sc.goal)}</span><br>${full}</div>
+            <div class="ts-full"><b>สินค้าแนะนำ:</b> ${csRecoHTML(it, it.lr)}</div>
+            ${canCopy?`<button class="ts-btn" onclick="csCopy(${i},this)">📋 คัดลอกรายการ</button>`:''}
+          </details></td>
       <td class="no-print">${csOutcomeSel(it.name)}
-          <div class="call-slot" data-name="${escHTML(it.name)}"></div>
-          ${canCopy?`<button class="ts-btn" onclick="csCopy(${i},this)">📋 คัดลอกรายการ</button>`:''}</td>
-      <td class="print-only"><span class="ts-box"></span>ได้คุย<br><span class="ts-box"></span>ไม่รับสาย<br><span class="ts-box"></span>ไม่สนใจ<br><span style="display:block;border-bottom:1px dotted #94a3b8;height:14px;"></span></td>
+          <div class="call-slot" data-name="${escHTML(it.name)}"></div></td>
+      <td class="print-only"><span class="ts-box"></span>ได้คุย<br><span class="ts-box"></span>ไม่รับสาย<br><span class="ts-box"></span>ไม่สนใจ</td>
     </tr>`; }).join('');
   renderCallBtns();
 }
