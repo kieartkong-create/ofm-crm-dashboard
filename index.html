@@ -2041,11 +2041,13 @@ function retryRecount(){
   if(wrap && !total) wrap.innerHTML = '<div class="card" style="padding:18px;color:#64748b;">— วันนี้ไม่มีรายที่ต้องโทรซ้ำ —</div>';
 }
 function callSet(btn,v){
-  if(!CALL_WHO){ alert('กรุณาเลือกก่อนว่า "ฉันคือใคร" (ปุ่มด้านบนของส่วนนี้)'); return; }
-  const slot = btn.closest('.call-slot'), name = slot.dataset.name;
+  const slot = btn.closest('.call-slot'); callApply(slot.dataset.name, v, false);
+}
+function callApply(name, v, force){
+  if(!CALL_WHO){ alert('กรุณาเลือกก่อนว่า "ฉันคือใคร" (ปุ่มด้านบนของส่วนนี้)'); return false; }
   const _now=Date.now();
-  if(CALL_LASTSAVE[name] && _now-CALL_LASTSAVE[name] < CALL_DUP_MS){ callSavedMsg(name,'เพิ่งบันทึกไปแล้ว'); return; }
-  CALL_LASTSAVE[name]=_now;
+  if(CALL_LASTSAVE[name] && CALL_LASTSAVE[name].v===v && _now-CALL_LASTSAVE[name].t < CALL_DUP_MS && !force){ callSavedMsg(name,'เพิ่งบันทึกไปแล้ว'); return false; }
+  CALL_LASTSAVE[name]={v,t:_now};
   CALL_META[name] = {status:v, who:CALL_WHO, t:new Date().toISOString()};
   callPush(name,v);
   if(v!=='call'){ document.querySelectorAll('tr.retry-row').forEach(tr=>{ if(tr.dataset.name===name) tr.remove(); }); retryRecount(); }
@@ -2054,6 +2056,7 @@ function callSet(btn,v){
   renderCallBtns();
   callSavedMsg(name,'บันทึกแล้ว ✓');
   if(typeof csAfterPress==='function') csAfterPress(name,v);
+  return true;
 }
 function callClear(btn){
   const name = btn.closest('.call-slot').dataset.name;
@@ -2346,9 +2349,9 @@ function csOwner(name, tier, whoLogged){
   if(tier===1) return CS_TEAM.includes(whoLogged) ? whoLogged : CS_TEAM[csHash(name)%3];
   if(tier===2) return 'แจง';
   if(tier===3) return csHash(name)%2===0 ? 'กระแต' : 'วัน';
-  if(tier===4) return 'วัน';
   return CS_TEAM[csHash(name)%3];
 }
+const csExcluded = n => isControl(n) || isWaitQueue(n) || isHeld(n);   // ต้องกรองทุกเส้นทาง: ปักหมุด · ค้าง · โทรซ้ำ · รายใหม่ · ใบที่ตรึงไว้
 // ใบของ who วันนี้ (ยังไม่ใส่รายการสินค้า)
 function csCompose(E, who, log, isNewDay){
   const T = E.T, items = [], used = new Set();
@@ -2360,14 +2363,15 @@ function csCompose(E, who, log, isNewDay){
   // รายค้าง = เคยขึ้นใบของ who (ในเครื่องนี้ ≤14 วัน) แต่ยังไม่มีการกดเลย
   const carry = [];
   readSheets(who).forEach(({dn,st})=>st.items.forEach(it=>{
-    if(carry.some(x=>x.name===it.n) || pressedSince(it.n,dn) || stale(it.n,dn) || blocked(it.n)) return;
+    if(carry.some(x=>x.name===it.n) || pressedSince(it.n,dn) || stale(it.n,dn) || blocked(it.n) || csExcluded(it.n) || (it.t===4 && csOwner(it.n,4)!==who)) return;   // ④ จากใบเก่า (กฎ ④→วัน): ข้ามถ้าแฮชใหม่ไม่ใช่ของคนนี้ กันซ้ำ   // 27 พ.ย.: รายค้างจากใบเก่าต้องผ่านกฎ กลุ่มทดลอง/รอคิว/เก็บไว้ไม่โทร ด้วย
     carry.push({name:it.n, from:dn});
   }));
   const carryNames = new Set(carry.map(x=>x.name));
+  // otherCarry ต้องไม่รวมรายที่ถูกกันออก (ไม่งั้นรายที่กันแล้วยังบล็อกคนอื่นต่อ)
   const otherCarry = new Set();
   CS_TEAM.filter(w=>w!==who).forEach(w=>readSheets(w).forEach(({dn,st})=>st.items.forEach(it=>{ if(!pressedSince(it.n,dn) && !stale(it.n,dn)) otherCarry.add(it.n); })));
   carry.forEach(x=>{ if(items.length<Math.min(CS_QUOTA,CS_MAX_CARRY)){ items.push({name:x.name, tier:1, carry:true, from:x.from}); used.add(x.name); } });
-  E.retries.filter(r=>csOwner(r.name,1,r.who)===who && !isHeld(r.name) && !blocked(r.name) && !used.has(r.name) && !otherCarry.has(r.name))
+  E.retries.filter(r=>csOwner(r.name,1,r.who)===who && !csExcluded(r.name) && !blocked(r.name) && !used.has(r.name) && !otherCarry.has(r.name))
     .sort((a,b)=>b.wd-a.wd).forEach(r=>{ if(items.length<Math.min(CS_QUOTA,CS_MAX_CARRY)){ items.push({name:r.name, tier:1, retry:r}); used.add(r.name); } });
   if(isNewDay){
     const mine = [];
@@ -2376,7 +2380,7 @@ function csCompose(E, who, log, isNewDay){
     if(T>=pinDn(CS_PIN_FROM) && T<=pinDn(CS_PIN_TO)){
       CS_PIN_NAMES.forEach((n,idx)=>{
         if(items.length>=CS_QUOTA || used.has(n) || carryNames.has(n) || otherCarry.has(n) || blocked(n)) return;
-        if(isControl(n)||isWaitQueue(n)||isHeld(n)) return;
+        if(csExcluded(n)) return;
         const m = meta(n); if(m && m.status==='call' && m.t && csLogOk(m.t) && T-csTsDn(m.t)<=14) return;   // ไม่รับสายเมื่อเร็ว ๆ นี้ = เรื่องของนัดโทรซ้ำ
         const r = E.cands.get(n); if(r && r.boughtThisMonth) return;                                         // ซื้อเดือนนี้แล้ว = ไม่ต้องไล่
         const owner = (r && r.tier) ? csOwner(n, r.tier) : CS_PIN_RR[idx%3];
@@ -2384,14 +2388,17 @@ function csCompose(E, who, log, isNewDay){
         items.push({name:n, tier:7}); used.add(n);
       });
     }
+    // รายใหม่: ผู้สมัครที่ผ่านกฎกรอง แยกตามเจ้าของ
+    const poolBy = {}; CS_TEAM.forEach(w=>poolBy[w]=[]);
     E.cands.forEach(r=>{
-      if(!r.tier || used.has(r.name) || carryNames.has(r.name) || otherCarry.has(r.name) || blocked(r.name)) return;
+      if(!r.tier || used.has(r.name) || carryNames.has(r.name) || otherCarry.has(r.name) || blocked(r.name) || csExcluded(r.name)) return;
       const m = meta(r.name); if(m && m.status==='call' && m.t && csLogOk(m.t) && T-csTsDn(m.t)<=14) return;   // ไม่รับสายเมื่อเร็ว ๆ นี้ = เรื่องของนัดโทรซ้ำ ไม่ขึ้นซ้ำเป็นรายใหม่
       if(r.tier<=4 && csWorkdaysAfter(r.lastAll,T)<=5) return;                                  // เพิ่งซื้อไม่เกิน 5 วันทำการ
-      if(csOwner(r.name, r.tier)!==who) return;
-      mine.push(r);
+      poolBy[csOwner(r.name, r.tier)].push(r);
     });
-    mine.sort((a,b)=>a.tier-b.tier || (b.info.score-a.info.score) || a.name.localeCompare(b.name,'th'));
+    const cmpR = (a,b)=>a.tier-b.tier || (b.info.score-a.info.score) || a.name.localeCompare(b.name,'th');
+    poolBy[who].forEach(r=>mine.push(r));   // ไม่เติมข้ามคน (ทำให้ซ้ำเมื่อเปิดใบคนละเวลา) · ④ แบ่ง 3 คนด้วยแฮชชื่อใน csOwner
+    mine.sort(cmpR);
     mine.forEach(r=>{ if(items.length<CS_QUOTA){ items.push({name:r.name, tier:r.tier}); used.add(r.name); } });
   }
   return items;
@@ -2482,7 +2489,15 @@ function csOutcomeSel(name){
   const cur = (csLS.get('ofm_cs_outcome',{})[name]||{}).v||'';
   return `<select onchange="csSetOutcome(this)" data-name="${escHTML(name)}"><option value="">— ผลที่ได้ —</option>${CS_OUTCOMES.map(o=>`<option ${o===cur?'selected':''}>${o}</option>`).join('')}</select>`;
 }
-function csSetOutcome(sel){ const o=csLS.get('ofm_cs_outcome',{}); if(sel.value) o[sel.dataset.name]={v:sel.value,t:Date.now()}; else delete o[sel.dataset.name]; csLS.set('ofm_cs_outcome',o); }
+function csSetOutcome(sel){
+  const name = sel.dataset.name, o = csLS.get('ofm_cs_outcome',{});
+  if(!sel.value){ delete o[name]; csLS.set('ofm_cs_outcome',o); return; }
+  if(!CALL_WHO){ alert('กรุณาเลือกก่อนว่า "ฉันคือใคร" (ปุ่มด้านบนของส่วนนี้)'); sel.value=(o[name]||{}).v||''; return; }
+  o[name]={v:sel.value,t:Date.now()}; csLS.set('ofm_cs_outcome',o);
+  // 27 พ.ย.: เลือกผลที่ได้ = บันทึกทันที (ได้คุยแล้ว + ผลนั้น) ไม่ต้องกดปุ่ม "คุยแล้ว" อีก · ถ้าวันนี้กด "ไม่สนใจ" ไว้แล้ว คงสถานะนั้นไว้ แล้วแนบผลไปด้วย
+  const m = CALL_META[name], keepNo = !!(m && m.status==='no' && m.t && new Date(m.t).toDateString()===new Date().toDateString());
+  callApply(name, keepNo ? 'no' : 'ok', true);
+}
 function csOutcomeFor(name){ const x=csLS.get('ofm_cs_outcome',{})[name]; return x && Date.now()-x.t<12*3600e3 ? x.v : ''; }   // ส่งไปกับปุ่มสถานะที่กดถัดไป (เลือกผลก่อนกดปุ่ม)
 function csAfterPress(name, v){
   if(v==='call'){ const tr=csLS.get('ofm_cs_tries',{}); tr[name]=(tr[name]||[]).concat(Date.now()).filter(x=>Date.now()-x<30*864e5); csLS.set('ofm_cs_tries',tr); }
@@ -2555,7 +2570,7 @@ async function renderTodaySheet(){
     items = csCompose(CS, who, CS.log||{}, isNewDay);
     if(CS_STATE.usedLog) csLS.set(key, {items: items.map(it=>({n:it.name,t:it.tier,c:it.carry,f:it.from,r:it.retry}))});   // ตรึงใบวันนี้ (เฉพาะตอนมีบันทึกการโทรครบ)
   }
-  items = items.filter(it=>CS.cands.has(it.name) || it.tier===1 || it.tier===7);
+  items = items.filter(it=>!csExcluded(it.name) && (CS.cands.has(it.name) || it.tier===1 || it.tier===7));   // กรองซ้ำหลังตรึง: ใบที่ตรึงไว้ก่อนรายนั้นถูกเก็บไว้/ควบคุม ต้องหลุดออกด้วย
   const nCarry = items.filter(i=>i.tier===1).length;
   const dateTxt = `${['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'][dow]} ${now.getDate()} ${THAI_MO[now.getMonth()]} ${now.getFullYear()+543}`;
   head.textContent = `📞 ใบโทรวันนี้ ของ ${who} — วันนี้ ${items.length} ราย · ค้าง ${nCarry} ราย`;
