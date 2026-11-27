@@ -2563,12 +2563,14 @@ async function renderTodaySheet(){
   const now = CS.now, dow = now.getDay(), T = CS.T;
   const isNewDay = (dow>=2 && dow<=5 && csIsWorkday(T)) || csYmd(T)===CS_FIRST_DAY;   // อ.–ศ. = ใบใหม่ · ส. 14 พ.ย. 69 = วันเปิดใช้วันแรก ออกใบเต็ม (เจ้าของสั่ง)
   const key = 'ofm_cs_sheet|'+csYmd(T)+'|'+who;
-  const frozen = csLS.get(key,null);
+  const CS_SHEET_VER = '2026-11-27b';   // เปลี่ยนเลขนี้เมื่อกติกาแบ่งใบเปลี่ยน → ใบที่ตรึงไว้ด้วยกติกาเก่าจะคำนวณใหม่
+  const frozen0 = csLS.get(key,null);
+  const frozen = (frozen0 && frozen0.v===CS_SHEET_VER) ? frozen0 : null;
   let items;
   if(frozen) items = frozen.items.map(it=>({name:it.n, tier:it.t, carry:it.c, from:it.f, retry:it.r}));
   else{
     items = csCompose(CS, who, CS.log||{}, isNewDay);
-    if(CS_STATE.usedLog) csLS.set(key, {items: items.map(it=>({n:it.name,t:it.tier,c:it.carry,f:it.from,r:it.retry}))});   // ตรึงใบวันนี้ (เฉพาะตอนมีบันทึกการโทรครบ)
+    if(CS_STATE.usedLog) csLS.set(key, {v:CS_SHEET_VER, items: items.map(it=>({n:it.name,t:it.tier,c:it.carry,f:it.from,r:it.retry}))});   // ตรึงใบวันนี้ (เฉพาะตอนมีบันทึกการโทรครบ)
   }
   items = items.filter(it=>!csExcluded(it.name) && (CS.cands.has(it.name) || it.tier===1 || it.tier===7));   // กรองซ้ำหลังตรึง: ใบที่ตรึงไว้ก่อนรายนั้นถูกเก็บไว้/ควบคุม ต้องหลุดออกด้วย
   const nCarry = items.filter(i=>i.tier===1).length;
